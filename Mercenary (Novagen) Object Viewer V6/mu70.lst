@@ -1,0 +1,5507 @@
+
+;6502/65C02/65816/CPU64/DTV Turbo Assembler V1.47 listing file of "mu70.tas"
+;done on Sun Nov 13 20:33:21 2022
+
+=0002					SCREEN_POS_LO = $02
+
+=0003					SCREEN_POS_HI = $03
+
+=0024					SCREEN_FLIP = $24
+
+=0025					SCREEN_BANK = $25
+
+=0066					LINE_INC = $66
+
+=0002					SCREEN_POS_PTR = $02
+
+=0040					SCREEN_0 = $40
+
+=0060					SCREEN_1 = $60
+
+=0052					X_POS_HI = $52
+
+=0053					X_POS_LO = $53
+
+=0054					Y_POS_HI = $54
+
+=0055					Y_POS_LO = $55
+
+=0056					Z_POS_HI = $56
+
+=0057					Z_POS_LO = $57
+
+=00b8					OBJECT_TO_DRAW = $B8
+
+=0004					LINE_JUMP_PTR_LO = $04
+
+=0005					LINE_JUMP_PTR_HI = $05
+
+=0006					ab06 = $06 ; math temp?
+
+=0007					ab07 = $07 ; math temp?
+
+=0008					LINE_FRACTION_ab08 = $08
+
+=0008					ab08 = $08 ; math temp? line draw fraction?
+
+=0009					ab09 = $09 ; math temp?
+
+=0008					Z_ROT_LO = $08 ; math temp?
+
+=0009					Z_ROT_HI = $09 
+
+=000a					ab0A = $0A ; math temp?
+
+=000a					X_ROT_LO = $0A ; math temp?
+
+=000b					ab0B = $0B ; math temp?
+
+=000b					X_ROT_HI = $0B ; math temp?
+
+=000c					ab0C = $0C ; math temp?
+
+=000d					ab0D = $0D ; math temp?
+
+=0018					ab18 = $18 ; math temp?
+
+=0019					POINT_LINE_COUNT = $19
+
+=000e					REGA = $0E
+
+=000f					REGX = $0F
+
+=0020					REGY = $20
+
+=0021					ab21 = $21 ; used in line draw?
+
+=0029					ab29 = $29
+
+=002c					ROT_LO = $2C
+
+=002d					ROT_HI = $2D
+
+=003c					SIN_LO = $3C
+
+=003d					SIN_HI = $3D
+
+=003e					COS_LO = $3E
+
+=003f					COS_HI = $3F
+
+=0058					X_ROTATION_LO = $58
+
+=0059					X_ROTATION_HI = $59
+
+=005a					Y_ROTATION_LO = $5A
+
+=005b					Y_ROTATION_HI = $5B
+
+=005c					Z_ROTATION_LO = $5C
+
+=005d					Z_ROTATION_HI = $5D
+
+=005e					ab5E = $5E
+
+=005f					ab5F = $5F
+
+=0060					ab60 = $60
+
+=0061					ab61 = $61
+
+=0062					ab62 = $62
+
+=0063					ab63 = $63
+
+=0064					ab64 = $64
+
+=0065					ab65 = $65
+
+=0067					LINE_TYPE_POINTER = $67 ; line type?
+
+=0068					ab68 = $68
+
+=0069					ab69 = $69
+
+=006a					LINE_START_HOR = $6A ; line start x?
+
+=006b					LINE_START_VER = $6B ; line start y?
+
+=006c					ab6C = $6C
+
+=006d					ab6D = $6D
+
+=006e					POINT_CLASSIFY_1 = $6E	; point classification of this point?
+
+=006f					POINT_CLASSIFY_2 = $6F
+
+=0072					CURR_X_LSB = $72
+
+=0073					CURR_X_MSB = $73
+
+=0074					CURR_X_HSB = $74
+
+=0075					CURR_Y_LSB = $75
+
+=0076					CURR_Y_MSB = $76
+
+=0077					CURR_Y_HSB = $77
+
+=0078					CURR_Z_LSB = $78
+
+=0079					CURR_Z_MSB = $79
+
+=007a					CURR_Z_HSB = $7A
+
+=0080					JOYSTICK_MOVEMENT = $80
+
+=008e					ab8E = $8E
+
+=008f					ab8F = $8F
+
+=0090					ab90 = $90
+
+=0091					ab91 = $91
+
+=0092					ab92 = $92
+
+=0093					ab93 = $93
+
+=0094					ab94 = $94
+
+=0095					ab95 = $95
+
+=0096					ab96 = $96
+
+=0097					ab97 = $97
+
+=0099					ab99 = $99
+
+=009a					ab9A = $9A
+
+=00a2					abA2 = $A2 ; working backwards from here?
+
+=00a3					abA3 = $A3
+
+=00aa					SPEED_LO = $AA
+
+=00ab					SPEED_HI = $AB
+
+=00ac					ROT_SPD = $AC
+
+=00ad					OBJECT_POINTER_POS = $AD
+
+=00af					CURRENT_OBJECT = $AF
+
+=00b0					NUMBER_OF_POINTS = $B0
+
+=00b2					DRAW_OBJECT_COUNT = $B2
+
+=00b3					DRAW_OBJECT_COUNTER = $B3
+
+=00b7					abB7 = $B7
+
+=00b9					abB9 = $B9
+
+=00c7					VIC_SCREEN_BANK = $C7
+
+=00cd					abCD = $CD
+
+=00cf					OBJ_PNT_X 		= $CF
+
+=00d0					OBJ_PNT_X_MSB 	= $D0
+
+=00d1					OBJ_PNT_Y 		= $D1
+
+=00d2					OBJ_PNT_Y_MSB 	= $D2
+
+=00d3					OBJ_PNT_Z 		= $D3
+
+=00d4					OBJ_PNT_Z_MSB 	= $D4
+
+=00d5					DIFF_X_LSB = $D5
+
+=00d6					DIFF_X_MSB = $D6
+
+=00d7					DIFF_X_HSB = $D7
+
+=00d8					DIFF_Y_LSB = $D8
+
+=00d9					DIFF_Y_MSB = $D9
+
+=00da					DIFF_Y_HSB = $DA
+
+=00db					DIFF_Z_LSB = $DB
+
+=00dc					DIFF_Z_MSB = $DC
+
+=00dd					DIFF_Z_HSB = $DD
+
+=00de					abDE = $DE
+
+=00df					abDF = $DF
+
+=00e0					abE0 = $E0
+
+=00e6					abE6 = $E6
+
+=00eb					abEB = $EB
+
+=00f1					abF1 = $F1
+
+=00f2					abF2 = $F2
+
+=00fa					abFA = $FA
+
+=00fc					abFC = $FC
+
+=001d					OBJECT_POINTER = $1D
+
+=fffe					IRQ = $FFFE
+
+=0004					LINE_JUMP_PTR = LINE_JUMP_PTR_LO
+
+=0088					CLIP_TEST_BOTTOM = $88
+
+=0087					CLIP_BOTTOM = $87
+
+=00a0					CLIP_TEST_RIGHT = $A0 ; $80
+
+=009f					CLIP_RIGHT = $9F ; $7F
+
+=0000					CLIP_TEST_TOP = $00
+
+=0000					CLIP_TEST_LEFT = $00
+
+=0001					PNT_OFF_RIGHT = $01
+
+=0000					PNT_OFF_LEFT = 0
+
+=0000					PNT_BEHIND = 0
+
+=0000					PNT_ONSCREEN = 0
+
+=0002					PNT_OFF_BOTTOM = $02
+
+=0000					PNT_OFF_TOP = 0
+
+.0801					startup
+
+.0801	 78		sei			SEI
+
+.0802	 a9 00		lda #$00	 LDA #$00
+
+.0804	 8d 20 d0	sta $d020	 STA $D020
+
+.0807	 a9 01		lda #$01	 LDA #$01 ; $00
+
+.0809	 8d 21 d0	sta $d021	 STA $D021
+
+.080c	 a9 0b		lda #$0b	 LDA #$0B ; $00
+
+.080e	 8d 22 d0	sta $d022	 STA $D022
+
+.0811	 a9 0c		lda #$0c	 LDA #$0C ; $00
+
+.0813	 8d 23 d0	sta $d023	 STA $D023
+
+.0816	 a9 bc		lda #$bc	 LDA #$BC ;$65 ; colour 01 (0000????) and colour 10 (????0000) - bank 1
+
+.0818	 a2 00		ldx #$00	 LDX #<(ab5C00)
+
+.081a	 a0 5c		ldy #$5c	 LDY #>(ab5C00)
+
+.081c	 86 02		stx $02		 STX SCREEN_POS_LO+0
+
+.081e	 84 03		sty $03		 STY SCREEN_POS_LO+1
+
+.0820	 a2 03		ldx #$03	 LDX #>1000 
+
+.0822	 a0 e8		ldy #$e8	 LDY #<1000
+
+.0824	 20 64 09	jsr $0964	 JSR MEMSET
+
+.0827	 a9 35		lda #$35		LDA #$35
+
+.0829	 85 01		sta $01			STA $1
+
+.082b	 a9 70		lda #$70		LDA #$70
+
+.082d	 8d 18 d0	sta $d018		STA $D018
+
+.0830	 a9 3b		lda #$3b		LDA #$3B
+
+.0832	 8d 11 d0	sta $d011		STA $D011
+
+.0835	 a9 00		lda #$00		LDA #$00 
+
+.0837	 8d 21 d0	sta $d021		STA $D021
+
+.083a	 a9 18		lda #$18		LDA #$18
+
+.083c	 8d 16 d0	sta $d016		STA $D016
+
+.083f	 a9 0b		lda #$0b		LDA #<pBA1E
+
+.0841	 8d fe ff	sta $fffe		STA $FFFE
+
+.0844	 a9 09		lda #$09		LDA #>pBA1E
+
+.0846	 8d ff ff	sta $ffff		STA $FFFF
+
+.0849	 a9 7f		lda #$7f	 LDA #$7F
+
+.084b	 8d 0d dc	sta $dc0d	 STA $DC0D  ; disable timer interrupts which can be generated by the two CIA chips
+
+.084e	 8d 0d dd	sta $dd0d	 STA $DD0D  ; the kernal uses such an interrupt to flash the cursor and scan the keyboard, so we better stop it.
+
+.0851	 ad 0d dc	lda $dc0d	 LDA $DC0D  ; by reading this two registers we negate any pending CIA irqs.
+
+.0854	 ad 0d dd	lda $dd0d	 LDA $DD0D  ; if we don't do this, a pending CIA irq might occur after we finish setting up our irq. we don't want that to happen.
+
+.0857	 a9 01		lda #$01	  LDA #$01   ; this is how to tell the VICII to generate a raster interrupt
+
+.0859	 8d 1a d0	sta $d01a	 STA $D01A
+
+.085c	 a9 02		lda #$02	 LDA #2 ; SCRNBANK
+
+.085e	 8d 00 dd	sta $dd00	 STA $DD00 ; bank
+
+.0861	 a9 ba		lda #$ba		LDA #$BA
+
+.0863	 8d 12 d0	sta $d012		STA $D012
+
+.0866	 a9 01		lda #$01		LDA #$01
+
+.0868	 8d 19 d0	sta $d019		STA $D019
+
+.086b	 a2 fd		ldx #$fd		LDX #253
+
+.086d	 bd e0 27	lda $27e0,x	ZP_LOOP	LDA ZP,X
+
+.0870	 95 00		sta $00,x		STA 00,X
+
+.0872	 ca		dex			DEX 
+
+.0873	 e0 02		cpx #$02		CPX #2
+
+.0875	 d0 f6		bne $086d		BNE ZP_LOOP
+
+.0877	 58		cli			CLI
+
+.0878	 20 78 11	jsr $1178	MAIN_LOOP   JSR SIN_COS
+
+.087b	 20 56 15	jsr $1556				JSR DRAW_SCREEN
+
+.087e	 20 15 15	jsr $1515				JSR COLOUR_SETUP_WHITE
+
+.0881	 20 a1 0b	jsr $0ba1				JSR DRAW_OBJECTS
+
+.0884	 20 78 16	jsr $1678				JSR READ_JOYSTICK_KEYBOARD
+
+.0887	 20 d5 10	jsr $10d5				JSR MOVEMENT
+
+.088a	 a6 73		ldx $73					LDX CURR_X_MSB
+
+.088c	 a5 74		lda $74					LDA CURR_X_HSB
+
+.088e	 a0 00		ldy #$00				LDY	#0
+
+.0890	 20 b8 16	jsr $16b8				JSR	HEX16
+
+.0893	 a5 72		lda $72					LDA CURR_X_LSB
+
+.0895	 a2 20		ldx #$20				LDX #32
+
+.0897	 a0 00		ldy #$00				LDY	#0
+
+.0899	 20 cb 16	jsr $16cb				JSR	HEX8
+
+.089c	 a6 76		ldx $76					LDX CURR_Y_MSB
+
+.089e	 a5 77		lda $77					LDA CURR_Y_HSB
+
+.08a0	 a0 06		ldy #$06				LDY	#6
+
+.08a2	 20 b8 16	jsr $16b8				JSR	HEX16
+
+.08a5	 a5 75		lda $75					LDA CURR_Y_LSB
+
+.08a7	 a2 20		ldx #$20				LDX #32
+
+.08a9	 a0 06		ldy #$06				LDY	#6
+
+.08ab	 20 cb 16	jsr $16cb				JSR	HEX8
+
+.08ae	 a6 79		ldx $79					LDX CURR_Z_MSB
+
+.08b0	 a5 7a		lda $7a					LDA CURR_Z_HSB
+
+.08b2	 a0 0c		ldy #$0c				LDY	#12
+
+.08b4	 20 b8 16	jsr $16b8				JSR	HEX16
+
+.08b7	 a5 78		lda $78					LDA CURR_Z_LSB
+
+.08b9	 a2 20		ldx #$20				LDX #32
+
+.08bb	 a0 0c		ldy #$0c				LDY	#12
+
+.08bd	 20 cb 16	jsr $16cb				JSR	HEX8
+
+.08c0	 a4 72		ldy $72					LDY	CURR_X_LSB
+
+.08c2	 a6 73		ldx $73					LDX	CURR_X_MSB
+
+.08c4	 a5 74		lda $74					LDA	CURR_X_HSB
+
+.08c6	 20 55 0b	jsr $0b55				JSR	BIT24TOFP
+
+.08c9	 8e 09 09	stx $0909				STX TEMPX
+
+.08cc	 8c 0a 09	sty $090a				STY TEMPY
+
+.08cf	 ae 09 09	ldx $0909				LDX TEMPX
+
+.08d2	 ad 0a 09	lda $090a				LDA TEMPY
+
+.08d5	 a0 12		ldy #$12				LDY	#18
+
+.08d7	 20 b8 16	jsr $16b8				JSR	HEX16
+
+.08da	 ae 09 09	ldx $0909				LDX TEMPX
+
+.08dd	 ac 0a 09	ldy $090a				LDY TEMPY
+
+.08e0	 20 ed 0a	jsr $0aed				JSR FPTO16BIT
+
+.08e3	 8e 09 09	stx $0909				STX TEMPX
+
+.08e6	 8c 0a 09	sty $090a				STY TEMPY
+
+.08e9	 ae 09 09	ldx $0909				LDX TEMPX
+
+.08ec	 ad 0a 09	lda $090a				LDA TEMPY
+
+.08ef	 a0 18		ldy #$18				LDY	#24
+
+.08f1	 20 b8 16	jsr $16b8				JSR	HEX16
+
+.08f4	 a6 aa		ldx $aa					LDX SPEED_LO
+
+.08f6	 a5 ab		lda $ab					LDA SPEED_HI
+
+.08f8	 a0 1e		ldy #$1e				LDY	#30
+
+.08fa	 20 b8 16	jsr $16b8				JSR	HEX16
+
+.08fd	 a5 ac		lda $ac					LDA ROT_SPD
+
+.08ff	 a2 20		ldx #$20				LDX #32
+
+.0901	 a0 1e		ldy #$1e				LDY	#30
+
+.0903	 20 cb 16	jsr $16cb				JSR	HEX8
+
+.0906	 4c 78 08	jmp $0878				JMP MAIN_LOOP
+
+
+>0909	 00                       	TEMPX .byte 0
+
+>090a	 00                       	TEMPY .byte 0
+
+
+.090b	 48		pha		pBA1E   PHA 
+
+.090c	 8a		txa		        TXA 
+
+.090d	 48		pha		        PHA 
+
+.090e	 98		tya		        TYA 
+
+.090f	 48		pha		        PHA 
+
+.0910	 a9 3e		lda #$3e	        LDA #<pB9BB
+
+.0912	 8d fe ff	sta $fffe	        STA IRQ   ;IRQ
+
+.0915	 a9 09		lda #$09	        LDA #>pB9BB
+
+.0917	 8d ff ff	sta $ffff	        STA IRQ+1   ;IRQ
+
+.091a	 a9 00		lda #$00	        LDA #$00
+
+.091c	 8d 12 d0	sta $d012	        STA $D012    ;Raster Position
+
+.091f	 a9 01		lda #$01	        LDA #$01
+
+.0921	 8d 19 d0	sta $d019	        STA $D019    ;VIC Interrupt Request Register (IRR)
+
+.0924	 a9 7e		lda #$7e	        LDA #$7E
+
+.0926	 a2 1b		ldx #$1b	        LDX #$1B
+
+.0928	 a0 01		ldy #$01	        LDY #$01
+
+.092a	 8d 18 d0	sta $d018	        STA $D018    ;VIC Memory Control Register
+
+.092d	 8e 11 d0	stx $d011	        STX $D011    ;VIC Control Register 1
+
+.0930	 8c 21 d0	sty $d021	        STY $D021    ;Background Color 0
+
+.0933	 a9 08		lda #$08	        LDA #$08
+
+.0935	 8d 16 d0	sta $d016	        STA $D016    ;VIC Control Register 2
+
+.0938	 68		pla				PLA 
+
+.0939	 a8		tay		        TAY 
+
+.093a	 68		pla		        PLA 
+
+.093b	 aa		tax		        TAX 
+
+.093c	 68		pla		        PLA 
+
+.093d	 40		rti		NMI_NOP	RTI ; This is the irq handler for the NMI. Just returns without acknowledge. This prevents subsequent NMI's from interfering.
+
+.093e	 48		pha		pB9BB  	PHA
+
+.093f	 a5 c7		lda $c7		        LDA VIC_SCREEN_BANK
+
+.0941	 8d 18 d0	sta $d018	        STA $D018    ;VIC Memory Control Register
+
+.0944	 a9 3b		lda #$3b			LDA #$3B
+
+.0946	 8d 11 d0	sta $d011	        STA $D011    ;VIC Control Register 1
+
+.0949	 a9 18		lda #$18	        LDA #$18
+
+.094b	 8d 16 d0	sta $d016			STA $D016    ;VIC Control Register 2
+
+.094e	 a9 0b		lda #$0b	        LDA #<pBA1E
+
+.0950	 8d fe ff	sta $fffe	        STA IRQ   ;IRQ
+
+.0953	 a9 09		lda #$09	        LDA #>pBA1E
+
+.0955	 8d ff ff	sta $ffff	        STA IRQ+1   ;IRQ
+
+.0958	 a9 ba		lda #$ba	        LDA #$BA
+
+.095a	 8d 12 d0	sta $d012	        STA $D012    ;Raster Position
+
+.095d	 a9 01		lda #$01	        LDA #$01
+
+.095f	 8d 19 d0	sta $d019	        STA $D019    ;VIC Interrupt Request Register (IRR)
+
+.0962	 68		pla		        PLA 
+
+.0963	 40		rti		        RTI
+
+.0964	 8c 78 09	sty $0978	MEMSET       STY    LSB_ONLY+1 ; store LSB count
+
+.0967	 e0 00		cpx #$00	             CPX    #0          ; MSB?     
+
+.0969	 f0 0c		beq $0977	             BEQ    LSB_ONLY   ; no
+
+.096b	 a0 00		ldy #$00	             LDY    #0          ; yes so reset LSB
+
+.096d					msb_loop
+.096d	 91 02		sta ($02),y	LSB_LOOP      STA    (SCREEN_POS_LO),Y   ; clear whole MSB
+
+.096f	 88		dey		               DEY 
+
+.0970	 d0 fb		bne $096d	               BNE    LSB_LOOP
+
+.0972	 e6 03		inc $03		              INC    SCREEN_POS_LO+1      ; inc MSB
+
+.0974	 ca		dex		              DEX               ; dec MSB count
+
+.0975	 d0 f6		bne $096d	              BNE    MSB_LOOP
+
+.0977	 a0 00		ldy #$00	LSB_ONLY    LDY    #0          ; LSB count 
+
+.0979	 f0 07		beq $0982	             BEQ    MS_END
+
+.097b	 91 02		sta ($02),y	LAST_LSB_LOOP STA   (SCREEN_POS_LO),Y
+
+.097d	 88		dey		               DEY 
+
+.097e	 d0 fb		bne $097b	               BNE   LAST_LSB_LOOP               
+
+.0980	 91 02		sta ($02),y	              STA   (SCREEN_POS_LO),Y     ; clear last Y (0)
+
+.0982	 60		rts		MS_END      RTS
+
+.0983					fpmul
+.0983	 bd 00 22	lda $2200,x		LDA LOG_TABLE,X
+
+.0986	 a6 08		ldx $08		        LDX ab08
+
+.0988	 18		clc		        CLC 
+
+.0989	 7d 00 22	adc $2200,x	        ADC LOG_TABLE,X
+
+.098c	 aa		tax		        TAX 
+
+.098d	 98		tya		        TYA 
+
+.098e	 90 03		bcc $0993	        BCC b830A
+
+.0990	 69 03		adc #$03	        ADC #$03
+
+.0992	 18		clc		        CLC 
+
+.0993					b830a
+.0993	 65 09		adc $09			ADC ab09
+
+.0995	 70 0c		bvs $09a3	        BVS MATH_LIMIT 
+
+.0997	 29 fd		and #$fd	        AND #$FD
+
+.0999	 85 09		sta $09		        STA ab09
+
+.099b	 a8		tay		        TAY 
+
+.099c	 bd 00 23	lda $2300,x	        LDA EXP_TABLE,X
+
+.099f	 aa		tax		        TAX 
+
+.09a0	 85 08		sta $08		        STA ab08
+
+.09a2	 60		rts		        RTS 
+
+.09a3					math_limit
+.09a3	 10 0c		bpl $09b1		BPL b8328
+
+.09a5	 29 01		and #$01	        AND #$01
+
+.09a7	 09 78		ora #$78	        ORA #$78
+
+.09a9	 a8		tay		        TAY 
+
+.09aa	 a2 00		ldx #$00	        LDX #$00
+
+.09ac	 86 08		stx $08		        STX ab08
+
+.09ae	 84 09		sty $09		        STY ab09
+
+.09b0	 60		rts		        RTS 
+
+.09b1					b8328
+.09b1	 29 01		and #$01		AND #$01
+
+.09b3	 09 84		ora #$84	        ORA #$84
+
+.09b5					b832c
+.09b5	 a8		tay			TAY 
+
+.09b6	 a2 00		ldx #$00	        LDX #$00
+
+.09b8	 86 08		stx $08		        STX ab08
+
+.09ba	 84 09		sty $09		        STY ab09
+
+.09bc	 60		rts		        RTS 
+
+.09bd					fpdiv
+.09bd	 84 06		sty $06			STY ab06
+
+.09bf	 a4 08		ldy $08		        LDY ab08
+
+.09c1	 b9 00 22	lda $2200,y	        LDA LOG_TABLE,Y
+
+.09c4	 38		sec		        SEC 
+
+.09c5	 fd 00 22	sbc $2200,x	        SBC LOG_TABLE,X
+
+.09c8	 aa		tax		        TAX 
+
+.09c9	 a5 09		lda $09		        LDA ab09
+
+.09cb	 09 02		ora #$02	        ORA #$02
+
+.09cd	 b0 03		bcs $09d2	        BCS b8349
+
+.09cf	 e9 03		sbc #$03	        SBC #$03
+
+.09d1	 38		sec		        SEC 
+
+.09d2					b8349
+.09d2	 e5 06		sbc $06			SBC ab06
+
+.09d4	 70 cd		bvs $09a3	        BVS MATH_LIMIT 
+
+.09d6	 29 fd		and #$fd	        AND #$FD
+
+.09d8	 85 09		sta $09		        STA ab09
+
+.09da	 a8		tay		        TAY 
+
+.09db	 bd 00 23	lda $2300,x	        LDA EXP_TABLE,X
+
+.09de	 aa		tax		        TAX 
+
+.09df	 85 08		sta $08		        STA ab08
+
+.09e1	 60		rts		        RTS 
+
+.09e2					fpadd
+.09e2	 a5 18		lda $18			LDA ab18
+
+.09e4	 4a		lsr		        LSR 
+
+.09e5	 b0 15		bcs $09fc	        BCS b8373
+
+.09e7	 8a		txa		        TXA 
+
+.09e8	 65 08		adc $08		        ADC ab08
+
+.09ea	 6a		ror		        ROR 
+
+.09eb	 c8		iny		        INY 
+
+.09ec	 c8		iny		        INY 
+
+.09ed	 c8		iny		        INY 
+
+.09ee	 c8		iny		        INY 
+
+.09ef	 aa		tax		        TAX 
+
+.09f0	 85 08		sta $08		        STA ab08
+
+.09f2	 84 09		sty $09		        STY ab09
+
+.09f4	 60		rts		        RTS 
+
+.09f5	 98		tya		b836C   TYA 
+
+.09f6	 0a		asl		        ASL 
+
+.09f7	 90 5c		bcc $0a55	        BCC b83CC
+
+.09f9	 4c a2 0a	jmp $0aa2	        JMP j8419
+
+.09fc	 8a		txa		b8373   TXA 
+
+.09fd	 e5 08		sbc $08		        SBC ab08
+
+.09ff	 f0 0b		beq $0a0c	        BEQ b8383
+
+.0a01	 b0 5b		bcs $0a5e	        BCS b83D5
+
+.0a03	 a4 09		ldy $09		        LDY ab09
+
+.0a05	 49 ff		eor #$ff	        EOR #$FF
+
+.0a07	 69 01		adc #$01	        ADC #$01
+
+.0a09	 4c 5e 0a	jmp $0a5e	        JMP b83D5
+
+.0a0c	 98		tya		b8383   TYA 
+
+.0a0d	 38		sec		        SEC 
+
+.0a0e	 e9 24		sbc #$24	        SBC #$24
+
+.0a10	 70 9f		bvs $09b1	        BVS b8328
+
+.0a12	 50 a1		bvc $09b5	        BVC b832C
+
+.0a14	 98		tya		s838B   TYA			; looks like some fp conversion?
+
+.0a15	 38		sec		        SEC 
+
+.0a16	 e5 09		sbc $09		        SBC ab09
+
+.0a18	 70 db		bvs $09f5	        BVS b836C
+
+.0a1a	 85 18		sta $18		        STA ab18
+
+.0a1c	 69 01		adc #$01	        ADC #$01
+
+.0a1e	 70 d5		bvs $09f5	        BVS b836C
+
+.0a20	 30 5c		bmi $0a7e	        BMI b83F5
+
+.0a22	 4a		lsr		        LSR 
+
+.0a23	 4a		lsr		        LSR 
+
+.0a24	 f0 bc		beq $09e2	        BEQ FPADD
+
+.0a26	 c9 09		cmp #$09	        CMP #$09
+
+.0a28	 b0 2b		bcs $0a55	        BCS b83CC
+
+.0a2a	 49 0f		eor #$0f	        EOR #$0F
+
+.0a2c	 8d 34 0a	sta $0a34	        STA ab83AB +1
+
+.0a2f	 a5 08		lda $08		        LDA ab08
+
+.0a31	 38		sec		        SEC 
+
+.0a32	 6a		ror		        ROR 
+
+.0a33	 d0 07		bne $0a3c	ab83AB  BNE b83B3 ; looks like part of fp calculation?
+
+.0a35	 ea		nop		        NOP 
+
+.0a36	 ea		nop		        NOP 
+
+.0a37	 ea		nop		        NOP 
+
+.0a38	 ea		nop		        NOP 
+
+.0a39	 ea		nop		        NOP 
+
+.0a3a	 ea		nop		        NOP 
+
+.0a3b	 ea		nop		        NOP 
+
+.0a3c	 4a		lsr		b83B3   LSR 
+
+.0a3d	 4a		lsr		        LSR 
+
+.0a3e	 4a		lsr		        LSR 
+
+.0a3f	 4a		lsr		        LSR 
+
+.0a40	 4a		lsr		        LSR 
+
+.0a41	 4a		lsr		        LSR 
+
+.0a42	 4a		lsr		        LSR 
+
+.0a43	 85 06		sta $06		        STA ab06
+
+.0a45	 a5 18		lda $18		        LDA ab18
+
+.0a47	 4a		lsr		        LSR 
+
+.0a48	 8a		txa		        TXA 
+
+.0a49	 b0 0f		bcs $0a5a	        BCS b83D1
+
+.0a4b	 65 06		adc $06		b83C2   ADC ab06
+
+.0a4d	 90 05		bcc $0a54	        BCC b83CB
+
+.0a4f	 4a		lsr		        LSR 
+
+.0a50	 c8		iny		        INY 
+
+.0a51	 c8		iny		        INY 
+
+.0a52	 c8		iny		        INY 
+
+.0a53	 c8		iny		        INY 
+
+.0a54	 aa		tax		b83CB   TAX 
+
+.0a55	 86 08		stx $08		b83CC   STX ab08
+
+.0a57	 84 09		sty $09		        STY ab09
+
+.0a59	 60		rts		        RTS 
+
+.0a5a	 e5 06		sbc $06		b83D1   SBC ab06
+
+.0a5c	 b0 f6		bcs $0a54	        BCS b83CB
+
+.0a5e	 84 06		sty $06		b83D5   STY ab06
+
+.0a60	 a0 00		ldy #$00	        LDY #$00
+
+.0a62	 0a		asl		b83D9   ASL 
+
+.0a63	 88		dey		        DEY 
+
+.0a64	 90 fc		bcc $0a62	        BCC b83D9
+
+.0a66	 aa		tax		        TAX 
+
+.0a67	 98		tya		        TYA 
+
+.0a68	 0a		asl		        ASL 
+
+.0a69	 0a		asl		        ASL 
+
+.0a6a	 18		clc		        CLC 
+
+.0a6b	 65 06		adc $06		        ADC ab06
+
+.0a6d	 70 06		bvs $0a75	        BVS b83EC
+
+.0a6f	 a8		tay		        TAY 
+
+.0a70	 86 08		stx $08		        STX ab08
+
+.0a72	 84 09		sty $09		        STY ab09
+
+.0a74	 60		rts		        RTS 
+
+.0a75					b83ec
+.0a75	 a2 89		ldx #$89		LDX #<p8400
+
+.0a77	 a0 0a		ldy #$0a	        LDY #>p8400
+
+.0a79	 86 08		stx $08		        STX ab08
+
+.0a7b	 84 09		sty $09		        STY ab09
+
+.0a7d	 60		rts		        RTS 
+
+.0a7e	 c9 e0		cmp #$e0	b83F5   CMP #$E0
+
+.0a80	 90 20		bcc $0aa2	        BCC j8419
+
+.0a82	 4a		lsr		        LSR 
+
+.0a83	 4a		lsr		        LSR 
+
+.0a84	 29 07		and #$07	        AND #$07
+
+.0a86	 8d 8d 0a	sta $0a8d	        STA ab8404 +1
+
+.0a89	 8a		txa		p8400   TXA 
+
+.0a8a	 38		sec		        SEC 
+
+.0a8b	 6a		ror		        ROR 
+
+.0a8c	 d0 03		bne $0a91	ab8404  BNE b8408
+
+.0a8e	 4a		lsr		        LSR 
+
+.0a8f	 4a		lsr		        LSR 
+
+.0a90	 4a		lsr		        LSR 
+
+.0a91	 4a		lsr		b8408   LSR 
+
+.0a92	 4a		lsr		        LSR 
+
+.0a93	 4a		lsr		        LSR 
+
+.0a94	 4a		lsr		        LSR 
+
+.0a95	 85 06		sta $06		        STA ab06
+
+.0a97	 a4 09		ldy $09		        LDY ab09
+
+.0a99	 a5 18		lda $18		        LDA ab18
+
+.0a9b	 4a		lsr		        LSR 
+
+.0a9c	 a5 08		lda $08		        LDA ab08
+
+.0a9e	 90 ab		bcc $0a4b	        BCC b83C2
+
+.0aa0	 b0 b8		bcs $0a5a	        BCS b83D1
+
+.0aa2	 a6 08		ldx $08		j8419   LDX ab08
+
+.0aa4	 a4 09		ldy $09		        LDY ab09
+
+.0aa6	 60		rts		        RTS 
+
+.0aa7	 c8		iny		COS_FP	INY 
+
+.0aa8	 98		tya		SIN_FP	TYA 
+
+.0aa9	 4a		lsr				LSR 
+
+.0aaa	 90 06		bcc $0ab2			BCC b8429
+
+.0aac	 8a		txa					TXA 
+
+.0aad	 49 ff		eor #$ff				EOR #$FF
+
+.0aaf	 aa		tax					TAX 
+
+.0ab0	 98		tya					TYA 
+
+.0ab1	 4a		lsr					LSR 
+
+.0ab2	 29 01		and #$01	b8429   AND #$01
+
+.0ab4	 1d 00 21	ora $2100,x			ORA SIN_MSB,X
+
+.0ab7	 a8		tay				TAY 
+
+.0ab8	 bd 00 20	lda $2000,x			LDA SIN_LSB,X
+
+.0abb	 aa		tax				TAX 
+
+.0abc	 60		rts				RTS 
+
+.0abd					fpto8bit
+.0abd	 98		tya				TYA 			; transfer y (floating point position) to a
+
+.0abe	 30 25		bmi $0ae5			BMI	b849F		; if negative
+
+.0ac0	 4a		lsr				LSR 			; divide and remove first bit
+
+.0ac1	 4a		lsr		        LSR 			; divide and remove second bit
+
+.0ac2	 c9 07		cmp #$07	        CMP #$07		; is it greater than 7
+
+.0ac4	 b0 26		bcs $0aec	        BCS b84A6		; yes so error so exit with carry set
+
+.0ac6	 8d cd 0a	sta $0acd	        STA ab8487+1	; no so self modifying code to jump forward a number of divides
+
+.0ac9	 8a		txa		        TXA 			; transfer x (actual number) to a
+
+.0aca	 38		sec		        SEC 			; set carry
+
+.0acb	 6a		ror		        ROR 			; /2 - putting 1 in top bit (and putting 0 in carry?) 
+
+.0acc	 d0 04		bne $0ad2	ab8487  BNE b848C		; jump forward self modifying code - always done as carry is set so ROR result is never 0
+
+.0ace	 4a		lsr		        LSR 			; /2
+
+.0acf	 4a		lsr		        LSR 			; /4
+
+.0ad0	 4a		lsr		        LSR 			; /8
+
+.0ad1	 4a		lsr		        LSR 			; /16
+
+.0ad2	 4a		lsr		b848C   LSR 			; /32
+
+.0ad3	 4a		lsr		        LSR 			; /64
+
+.0ad4	 4a		lsr		        LSR 			; /128
+
+.0ad5	 69 00		adc #$00	b848F   ADC #$00		; add carry?
+
+.0ad7	 30 12		bmi $0aeb	        BMI b84A5		; if minus then error?
+
+.0ad9	 aa		tax		        TAX 			; backup result
+
+.0ada	 98		tya		        TYA 			; transfer y to a
+
+.0adb	 4a		lsr		        LSR				; / 2
+
+.0adc	 8a		txa		        TXA 			; restore result
+
+.0add	 90 05		bcc $0ae4	        BCC b849E		; clear carry so ok?
+
+.0adf	 49 ff		eor #$ff			EOR #$FF		; negate?
+
+.0ae1	 69 00		adc #$00				ADC #$00		; negete by adding carry that is already set?
+
+.0ae3	 18		clc					CLC 			; clear carry for ok?
+
+.0ae4	 60		rts		b849E   RTS 			; exit
+
+.0ae5	 c9 fc		cmp #$fc	b849F   CMP #$FC		; sets the carry flag if greater than (11111100 binary)
+
+.0ae7	 a9 00		lda #$00	        LDA #$00		; resets the output x value? 
+
+.0ae9	 f0 ea		beq $0ad5	        BEQ b848F		; jump back into code
+
+.0aeb	 38		sec		b84A5   SEC 			; set carry for error?
+
+.0aec	 60		rts		b84A6   RTS 			; exit
+
+.0aed					fpto16bit
+.0aed	 98		tya				TYA				; get input (exponent?)
+
+.0aee	 30 57		bmi $0b47	        BMI b8501 		; if negative
+
+.0af0	 4a		lsr		        LSR 			; ignore bit 1
+
+.0af1	 4a		lsr		        LSR 			; ignore bit 2
+
+.0af2	 c9 0f		cmp #$0f	        CMP #$0F		; compare with 15
+
+.0af4	 b0 f6		bcs $0aec	        BCS b84A6		; greater so exit with carry set
+
+.0af6	 85 06		sta $06		        STA ab06		; store intermediate in temp var
+
+.0af8	 0a		asl		        ASL 			; *2
+
+.0af9	 65 06		adc $06		        ADC ab06		; *3 
+
+.0afb	 8d 08 0b	sta $0b08	        STA ab84C2 +1	; number of bytes to jump
+
+.0afe	 a9 00		lda #$00	        LDA #$00
+
+.0b00	 85 06		sta $06		        STA ab06		; clear result
+
+.0b02	 8a		txa		        TXA 			; get input (mantisa?)
+
+.0b03	 38		sec		        SEC 			; set carry to move 1 into result
+
+.0b04	 6a		ror		        ROR 			; rotate carry into high bit and low bit into carry
+
+.0b05	 66 06		ror $06		        ROR ab06		; rotate carry into result
+
+.0b07	 90 0f		bcc $0b18	ab84C2  BCC b84D2		; jump forward
+
+.0b09	 4a		lsr		        LSR 			; half and shift lowest bit into carry  
+
+.0b0a	 66 06		ror $06		        ROR ab06		; half and rotate carry bit into result
+
+.0b0c	 4a		lsr		        LSR 
+
+.0b0d	 66 06		ror $06		        ROR ab06
+
+.0b0f	 4a		lsr		        LSR 
+
+.0b10	 66 06		ror $06		        ROR ab06
+
+.0b12	 4a		lsr		        LSR 
+
+.0b13	 66 06		ror $06		        ROR ab06
+
+.0b15	 4a		lsr		        LSR 
+
+.0b16	 66 06		ror $06		        ROR ab06
+
+.0b18	 4a		lsr		b84D2   LSR 
+
+.0b19	 66 06		ror $06		        ROR ab06
+
+.0b1b	 4a		lsr		        LSR 
+
+.0b1c	 66 06		ror $06		        ROR ab06
+
+.0b1e	 4a		lsr		        LSR 
+
+.0b1f	 66 06		ror $06				ROR ab06
+
+.0b21	 4a		lsr		        LSR 
+
+.0b22	 66 06		ror $06		        ROR ab06
+
+.0b24	 4a		lsr		        LSR 
+
+.0b25	 66 06		ror $06		        ROR ab06
+
+.0b27	 4a		lsr		        LSR 
+
+.0b28	 66 06		ror $06		        ROR ab06
+
+.0b2a	 4a		lsr		        LSR 
+
+.0b2b	 66 06		ror $06		        ROR ab06
+
+.0b2d	 4a		lsr		        LSR 
+
+.0b2e	 66 06		ror $06		        ROR ab06
+
+.0b30	 4a		lsr		        LSR 
+
+.0b31	 66 06		ror $06		        ROR ab06
+
+.0b33	 4a		lsr		        LSR 
+
+.0b34	 66 06		ror $06		        ROR ab06
+
+.0b36	 aa		tax		        TAX 		; store low byte of result?
+
+.0b37	 98		tya		        TYA 		; get input (exponent?)
+
+.0b38	 a4 06		ldy $06		        LDY ab06	; store high byte of result?
+
+.0b3a	 4a		lsr		        LSR 		; move 1st bit of input into carry
+
+.0b3b	 90 09		bcc $0b46	        BCC b8500	; set y/n
+
+.0b3d	 8a		txa					TXA 		; yes
+
+.0b3e	 49 ff		eor #$ff				EOR #$FF	; negate x
+
+.0b40	 aa		tax					TAX 
+
+.0b41	 98		tya					TYA 
+
+.0b42	 49 ff		eor #$ff				EOR #$FF	; negate y
+
+.0b44	 a8		tay					TAY 
+
+.0b45	 18		clc					CLC 
+
+.0b46	 60		rts		b8500   RTS 		; no
+
+.0b47	 4a		lsr		b8501 	LSR 		; move 1st bit to carry
+
+.0b48	 90 06		bcc $0b50	        BCC b850B	; set y/n
+
+.0b4a	 a2 ff		ldx #$ff				LDX #$FF	; yes
+
+.0b4c	 a0 ff		ldy #$ff				LDY #$FF
+
+.0b4e	 18		clc					CLC 
+
+.0b4f	 60		rts					RTS 
+
+.0b50	 a2 00		ldx #$00	b850B   LDX #$00	; no
+
+.0b52	 a0 00		ldy #$00	        LDY #$00
+
+.0b54	 60		rts		        RTS 
+
+.0b55					bit24tofp
+.0b55	 84 07		sty $07				STY	ab07 ; store lsb
+
+.0b57	 85 06		sta $06				STA ab06 ; store msb
+
+.0b59	 10 11		bpl $0b6c	        BPL b8527 ; positive ?
+
+.0b5b	 a9 00		lda #$00				LDA #$00 ; negative so 
+
+.0b5d	 38		sec					SEC 
+
+.0b5e	 e5 07		sbc $07					SBC ab07 ; negate lsb
+
+.0b60	 85 07		sta $07					STA ab07
+
+.0b62	 8a		txa					TXA 		; negate psb
+
+.0b63	 49 ff		eor #$ff				EOR #$FF
+
+.0b65	 69 00		adc #$00				ADC #$00
+
+.0b67	 aa		tax					TAX 
+
+.0b68	 a9 00		lda #$00				LDA #$00
+
+.0b6a	 e5 06		sbc $06					SBC ab06	; negate msb
+
+.0b6c	 d0 0f		bne $0b7d	b8527   BNE b8538	; if msb not 0
+
+.0b6e	 8a		txa					TXA 		; move psb to a
+
+.0b6f	 d0 23		bne $0b94				BNE b854F	; if psb not 0
+
+.0b71	 a5 07		lda $07						LDA ab07	; get lsb
+
+.0b73	 f0 23		beq $0b98					BEQ b8553	; if lsb not 0
+
+.0b75	 a2 00		ldx #$00						LDX #$00
+
+.0b77	 86 07		stx $07							STX ab07
+
+.0b79	 a2 08		ldx #$08						LDX #$08
+
+.0b7b	 d0 04		bne $0b81						BNE b853C ; jump?
+
+.0b7d	 86 07		stx $07		b8538   STX ab07
+
+.0b7f	 a2 18		ldx #$18	        LDX #$18
+
+.0b81	 ca		dex		b853C   	DEX 
+
+.0b82	 06 07		asl $07					ASL ab07 ; *2
+
+.0b84	 2a		rol					ROL 	 ; *2
+
+.0b85	 90 fa		bcc $0b81				BCC b853C
+
+.0b87	 85 08		sta $08		        STA ab08
+
+.0b89	 8a		txa		        TXA 
+
+.0b8a	 0a		asl		        ASL 
+
+.0b8b	 06 06		asl $06		        ASL ab06
+
+.0b8d	 2a		rol		        ROL 
+
+.0b8e	 aa		tax		        TAX 
+
+.0b8f	 86 09		stx $09		        STX ab09
+
+.0b91	 a5 08		lda $08		        LDA ab08
+
+.0b93	 60		rts		        RTS 
+
+.0b94	 a2 10		ldx #$10	b854F   LDX #$10
+
+.0b96	 d0 e9		bne $0b81	        BNE b853C ; jump?
+
+.0b98	 a9 00		lda #$00	b8553   LDA #<OVERFLOW ; overflow?
+
+.0b9a	 a2 e0		ldx #$e0	        LDX #>OVERFLOW
+
+.0b9c	 85 08		sta $08		        STA ab08
+
+.0b9e	 86 09		stx $09		        STX ab09
+
+.0ba0	 60		rts		        RTS 
+
+=e000					OVERFLOW = $E000 ; overflow?
+
+.0ba1					draw_objects
+.0ba1	 a4 b2		ldy $b2			LDY DRAW_OBJECT_COUNT ; number of objects to draw
+
+.0ba3	 f0 0e		beq $0bb3		BEQ DRAW_OBJECTS_EXIT ; exit if none
+
+.0ba5	 84 b3		sty $b3				STY DRAW_OBJECT_COUNTER ; store temp object count
+
+.0ba7					draw_objects_loop
+.0ba7	 be 41 1a	ldx $1a41,y			LDX OBJECTS_TO_DRAW,Y 	; object number
+
+.0baa	 20 b4 0b	jsr $0bb4			JSR DRAW_OBJECT
+
+.0bad	 c6 b3		dec $b3				DEC DRAW_OBJECT_COUNTER ; dec temp object count
+
+.0baf	 a4 b3		ldy $b3				LDY DRAW_OBJECT_COUNTER ; get temp object count
+
+.0bb1	 d0 f4		bne $0ba7			BNE DRAW_OBJECTS_LOOP 	; exit y/n
+
+.0bb3					draw_objects_exit
+.0bb3	 60		rts			RTS 	; exit
+
+.0bb4	 86 af		stx $af		DRAW_OBJECT			STX	CURRENT_OBJECT					; store object number 
+
+.0bb6	 bd 01 19	lda $1901,x						LDA	OBJECT_SHAPE_PTR_LO,X	; get object pos hi
+
+.0bb9	 85 1d		sta $1d							STA	OBJECT_POINTER			; store in pointer
+
+.0bbb	 bd 41 19	lda $1941,x						LDA	OBJECT_SHAPE_PTR_HI,X	; get object pos lo
+
+.0bbe	 85 1e		sta $1e							STA	OBJECT_POINTER+1		; store in pointer
+
+.0bc0	 20 97 0c	jsr $0c97						JSR	CAMERA_OBJECT_DIFF
+
+.0bc3	 a2 00		ldx #$00	DRAW_OBJECT_CONT   	LDX	#$00
+
+.0bc5	 86 19		stx $19							STX	POINT_LINE_COUNT
+
+.0bc7	 a0 01		ldy #$01						LDY	#$01
+
+.0bc9	 20 da 0c	jsr $0cda						JSR	s999A
+
+.0bcc	 90 5b		bcc $0c29						BCC	b978A
+
+.0bce	 a5 da		lda $da							LDA	DIFF_Y_HSB
+
+.0bd0	 10 09		bpl $0bdb						BPL	b9755
+
+.0bd2	 a4 b9		ldy $b9							LDY	abB9
+
+.0bd4	 a2 00		ldx #$00						LDX	#$00
+
+.0bd6	 20 da 0c	jsr $0cda						JSR	s999A
+
+.0bd9	 b0 d8		bcs $0bb3						BCS	DRAW_OBJECTS_EXIT
+
+.0bdb					b9755
+.0bdb	 a4 d5		ldy $d5				LDY	DIFF_X_LSB
+
+.0bdd	 a6 d6		ldx $d6		        LDX	DIFF_X_MSB
+
+.0bdf	 a5 d7		lda $d7		        LDA	DIFF_X_HSB
+
+.0be1	 20 55 0b	jsr $0b55	        JSR	BIT24TOFP
+
+.0be4	 85 52		sta $52		        STA	X_POS_HI
+
+.0be6	 86 53		stx $53		        STX	X_POS_LO
+
+.0be8	 a4 d8		ldy $d8		        LDY	DIFF_Y_LSB
+
+.0bea	 a6 d9		ldx $d9		        LDX	DIFF_Y_MSB
+
+.0bec	 a5 da		lda $da		        LDA	DIFF_Y_HSB
+
+.0bee	 60		rts				RTS
+
+.0bef	 85 54		sta $54		        STA	Y_POS_HI
+
+.0bf1	 86 55		stx $55		        STX	Y_POS_LO
+
+.0bf3	 a4 db		ldy $db		        LDY	DIFF_Z_LSB
+
+.0bf5	 a6 dc		ldx $dc		        LDX	DIFF_Z_MSB
+
+.0bf7	 a5 dd		lda $dd		        LDA	DIFF_Z_HSB
+
+.0bf9	 20 55 0b	jsr $0b55	        JSR	BIT24TOFP
+
+.0bfc	 85 56		sta $56		        STA	Z_POS_HI
+
+.0bfe	 86 57		stx $57		        STX	Z_POS_LO
+
+.0c00	 20 29 12	jsr $1229	        JSR	ROTATE_PERS
+
+.0c03	 a2 00		ldx #$00	        LDX	#$00
+
+.0c05	 bd 00 07	lda $0700,x	PLOT_POINT_CHK	LDA	POINT_CLASSIFICATION,X	; GET POINT FROM PLOT POINT TABLE ?
+
+.0c08	 d0 1e		bne $0c28					BNE	PLOT_POINT_EXIT	; EXIT IF ITS not ZERO - this being set to not zero plots a point - what sets it to 0?
+
+.0c0a	 bc c0 06	ldy $06c0,x	PLOT_POINT			LDY	PERS_VER,X	; GET VER POS
+
+.0c0d	 b9 90 24	lda $2490,y						LDA	VER_POS_LO,Y 
+
+.0c10	 85 02		sta $02							STA	SCREEN_POS_LO
+
+.0c12	 bd 80 06	lda $0680,x						LDA	PERS_HOR,X	; GET HOR POS into A and X
+
+.0c15	 aa		tax							TAX 	
+
+.0c16	 0a		asl							ASL 
+
+.0c17	 b9 00 24	lda $2400,y						LDA	VER_POS_HI,Y
+
+.0c1a	 65 25		adc $25							ADC	SCREEN_BANK
+
+.0c1c	 85 03		sta $03							STA	SCREEN_POS_HI
+
+.0c1e	 bc 20 25	ldy $2520,x						LDY	HOR_SCR_POS,X
+
+.0c21	 b1 02		lda ($02),y						LDA	(SCREEN_POS_PTR),Y	; GET SCREEN BYTE
+
+.0c23	 3d 00 27	and $2700,x	LINE_DRAW_8_TYPE	AND	PIXEL_POS,X			; AND PIXEL
+
+.0c26	 91 02		sta ($02),y						STA	(SCREEN_POS_PTR),Y	; PUT SCREEN BYTE
+
+.0c28	 60		rts		PLOT_POINT_EXIT RTS 
+
+.0c29	 a5 d6		lda $d6		b978A   LDA DIFF_X_MSB
+
+.0c2b	 38		sec		        SEC 
+
+.0c2c	 e9 08		sbc #$08	        SBC #$08
+
+.0c2e	 85 d6		sta $d6		        STA DIFF_X_MSB
+
+.0c30	 b0 02		bcs $0c34	        BCS b9795
+
+.0c32	 c6 d7		dec $d7		        DEC DIFF_X_HSB
+
+.0c34	 a5 d9		lda $d9		b9795   LDA DIFF_Y_MSB
+
+.0c36	 38		sec		        SEC 
+
+.0c37	 e9 08		sbc #$08	        SBC #$08
+
+.0c39	 85 d9		sta $d9		        STA DIFF_Y_MSB
+
+.0c3b	 b0 02		bcs $0c3f	        BCS b97A0
+
+.0c3d	 c6 da		dec $da		        DEC DIFF_Y_HSB
+
+.0c3f	 a5 dc		lda $dc		b97A0   LDA DIFF_Z_MSB
+
+.0c41	 38		sec		        SEC 
+
+.0c42	 e9 08		sbc #$08	        SBC #$08
+
+.0c44	 85 dc		sta $dc		        STA DIFF_Z_MSB
+
+.0c46	 b0 02		bcs $0c4a	        BCS b97AB
+
+.0c48	 c6 dd		dec $dd		        DEC DIFF_Z_HSB
+
+.0c4a	 a0 00		ldy #$00	b97AB   LDY #$00
+
+.0c4c	 84 19		sty $19		        STY POINT_LINE_COUNT ; start point count
+
+.0c4e	 b1 1d		lda ($1d),y	        LDA (OBJECT_POINTER),Y ; object point count
+
+.0c50	 85 b0		sta $b0		        STA NUMBER_OF_POINTS ; number of points?
+
+.0c52	 84 ad		sty $ad		        STY OBJECT_POINTER_POS ; store mem pos
+
+.0c54	 20 8f 11	jsr $118f	PROCESS_POINT_LOOP	JSR PROCESS_POINT_TO_FP		; get point then *16 then convert to 24bit fp
+
+.0c57	 20 29 12	jsr $1229						JSR ROTATE_PERS
+
+.0c5a	 a5 19		lda $19							LDA POINT_LINE_COUNT		 ; get point count
+
+.0c5c	 e6 19		inc $19							INC POINT_LINE_COUNT		 ; inc point count
+
+.0c5e	 c5 b0		cmp $b0							CMP NUMBER_OF_POINTS	 	; last point yn
+
+.0c60	 d0 f2		bne $0c54						BNE PROCESS_POINT_LOOP  	; no so do next
+
+.0c62	 e6 ad		inc $ad		        INC OBJECT_POINTER_POS ; inc mem pos
+
+.0c64	 a4 ad		ldy $ad		        LDY OBJECT_POINTER_POS ; get mem pos
+
+.0c66	 b1 1d		lda ($1d),y	        LDA (OBJECT_POINTER),Y  ; object line count
+
+.0c68	 85 19		sta $19		        STA POINT_LINE_COUNT  ; number of lines?
+
+.0c6a	 10 13		bpl $0c7f	        BPL NEXT_COMPRESSED_LINE
+
+.0c6c	 a4 ad		ldy $ad		NEXT_LINE	LDY OBJECT_POINTER_POS ; get mem pos
+
+.0c6e	 c8		iny					INY  ; inc mem pos
+
+.0c6f	 b3 1d		lax ($1d),y				LAX (OBJECT_POINTER),Y ; get 1st point into a and x
+
+.0c71	 c8		iny					INY ; inc mem pos
+
+.0c72	 b1 1d		lda ($1d),y				LDA (OBJECT_POINTER),Y ; get 2nd point
+
+.0c74	 84 ad		sty $ad					STY OBJECT_POINTER_POS ; store 2nd point?
+
+.0c76	 a8		tay					TAY ; 2nd point
+
+.0c77	 20 1d 0d	jsr $0d1d				JSR LINE_DRAW ; draw line
+
+.0c7a	 c6 19		dec $19					DEC POINT_LINE_COUNT ; dec line count
+
+.0c7c	 30 ee		bmi $0c6c				BMI NEXT_LINE ; last line y/n
+
+.0c7e	 60		rts					RTS ; yes
+
+.0c7f	 a4 ad		ldy $ad		NEXT_COMPRESSED_LINE	LDY OBJECT_POINTER_POS ; get mem pos ; first and second point are stored in 1 byte as 2 nibbles
+
+.0c81	 c8		iny								INY  ; inc mem pos
+
+.0c82	 84 ad		sty $ad								STY OBJECT_POINTER_POS ; store mem pos
+
+.0c84	 b3 1d		lax ($1d),y							LAX (OBJECT_POINTER),Y ; get point count into a and x
+
+.0c86	 29 0f		and #$0f							AND #$0F ; and with 15 = 1st point
+
+.0c88	 a8		tay								TAY ; y = first point
+
+.0c89	 8a		txa								TXA  ; get backup
+
+.0c8a	 4a		lsr								LSR  ; /2
+
+.0c8b	 4a		lsr								LSR  ; /2
+
+.0c8c	 4a		lsr								LSR  ; /2
+
+.0c8d	 4a		lsr								LSR  ; /2
+
+.0c8e	 aa		tax								TAX  ; divide by 16 = 2nd point
+
+.0c8f	 20 1d 0d	jsr $0d1d							JSR LINE_DRAW       ; DRAW LINE
+
+.0c92	 c6 19		dec $19								DEC POINT_LINE_COUNT ; dec line count
+
+.0c94	 10 e9		bpl $0c7f							BPL NEXT_COMPRESSED_LINE ; last line yn
+
+.0c96	 60		rts								RTS  ; yes
+
+.0c97					camera_object_diff
+.0c97	 38		sec				SEC 
+
+.0c98	 bd 81 19	lda $1981,x	        LDA OBJ_X_LSB,X		;
+
+.0c9b	 e5 72		sbc $72		        SBC CURR_X_LSB		;
+
+.0c9d	 85 d5		sta $d5		        STA DIFF_X_LSB		;
+
+.0c9f	 bd 81 17	lda $1781,x	        LDA OBJ_X_MSB,X		;
+
+.0ca2	 e5 73		sbc $73		        SBC CURR_X_MSB		;
+
+.0ca4	 85 d6		sta $d6		        STA DIFF_X_MSB		;
+
+.0ca6	 bd 41 18	lda $1841,x	        LDA OBJ_X_HSB,X		;
+
+.0ca9	 e5 74		sbc $74		        SBC CURR_X_HSB		;
+
+.0cab	 85 d7		sta $d7		        STA DIFF_X_HSB		;
+
+.0cad	 38		sec		        SEC 
+
+.0cae	 bd c1 19	lda $19c1,x	        LDA OBJ_Y_LSB,X		;
+
+.0cb1	 e5 75		sbc $75		        SBC CURR_Y_LSB		;
+
+.0cb3	 85 d8		sta $d8		        STA DIFF_Y_LSB		;
+
+.0cb5	 bd c1 17	lda $17c1,x	        LDA OBJ_Y_MSB,X		;
+
+.0cb8	 e5 76		sbc $76		        SBC CURR_Y_MSB		;
+
+.0cba	 85 d9		sta $d9		        STA DIFF_Y_MSB		;
+
+.0cbc	 bd 81 18	lda $1881,x	        LDA OBJ_Y_HSB,X		;
+
+.0cbf	 e5 77		sbc $77		        SBC CURR_Y_HSB		;
+
+.0cc1	 85 da		sta $da		        STA DIFF_Y_HSB		;
+
+.0cc3	 38		sec		        SEC 
+
+.0cc4	 bd 01 1a	lda $1a01,x	        LDA OBJ_Z_LSB,X		;
+
+.0cc7	 e5 78		sbc $78		        SBC CURR_Z_LSB		;
+
+.0cc9	 85 db		sta $db		        STA DIFF_Z_LSB		;
+
+.0ccb	 bd 01 18	lda $1801,x	        LDA OBJ_Z_MSB,X		;
+
+.0cce	 e5 79		sbc $79		        SBC CURR_Z_MSB		;
+
+.0cd0	 85 dc		sta $dc		        STA DIFF_Z_MSB		;
+
+.0cd2	 bd c1 18	lda $18c1,x	        LDA OBJ_Z_HSB,X		;
+
+.0cd5	 e5 7a		sbc $7a		        SBC CURR_Z_HSB		;
+
+.0cd7	 85 dd		sta $dd		        STA DIFF_Z_HSB		;
+
+.0cd9	 60		rts		        RTS 
+
+.0cda	 86 08		stx $08		s999A   STX ab08
+
+.0cdc	 84 09		sty $09		        STY ab09
+
+.0cde	 a5 d5		lda $d5		        LDA DIFF_X_LSB
+
+.0ce0	 a6 d6		ldx $d6		        LDX DIFF_X_MSB
+
+.0ce2	 a4 d7		ldy $d7		        LDY DIFF_X_HSB
+
+.0ce4	 20 fe 0c	jsr $0cfe	        JSR s99BE
+
+.0ce7	 b0 14		bcs $0cfd	        BCS b99BD ; error so exit
+
+.0ce9	 a5 d8		lda $d8		        LDA DIFF_Y_LSB
+
+.0ceb	 a6 d9		ldx $d9		        LDX DIFF_Y_MSB
+
+.0ced	 a4 da		ldy $da		        LDY DIFF_Y_HSB
+
+.0cef	 20 fe 0c	jsr $0cfe	        JSR s99BE
+
+.0cf2	 b0 09		bcs $0cfd	        BCS b99BD ; error so exit
+
+.0cf4	 a5 db		lda $db		        LDA DIFF_Z_LSB
+
+.0cf6	 a6 dc		ldx $dc		        LDX DIFF_Z_MSB
+
+.0cf8	 a4 dd		ldy $dd		        LDY DIFF_Z_HSB
+
+.0cfa	 20 fe 0c	jsr $0cfe	        JSR s99BE
+
+.0cfd	 60		rts		b99BD   RTS 
+
+.0cfe					s99be
+.0cfe	 10 15		bpl $0d15				BPL CONTINUE1 	; if number is positive continue 
+
+.0d00	 49 ff		eor #$ff				EOR #$FF  		; negative so negate LSB
+
+.0d02	 48		pha					PHA 			; backup LSB
+
+.0d03	 8a		txa					TXA       		; negate MSB
+
+.0d04	 49 ff		eor #$ff				EOR #$FF		;
+
+.0d06	 aa		tax					TAX 			;
+
+.0d07	 98		tya					TYA 			; negate HSB
+
+.0d08	 49 ff		eor #$ff				EOR #$FF		;
+
+.0d0a	 a8		tay					TAY 			;
+
+.0d0b	 68		pla					PLA 			; restore LSB
+
+.0d0c	 18		clc					CLC 
+
+.0d0d	 69 01		adc #$01				ADC #$01		; inc LSB
+
+.0d0f	 90 04		bcc $0d15				BCC CONTINUE1	; no overlow so continue
+
+.0d11	 e8		inx					INX 			; inc MSB
+
+.0d12	 d0 01		bne $0d15				BNE CONTINUE1	; no overlow so continue
+
+.0d14	 c8		iny					INY 			; inc HSB
+
+.0d15	 38		sec		CONTINUE1   SEC 
+
+.0d16	 8a		txa					TXA 
+
+.0d17	 e5 08		sbc $08					SBC ab08		; subtract from MSB
+
+.0d19	 98		tya					TYA 
+
+.0d1a	 e5 09		sbc $09					SBC ab09		; subtract from HSB
+
+.0d1c	 60		rts					RTS 
+
+.0d1d					line_draw
+.0d1d	 bd 00 07	lda $0700,x	        LDA POINT_CLASSIFICATION,X 		; point 1 classification
+
+.0d20	 f0 25		beq $0d47	        BEQ A_POINT_IN_FRONT 			; point onscreen
+
+.0d22	 30 17		bmi $0d3b	        BMI POINT_BEHIND 				; point behind
+
+.0d24	 b9 00 07	lda $0700,y	        LDA POINT_CLASSIFICATION,Y 		; point 2 classification 
+
+.0d27	 f0 12		beq $0d3b	        BEQ POINT_BEHIND 				; point onscreen
+
+.0d29	 30 1c		bmi $0d47	        BMI A_POINT_IN_FRONT 			; point behind
+
+.0d2b	 b9 80 03	lda $0380,y	        LDA Z_ROT_TAB_HI,Y 
+
+.0d2e	 49 80		eor #$80	        EOR #$80
+
+.0d30	 85 06		sta $06		        STA ab06
+
+.0d32	 bd 80 03	lda $0380,x	        LDA Z_ROT_TAB_HI,X
+
+.0d35	 49 80		eor #$80	        EOR #$80
+
+.0d37	 c5 06		cmp $06		        CMP ab06
+
+.0d39	 b0 0c		bcs $0d47	        BCS A_POINT_IN_FRONT
+
+.0d3b	 98		tya		POINT_BEHIND 		TYA 		; swap x and y pointers?
+
+.0d3c	 86 06		stx $06							STX ab06	; temp
+
+.0d3e	 aa		tax							TAX 
+
+.0d3f	 a4 06		ldy $06							LDY ab06	; temp
+
+.0d41	 bd 00 07	lda $0700,x						LDA POINT_CLASSIFICATION,X 	; point 1 classification
+
+.0d44	 10 01		bpl $0d47						BPL A_POINT_IN_FRONT 		; point infront
+
+.0d46	 60		rts							RTS 						; both points behind
+
+.0d47	 bd 00 07	lda $0700,x	A_POINT_IN_FRONT	LDA POINT_CLASSIFICATION,X ; at least 1 point is in front ; point 1 classification
+
+.0d4a	 85 6e		sta $6e							STA POINT_CLASSIFY_1
+
+.0d4c	 30 1e		bmi $0d6c						BMI b9A2C 					; point behind 
+
+.0d4e	 bd 80 06	lda $0680,x						LDA PERS_HOR,X
+
+.0d51	 85 6a		sta $6a							STA LINE_START_HOR
+
+.0d53	 bd c0 06	lda $06c0,x						LDA PERS_VER,X
+
+.0d56	 85 6b		sta $6b							STA LINE_START_VER
+
+.0d58	 bd 00 06	lda $0600,x						LDA PERS_POINT_TAB_2,X
+
+.0d5b	 85 5e		sta $5e							STA ab5E
+
+.0d5d	 bd c0 03	lda $03c0,x						LDA PERS_POINT_TAB_3,X
+
+.0d60	 85 5f		sta $5f							STA ab5F
+
+.0d62	 bd a0 27	lda $27a0,x						LDA PERS_POINT_TAB_4,X
+
+.0d65	 85 60		sta $60							STA ab60
+
+.0d67	 bd 40 06	lda $0640,x						LDA PERS_POINT_TAB_5,X
+
+.0d6a	 85 61		sta $61							STA ab61
+
+.0d6c	 bd 00 01	lda $0100,x	b9A2C   LDA X_ROT_TAB_LO,X
+
+.0d6f	 85 52		sta $52		        STA X_POS_HI
+
+.0d71	 bd 40 01	lda $0140,x	        LDA X_ROT_TAB_HI,X
+
+.0d74	 85 53		sta $53		        STA X_POS_LO
+
+.0d76	 bd 80 01	lda $0180,x	        LDA Y_ROT_TAB_LO,X
+
+.0d79	 85 54		sta $54		        STA Y_POS_HI
+
+.0d7b	 bd c0 02	lda $02c0,x	        LDA Y_ROT_TAB_HI,X
+
+.0d7e	 85 55		sta $55		        STA Y_POS_LO
+
+.0d80	 bd 40 03	lda $0340,x	        LDA Z_ROT_TAB_LO,X
+
+.0d83	 85 56		sta $56		        STA Z_POS_HI
+
+.0d85	 bd 80 03	lda $0380,x	        LDA Z_ROT_TAB_HI,X
+
+.0d88	 85 57		sta $57		        STA Z_POS_LO
+
+.0d8a	 b9 00 07	lda $0700,y	        LDA POINT_CLASSIFICATION,Y
+
+.0d8d	 85 6f		sta $6f		        STA POINT_CLASSIFY_2
+
+.0d8f	 30 1e		bmi $0daf	        BMI b9A6F
+
+.0d91	 b9 80 06	lda $0680,y	        LDA PERS_HOR,Y
+
+.0d94	 85 6c		sta $6c		        STA ab6C
+
+.0d96	 b9 c0 06	lda $06c0,y	        LDA PERS_VER,Y
+
+.0d99	 85 6d		sta $6d		        STA ab6D
+
+.0d9b	 b9 00 06	lda $0600,y	        LDA PERS_POINT_TAB_2,Y
+
+.0d9e	 85 62		sta $62		        STA ab62
+
+.0da0	 b9 c0 03	lda $03c0,y	        LDA PERS_POINT_TAB_3,Y
+
+.0da3	 85 63		sta $63		        STA ab63
+
+.0da5	 b9 a0 27	lda $27a0,y	        LDA PERS_POINT_TAB_4,Y
+
+.0da8	 85 64		sta $64		        STA ab64
+
+.0daa	 b9 40 06	lda $0640,y	        LDA PERS_POINT_TAB_5,Y
+
+.0dad	 85 65		sta $65		        STA ab65
+
+.0daf	 b9 00 01	lda $0100,y	b9A6F   LDA X_ROT_TAB_LO,Y
+
+.0db2	 85 58		sta $58		        STA X_ROTATION_LO
+
+.0db4	 b9 40 01	lda $0140,y	        LDA X_ROT_TAB_HI,Y
+
+.0db7	 85 59		sta $59		        STA X_ROTATION_HI
+
+.0db9	 b9 80 01	lda $0180,y	        LDA Y_ROT_TAB_LO,Y
+
+.0dbc	 85 5a		sta $5a		        STA Y_ROTATION_LO
+
+.0dbe	 b9 c0 02	lda $02c0,y	        LDA Y_ROT_TAB_HI,Y
+
+.0dc1	 85 5b		sta $5b		        STA Y_ROTATION_HI
+
+.0dc3	 b9 40 03	lda $0340,y	        LDA Z_ROT_TAB_LO,Y
+
+.0dc6	 85 5c		sta $5c		        STA Z_ROTATION_LO
+
+.0dc8	 b9 80 03	lda $0380,y	        LDA Z_ROT_TAB_HI,Y
+
+.0dcb	 85 5d		sta $5d		        STA Z_ROTATION_HI
+
+.0dcd	 a5 6f		lda $6f		        LDA POINT_CLASSIFY_2
+
+.0dcf	 10 03		bpl $0dd4	        BPL b9A94
+
+.0dd1	 4c 6c 0e	jmp $0e6c	        JMP j9B2C ; LINE DRAW
+
+.0dd4	 a6 5e		ldx $5e		b9A94   LDX ab5E
+
+.0dd6	 a5 5f		lda $5f		        LDA ab5F
+
+.0dd8	 49 01		eor #$01	        EOR #$01
+
+.0dda	 86 08		stx $08		        STX ab08
+
+.0ddc	 85 09		sta $09		        STA ab09
+
+.0dde	 a6 62		ldx $62		        LDX ab62
+
+.0de0	 a4 63		ldy $63		        LDY ab63
+
+.0de2	 20 14 0a	jsr $0a14	        JSR s838B ; xy * 89 ?
+
+.0de5	 86 0a		stx $0a		        STX ab0A
+
+.0de7	 84 0b		sty $0b		        STY ab0B
+
+.0de9	 98		tya		        TYA 
+
+.0dea	 0a		asl		        ASL 
+
+.0deb	 29 02		and #$02	        AND #$02
+
+.0ded	 85 67		sta $67		        STA LINE_TYPE_POINTER
+
+.0def	 a6 60		ldx $60		        LDX ab60
+
+.0df1	 a5 61		lda $61		        LDA ab61
+
+.0df3	 49 01		eor #$01	        EOR #$01
+
+.0df5	 86 08		stx $08		        STX ab08
+
+.0df7	 85 09		sta $09		        STA ab09
+
+.0df9	 a6 64		ldx $64		        LDX ab64
+
+.0dfb	 a4 65		ldy $65		        LDY ab65
+
+.0dfd	 20 14 0a	jsr $0a14	        JSR s838B
+
+.0e00	 86 0c		stx $0c		        STX ab0C
+
+.0e02	 84 0d		sty $0d		        STY ab0D
+
+.0e04	 98		tya		        TYA 
+
+.0e05	 29 01		and #$01	        AND #$01
+
+.0e07	 05 67		ora $67		        ORA LINE_TYPE_POINTER
+
+.0e09	 85 67		sta $67		        STA LINE_TYPE_POINTER
+
+.0e0b	 a6 08		ldx $08		        LDX ab08
+
+.0e0d	 bd 00 22	lda $2200,x	        LDA LOG_TABLE,X
+
+.0e10	 a6 0a		ldx $0a		        LDX ab0A
+
+.0e12	 38		sec		        SEC 
+
+.0e13	 fd 00 22	sbc $2200,x	        SBC LOG_TABLE,X
+
+.0e16	 a8		tay		        TAY 
+
+.0e17	 a5 09		lda $09		        LDA ab09
+
+.0e19	 09 02		ora #$02	        ORA #$02
+
+.0e1b	 b0 03		bcs $0e20	        BCS b9AE0
+
+.0e1d	 e9 03		sbc #$03	        SBC #$03
+
+.0e1f	 38		sec		        SEC 
+
+.0e20	 e5 0b		sbc $0b		b9AE0   SBC ab0B
+
+.0e22	 29 fd		and #$fd	        AND #$FD
+
+.0e24	 85 69		sta $69		        STA ab69
+
+.0e26	 be 00 23	ldx $2300,y	        LDX EXP_TABLE,Y
+
+.0e29	 86 68		stx $68		        STX ab68
+
+.0e2b	 a8		tay		        TAY 
+
+.0e2c	 30 26		bmi $0e54	        BMI b9B14
+
+.0e2e	 a5 67		lda $67		        LDA LINE_TYPE_POINTER
+
+.0e30	 09 04		ora #$04	        ORA #$04
+
+.0e32	 85 67		sta $67		        STA LINE_TYPE_POINTER
+
+.0e34	 a6 0a		ldx $0a		        LDX ab0A
+
+.0e36	 bd 00 22	lda $2200,x	        LDA LOG_TABLE,X
+
+.0e39	 a6 0c		ldx $0c		        LDX ab0C
+
+.0e3b	 38		sec		        SEC 
+
+.0e3c	 fd 00 22	sbc $2200,x	        SBC LOG_TABLE,X
+
+.0e3f	 a8		tay		        TAY 
+
+.0e40	 a5 0b		lda $0b		        LDA ab0B
+
+.0e42	 09 02		ora #$02	        ORA #$02
+
+.0e44	 b0 03		bcs $0e49	        BCS b9B09
+
+.0e46	 e9 03		sbc #$03	        SBC #$03
+
+.0e48	 38		sec		        SEC 
+
+.0e49	 e5 0d		sbc $0d		b9B09   SBC ab0D
+
+.0e4b	 29 fd		and #$fd	        AND #$FD
+
+.0e4d	 85 09		sta $09		        STA ab09
+
+.0e4f	 be 00 23	ldx $2300,y	        LDX EXP_TABLE,Y
+
+.0e52	 86 08		stx $08		        STX ab08
+
+.0e54	 a8		tay		b9B14   TAY 
+
+.0e55	 30 07		bmi $0e5e	        BMI b9B1E
+
+.0e57	 a9 ff		lda #$ff	        LDA #$FF		; straight line?
+
+.0e59	 85 66		sta $66		        STA LINE_INC
+
+.0e5b	 4c 4e 0f	jmp $0f4e	        JMP GET_LINE_TYPE
+
+.0e5e	 18		clc		b9B1E   CLC 
+
+.0e5f	 69 20		adc #$20	        ADC #$20
+
+.0e61	 29 fc		and #$fc	        AND #$FC
+
+.0e63	 a8		tay		        TAY 
+
+.0e64	 20 ed 0a	jsr $0aed	        JSR FPTO16BIT
+
+.0e67	 84 66		sty $66		        STY LINE_INC
+
+.0e69	 4c 4e 0f	jmp $0f4e	        JMP GET_LINE_TYPE
+
+.0e6c	 a6 5c		ldx $5c		j9B2C   LDX Z_ROTATION_LO ; LINE_DRAW_03
+
+.0e6e	 bd 00 22	lda $2200,x	        LDA LOG_TABLE,X
+
+.0e71	 a6 56		ldx $56		        LDX Z_POS_HI
+
+.0e73	 38		sec		        SEC 
+
+.0e74	 fd 00 22	sbc $2200,x	        SBC LOG_TABLE,X
+
+.0e77	 a8		tay		        TAY 
+
+.0e78	 a5 5d		lda $5d		        LDA Z_ROTATION_HI
+
+.0e7a	 09 02		ora #$02	        ORA #$02
+
+.0e7c	 b0 03		bcs $0e81	        BCS b9B41
+
+.0e7e	 e9 03		sbc #$03	        SBC #$03
+
+.0e80	 38		sec		        SEC 
+
+.0e81	 e5 57		sbc $57		b9B41   SBC Z_POS_LO
+
+.0e83	 29 fd		and #$fd	        AND #$FD
+
+.0e85	 85 0b		sta $0b		        STA ab0B
+
+.0e87	 be 00 23	ldx $2300,y	        LDX EXP_TABLE,Y
+
+.0e8a	 86 0a		stx $0a		        STX ab0A
+
+.0e8c	 49 01		eor #$01	        EOR #$01
+
+.0e8e	 85 0b		sta $0b		        STA ab0B
+
+.0e90	 a6 0a		ldx $0a		        LDX ab0A
+
+.0e92	 bd 00 22	lda $2200,x	        LDA LOG_TABLE,X
+
+.0e95	 a6 52		ldx $52		        LDX X_POS_HI
+
+.0e97	 18		clc		        CLC 
+
+.0e98	 7d 00 22	adc $2200,x	        ADC LOG_TABLE,X
+
+.0e9b	 a8		tay		        TAY 
+
+.0e9c	 a5 0b		lda $0b		        LDA ab0B
+
+.0e9e	 90 03		bcc $0ea3	        BCC b9B63
+
+.0ea0	 69 03		adc #$03	        ADC #$03
+
+.0ea2	 18		clc		        CLC 
+
+.0ea3	 65 53		adc $53		b9B63   ADC X_POS_LO
+
+.0ea5	 29 fd		and #$fd	        AND #$FD
+
+.0ea7	 85 09		sta $09		        STA ab09
+
+.0ea9	 be 00 23	ldx $2300,y	        LDX EXP_TABLE,Y
+
+.0eac	 86 08		stx $08		        STX ab08
+
+.0eae	 a6 58		ldx $58		        LDX X_ROTATION_LO
+
+.0eb0	 a4 59		ldy $59		        LDY X_ROTATION_HI
+
+.0eb2	 20 14 0a	jsr $0a14	        JSR s838B
+
+.0eb5	 86 0c		stx $0c		        STX ab0C
+
+.0eb7	 84 0d		sty $0d		        STY ab0D
+
+.0eb9	 98		tya		        TYA 
+
+.0eba	 45 57		eor $57		        EOR Z_POS_LO
+
+.0ebc	 0a		asl		        ASL 
+
+.0ebd	 29 02		and #$02	        AND #$02
+
+.0ebf	 85 67		sta $67		        STA LINE_TYPE_POINTER
+
+.0ec1	 a6 0a		ldx $0a		        LDX ab0A
+
+.0ec3	 bd 00 22	lda $2200,x	        LDA LOG_TABLE,X
+
+.0ec6	 a6 54		ldx $54		        LDX Y_POS_HI
+
+.0ec8	 18		clc		        CLC 
+
+.0ec9	 7d 00 22	adc $2200,x	        ADC LOG_TABLE,X
+
+.0ecc	 a8		tay		        TAY 
+
+.0ecd	 a5 0b		lda $0b		        LDA ab0B
+
+.0ecf	 90 03		bcc $0ed4	        BCC b9B94
+
+.0ed1	 69 03		adc #$03	        ADC #$03
+
+.0ed3	 18		clc		        CLC 
+
+.0ed4	 65 55		adc $55		b9B94   ADC Y_POS_LO
+
+.0ed6	 29 fd		and #$fd	        AND #$FD
+
+.0ed8	 85 09		sta $09		        STA ab09
+
+.0eda	 be 00 23	ldx $2300,y	f9B9A   LDX EXP_TABLE,Y
+
+.0edd	 86 08		stx $08		        STX ab08
+
+.0edf	 a6 5a		ldx $5a		        LDX Y_ROTATION_LO
+
+.0ee1	 a4 5b		ldy $5b		        LDY Y_ROTATION_HI
+
+.0ee3	 20 14 0a	jsr $0a14	        JSR s838B
+
+.0ee6	 86 0a		stx $0a		        STX ab0A
+
+.0ee8	 84 0b		sty $0b		        STY ab0B
+
+.0eea	 98		tya		        TYA 
+
+.0eeb	 45 57		eor $57		        EOR Z_POS_LO
+
+.0eed	 29 01		and #$01	        AND #$01
+
+.0eef	 05 67		ora $67		        ORA LINE_TYPE_POINTER
+
+.0ef1	 85 67		sta $67		        STA LINE_TYPE_POINTER
+
+.0ef3	 a6 08		ldx $08		        LDX ab08
+
+.0ef5	 bd 00 22	lda $2200,x	        LDA LOG_TABLE,X
+
+.0ef8	 a6 0c		ldx $0c		        LDX ab0C
+
+.0efa	 38		sec		        SEC 
+
+.0efb	 fd 00 22	sbc $2200,x	        SBC LOG_TABLE,X
+
+.0efe	 a8		tay		        TAY 
+
+.0eff	 a5 09		lda $09		        LDA ab09
+
+.0f01	 09 02		ora #$02	        ORA #$02
+
+.0f03	 b0 03		bcs $0f08	        BCS b9BC8
+
+.0f05	 e9 03		sbc #$03	        SBC #$03
+
+.0f07	 38		sec		        SEC 
+
+.0f08	 e5 0d		sbc $0d		b9BC8   SBC ab0D
+
+.0f0a	 29 fd		and #$fd	        AND #$FD
+
+.0f0c	 85 69		sta $69		        STA ab69
+
+.0f0e	 be 00 23	ldx $2300,y	        LDX EXP_TABLE,Y
+
+.0f11	 86 68		stx $68		        STX ab68
+
+.0f13	 a8		tay		        TAY 
+
+.0f14	 30 26		bmi $0f3c	        BMI b9BFC
+
+.0f16	 a5 67		lda $67		        LDA LINE_TYPE_POINTER
+
+.0f18	 09 04		ora #$04	        ORA #$04
+
+.0f1a	 85 67		sta $67		        STA LINE_TYPE_POINTER
+
+.0f1c	 a6 0c		ldx $0c		        LDX ab0C
+
+.0f1e	 bd 00 22	lda $2200,x	        LDA LOG_TABLE,X
+
+.0f21	 a6 0a		ldx $0a		        LDX ab0A
+
+.0f23	 38		sec		        SEC 
+
+.0f24	 fd 00 22	sbc $2200,x	        SBC LOG_TABLE,X
+
+.0f27	 a8		tay		        TAY 
+
+.0f28	 a5 0d		lda $0d		        LDA ab0D
+
+.0f2a	 09 02		ora #$02	        ORA #$02
+
+.0f2c	 b0 03		bcs $0f31	        BCS b9BF1
+
+.0f2e	 e9 03		sbc #$03	        SBC #$03
+
+.0f30	 38		sec		        SEC 
+
+.0f31	 e5 0b		sbc $0b		b9BF1   SBC ab0B
+
+.0f33	 29 fd		and #$fd	        AND #$FD
+
+.0f35	 85 09		sta $09		        STA ab09
+
+.0f37	 be 00 23	ldx $2300,y	        LDX EXP_TABLE,Y
+
+.0f3a	 86 08		stx $08		        STX ab08
+
+.0f3c	 a8		tay		b9BFC   TAY 
+
+.0f3d	 30 04		bmi $0f43	        BMI b9C05
+
+.0f3f	 a0 ff		ldy #$ff				LDY #$FF			; straight line?
+
+.0f41	 d0 09		bne $0f4c				BNE LINE_CONT_99 ; jump
+
+.0f43	 18		clc		b9C05   CLC 
+
+.0f44	 69 20		adc #$20	        ADC #$20
+
+.0f46	 29 fc		and #$fc	        AND #$FC
+
+.0f48	 a8		tay		        TAY 
+
+.0f49	 20 ed 0a	jsr $0aed	        JSR FPTO16BIT
+
+.0f4c	 84 66		sty $66		LINE_CONT_99	STY LINE_INC
+
+.0f4e	 a6 67		ldx $67		GET_LINE_TYPE	LDX LINE_TYPE_POINTER    ; GET LINE TYPE 0-7
+
+.0f50	 bc 40 26	ldy $2640,x					LDY LINE_DRAW_CONV_PTR,X ; CONVERT LINE TYPE TO POINTER TYPE
+
+.0f53	 b9 30 26	lda $2630,y					LDA LINE_DRAW_PTR_LO,Y ; GET POINTER TO CORRECT LINE
+
+.0f56	 85 04		sta $04						STA LINE_JUMP_PTR_LO    ; STORE AT JUMP TABLE ADDRESS
+
+.0f58	 b9 38 26	lda $2638,y					LDA LINE_DRAW_PTR_HI,Y ; GET POINTER TO CORRECT LINE
+
+.0f5b	 85 05		sta $05						STA LINE_JUMP_PTR_HI    ; STORE AT JUMP TABLE ADDRESS
+
+.0f5d	 a5 6f		lda $6f						LDA POINT_CLASSIFY_2
+
+.0f5f	 f0 0a		beq $0f6b					BEQ b9C2F
+
+.0f61	 b9 48 26	lda $2648,y					LDA fBBD8,Y
+
+.0f64	 85 6c		sta $6c						STA ab6C
+
+.0f66	 b9 50 26	lda $2650,y					LDA fBBE0,Y
+
+.0f69	 85 6d		sta $6d						STA ab6D
+
+.0f6b	 a5 6e		lda $6e		b9C2F   		LDA POINT_CLASSIFY_1
+
+.0f6d	 d0 03		bne $0f72					BNE b9C36				; point off screen
+
+.0f6f	 4c c9 10	jmp $10c9					JMP		LINE_DRAW_JMP
+
+.0f72	 a5 61		lda $61		b9C36   LDA ab61
+
+.0f74	 0a		asl		        ASL 
+
+.0f75	 0a		asl		        ASL 
+
+.0f76	 29 04		and #$04	        AND #$04
+
+.0f78	 05 6e		ora $6e		        ORA POINT_CLASSIFY_1
+
+.0f7a	 85 06		sta $06		        STA ab06
+
+.0f7c	 a5 5f		lda $5f		        LDA ab5F
+
+.0f7e	 0a		asl		        ASL 
+
+.0f7f	 0a		asl		        ASL 
+
+.0f80	 0a		asl		        ASL 
+
+.0f81	 29 08		and #$08	        AND #$08
+
+.0f83	 05 06		ora $06		        ORA ab06
+
+.0f85	 aa		tax		        TAX 
+
+.0f86	 98		tya		        TYA 
+
+.0f87	 1d 58 26	ora $2658,x	        ORA fBBE8,X
+
+.0f8a	 4a		lsr		        LSR 
+
+.0f8b	 aa		tax		        TAX 
+
+.0f8c	 bd 68 26	lda $2668,x	        LDA fBBF8,X
+
+.0f8f	 d0 01		bne $0f92	        BNE b9C56
+
+.0f91	 60		rts		        RTS 
+
+.0f92	 85 6e		sta $6e		b9C56   STA POINT_CLASSIFY_1
+
+.0f94	 a5 6f		lda $6f		        LDA POINT_CLASSIFY_2
+
+.0f96	 30 20		bmi $0fb8	        BMI b9C7C
+
+.0f98	 a5 65		lda $65		        LDA ab65
+
+.0f9a	 0a		asl		        ASL 
+
+.0f9b	 0a		asl		        ASL 
+
+.0f9c	 29 04		and #$04	        AND #$04
+
+.0f9e	 05 6f		ora $6f		        ORA POINT_CLASSIFY_2
+
+.0fa0	 85 06		sta $06		        STA ab06
+
+.0fa2	 a5 63		lda $63		        LDA ab63
+
+.0fa4	 0a		asl		        ASL 
+
+.0fa5	 0a		asl		        ASL 
+
+.0fa6	 0a		asl		        ASL 
+
+.0fa7	 29 08		and #$08	        AND #$08
+
+.0fa9	 05 06		ora $06		        ORA ab06
+
+.0fab	 aa		tax		        TAX 
+
+.0fac	 98		tya		        TYA 
+
+.0fad	 1d 58 26	ora $2658,x	        ORA fBBE8,X
+
+.0fb0	 4a		lsr		        LSR 
+
+.0fb1	 aa		tax		        TAX 
+
+.0fb2	 bd 88 26	lda $2688,x	        LDA fBC18,X
+
+.0fb5	 d0 01		bne $0fb8	        BNE b9C7C
+
+.0fb7	 60		rts		        RTS 
+
+.0fb8	 a5 6e		lda $6e		b9C7C   LDA POINT_CLASSIFY_1
+
+.0fba	 29 01		and #$01	        AND #$01 ; off this edge
+
+.0fbc	 f0 3f		beq $0ffd	        BEQ b9CC1 ; no
+
+.0fbe	 a6 92		ldx $92		        LDX ab92 ; yes
+
+.0fc0	 a5 93		lda $93		        LDA ab93
+
+.0fc2	 38		sec		        SEC 
+
+.0fc3	 e5 21		sbc $21		        SBC ab21
+
+.0fc5	 86 08		stx $08		        STX ab08
+
+.0fc7	 85 09		sta $09		        STA ab09
+
+.0fc9	 a6 5e		ldx $5e		        LDX ab5E
+
+.0fcb	 a5 5f		lda $5f		        LDA ab5F
+
+.0fcd	 49 01		eor #$01	        EOR #$01
+
+.0fcf	 a8		tay		        TAY 
+
+.0fd0	 20 14 0a	jsr $0a14	        JSR s838B
+
+.0fd3	 a6 68		ldx $68		        LDX ab68
+
+.0fd5	 a4 69		ldy $69		        LDY ab69
+
+.0fd7	 20 83 09	jsr $0983	        JSR FPMUL
+
+.0fda	 a6 60		ldx $60		        LDX ab60
+
+.0fdc	 a4 61		ldy $61		        LDY ab61
+
+.0fde	 20 14 0a	jsr $0a14	        JSR s838B
+
+.0fe1	 98		tya		        TYA 
+
+.0fe2	 18		clc		        CLC 
+
+.0fe3	 65 21		adc $21		        ADC ab21
+
+.0fe5	 70 16		bvs $0ffd	        BVS b9CC1
+
+.0fe7	 a8		tay		        TAY 
+
+.0fe8	 20 bd 0a	jsr $0abd	        JSR FPTO8BIT
+
+.0feb	 b0 10		bcs $0ffd	        BCS b9CC1
+
+.0fed	 18		clc		        CLC 
+
+.0fee	 65 8f		adc $8f		        ADC ab8F
+
+.0ff0	 c9 88		cmp #$88	        CMP #CLIP_TEST_BOTTOM ; clip test?
+
+.0ff2	 b0 09		bcs $0ffd	        BCS b9CC1
+
+.0ff4	 85 6b		sta $6b		        STA LINE_START_VER
+
+.0ff6	 a9 9f		lda #$9f	        LDA #CLIP_RIGHT ; clip right ?
+
+.0ff8	 85 6a		sta $6a		        STA LINE_START_HOR ; clip right ?
+
+.0ffa	 4c c9 10	jmp $10c9	        JMP LINE_DRAW_JMP
+
+.0ffd	 a5 6e		lda $6e		b9CC1   LDA POINT_CLASSIFY_1
+
+.0fff	 29 02		and #$02	        AND #$02 ; off this edge
+
+.1001	 f0 3f		beq $1042	        BEQ b9D06 ; no
+
+.1003	 a6 96		ldx $96		        LDX ab96 ; yes
+
+.1005	 a5 97		lda $97		        LDA ab97
+
+.1007	 38		sec		        SEC 
+
+.1008	 e5 21		sbc $21		        SBC ab21
+
+.100a	 86 08		stx $08		        STX ab08
+
+.100c	 85 09		sta $09		        STA ab09
+
+.100e	 a6 60		ldx $60		        LDX ab60
+
+.1010	 a5 61		lda $61		        LDA ab61
+
+.1012	 49 01		eor #$01	        EOR #$01
+
+.1014	 a8		tay		        TAY 
+
+.1015	 20 14 0a	jsr $0a14	        JSR s838B
+
+.1018	 a6 68		ldx $68		        LDX ab68
+
+.101a	 a4 69		ldy $69		        LDY ab69
+
+.101c	 20 bd 09	jsr $09bd	        JSR FPDIV
+
+.101f	 a6 5e		ldx $5e		        LDX ab5E
+
+.1021	 a4 5f		ldy $5f		        LDY ab5F
+
+.1023	 20 14 0a	jsr $0a14	        JSR s838B
+
+.1026	 98		tya		        TYA 
+
+.1027	 18		clc		        CLC 
+
+.1028	 65 21		adc $21		        ADC ab21
+
+.102a	 70 16		bvs $1042	        BVS b9D06
+
+.102c	 a8		tay		        TAY 
+
+.102d	 20 bd 0a	jsr $0abd	        JSR FPTO8BIT
+
+.1030	 b0 10		bcs $1042	        BCS b9D06
+
+.1032	 18		clc		        CLC 
+
+.1033	 65 8e		adc $8e		        ADC ab8E
+
+.1035	 c9 a0		cmp #$a0	        CMP #CLIP_TEST_RIGHT 		; clip test
+
+.1037	 b0 09		bcs $1042	        BCS b9D06
+
+.1039	 85 6a		sta $6a		        STA LINE_START_HOR
+
+.103b	 a9 87		lda #$87	        LDA #CLIP_BOTTOM 			; clip bottom
+
+.103d	 85 6b		sta $6b		        STA LINE_START_VER 			; clip bottom
+
+.103f	 4c c9 10	jmp $10c9	        JMP LINE_DRAW_JMP
+
+.1042	 a5 6e		lda $6e		b9D06   LDA POINT_CLASSIFY_1 ; LINE DRAW
+
+.1044	 29 04		and #$04	        AND #$04 ; off this edge
+
+.1046	 f0 3f		beq $1087	        BEQ b9D4B ; no
+
+.1048	 a6 90		ldx $90		        LDX ab90 ; yes
+
+.104a	 a5 91		lda $91		        LDA ab91
+
+.104c	 38		sec		        SEC 
+
+.104d	 e5 21		sbc $21		        SBC ab21
+
+.104f	 86 08		stx $08		        STX ab08
+
+.1051	 85 09		sta $09		        STA ab09
+
+.1053	 a6 5e		ldx $5e		        LDX ab5E
+
+.1055	 a5 5f		lda $5f		        LDA ab5F
+
+.1057	 49 01		eor #$01	        EOR #$01
+
+.1059	 a8		tay		        TAY 
+
+.105a	 20 14 0a	jsr $0a14	        JSR s838B
+
+.105d	 a6 68		ldx $68		        LDX ab68
+
+.105f	 a4 69		ldy $69		        LDY ab69
+
+.1061	 20 83 09	jsr $0983	        JSR FPMUL
+
+.1064	 a6 60		ldx $60		        LDX ab60
+
+.1066	 a4 61		ldy $61		        LDY ab61
+
+.1068	 20 14 0a	jsr $0a14	        JSR s838B
+
+.106b	 98		tya		        TYA 
+
+.106c	 18		clc		        CLC 
+
+.106d	 65 21		adc $21		        ADC ab21
+
+.106f	 70 16		bvs $1087	        BVS b9D4B
+
+.1071	 a8		tay		        TAY 
+
+.1072	 20 bd 0a	jsr $0abd	        JSR FPTO8BIT
+
+.1075	 b0 10		bcs $1087	        BCS b9D4B
+
+.1077	 18		clc		        CLC 
+
+.1078	 65 8f		adc $8f		        ADC ab8F
+
+.107a	 c9 88		cmp #$88	        CMP #CLIP_TEST_BOTTOM ; clip test
+
+.107c	 b0 09		bcs $1087	        BCS b9D4B
+
+.107e	 85 6b		sta $6b		        STA LINE_START_VER
+
+.1080	 a9 00		lda #$00	        LDA #CLIP_TEST_TOP ; clip off top
+
+.1082	 85 6a		sta $6a		        STA LINE_START_HOR ; clip off top 
+
+.1084	 4c c9 10	jmp $10c9	        JMP LINE_DRAW_JMP
+
+.1087	 a5 6e		lda $6e		b9D4B   LDA POINT_CLASSIFY_1 ; LINE DRAW
+
+.1089	 29 08		and #$08	        AND #$08 ; off this edge
+
+.108b	 f0 47		beq $10d4	        BEQ b9D98 ; no
+
+.108d	 a6 94		ldx $94		        LDX ab94 ; yes
+
+.108f	 a5 95		lda $95		        LDA ab95
+
+.1091	 38		sec		        SEC 
+
+.1092	 e5 21		sbc $21		        SBC ab21
+
+.1094	 86 08		stx $08		        STX ab08
+
+.1096	 85 09		sta $09		        STA ab09
+
+.1098	 a6 60		ldx $60		        LDX ab60
+
+.109a	 a5 61		lda $61		        LDA ab61
+
+.109c	 49 01		eor #$01	        EOR #$01
+
+.109e	 a8		tay		        TAY 
+
+.109f	 20 14 0a	jsr $0a14	        JSR s838B
+
+.10a2	 a6 68		ldx $68		        LDX ab68
+
+.10a4	 a4 69		ldy $69		        LDY ab69
+
+.10a6	 20 bd 09	jsr $09bd	        JSR FPDIV
+
+.10a9	 a6 5e		ldx $5e		        LDX ab5E
+
+.10ab	 a4 5f		ldy $5f		        LDY ab5F
+
+.10ad	 20 14 0a	jsr $0a14	        JSR s838B
+
+.10b0	 98		tya		        TYA 
+
+.10b1	 18		clc		        CLC 
+
+.10b2	 65 21		adc $21		        ADC ab21
+
+.10b4	 70 1e		bvs $10d4	        BVS b9D98
+
+.10b6	 a8		tay		        TAY 
+
+.10b7	 20 bd 0a	jsr $0abd	        JSR FPTO8BIT
+
+.10ba	 b0 18		bcs $10d4	        BCS b9D98
+
+.10bc	 18		clc		        CLC 
+
+.10bd	 65 8e		adc $8e		        ADC ab8E
+
+.10bf	 c9 a0		cmp #$a0	        CMP #CLIP_TEST_RIGHT ; clip test
+
+.10c1	 b0 11		bcs $10d4	        BCS b9D98
+
+.10c3	 85 6a		sta $6a		        STA LINE_START_HOR
+
+.10c5	 a9 00		lda #$00	        LDA #CLIP_TEST_LEFT ; clip off left
+
+.10c7	 85 6b		sta $6b		        STA LINE_START_VER ; clip off left
+
+.10c9					line_draw_jmp
+.10c9	 a6 6a		ldx $6a				LDX LINE_START_HOR
+
+.10cb	 a4 6b		ldy $6b		        LDY LINE_START_VER
+
+.10cd	 a9 80		lda #$80	        LDA #$80 ; set fraction to half 
+
+.10cf	 85 08		sta $08		        STA LINE_FRACTION_ab08 ; set line fraction
+
+.10d1	 6c 04 00	jmp ($0004)	        JMP (LINE_JUMP_PTR) ; LINE_DRAW_01
+
+.10d4	 60		rts		b9D98   RTS 
+
+.10d5	 a5 f1		lda $f1		MOVEMENT	LDA abF1
+
+.10d7	 f0 07		beq $10e0				BEQ bA192
+
+.10d9	 a6 80		ldx $80					LDX JOYSTICK_MOVEMENT
+
+.10db	 bd 20 26	lda $2620,x				LDA JOYSTICK_MOVEMENT_TAB,X
+
+.10de	 85 80		sta $80					STA JOYSTICK_MOVEMENT
+
+.10e0					ba192
+.10e0	 a9 01		lda #$01	        LDA #$01                    ; UP
+
+.10e2	 24 80		bit $80		        BIT JOYSTICK_MOVEMENT
+
+.10e4	 d0 05		bne $10eb	        BNE bA1A1
+
+.10e6	 a9 01		lda #$01				LDA #$01 ; FORWARD
+
+.10e8	 20 21 11	jsr $1121				JSR FORWARD_BACK
+
+.10eb	 a9 02		lda #$02	bA1A1   LDA #$02					; DOWN
+
+.10ed	 24 80		bit $80		        BIT JOYSTICK_MOVEMENT
+
+.10ef	 d0 05		bne $10f6	        BNE bA1AC
+
+.10f1	 a9 00		lda #$00				LDA #$00	; BACKWARD
+
+.10f3	 20 21 11	jsr $1121				JSR FORWARD_BACK
+
+.10f6	 a9 04		lda #$04	bA1AC   LDA #$04					; LEFT
+
+.10f8	 24 80		bit $80		        BIT JOYSTICK_MOVEMENT
+
+.10fa	 d0 0f		bne $110b	        BNE bA1C1
+
+.10fc	 a5 2c		lda $2c					LDA ROT_LO	; LEFT
+
+.10fe	 18		clc					CLC 
+
+.10ff	 65 ac		adc $ac					ADC ROT_SPD
+
+.1101	 85 2c		sta $2c					STA ROT_LO
+
+.1103	 a5 2d		lda $2d					LDA ROT_HI
+
+.1105	 69 00		adc #$00				ADC #$00
+
+.1107	 29 03		and #$03				AND #$03
+
+.1109	 85 2d		sta $2d					STA ROT_HI
+
+.110b	 a9 08		lda #$08	bA1C1   LDA #$08					; RIGHT
+
+.110d	 24 80		bit $80		        BIT JOYSTICK_MOVEMENT
+
+.110f	 d0 0f		bne $1120	        BNE bA1D6
+
+.1111	 a5 2c		lda $2c					LDA ROT_LO	; RIGHT
+
+.1113	 38		sec					SEC 
+
+.1114	 e5 ac		sbc $ac					SBC ROT_SPD
+
+.1116	 85 2c		sta $2c					STA ROT_LO
+
+.1118	 a5 2d		lda $2d					LDA ROT_HI
+
+.111a	 e9 00		sbc #$00				SBC #$00
+
+.111c	 29 03		and #$03				AND #$03
+
+.111e	 85 2d		sta $2d					STA ROT_HI
+
+.1120	 60		rts		bA1D6 	RTS
+
+.1121	 48		pha		FORWARD_BACK	PHA 			; push sign/direction
+
+.1122	 a6 aa		ldx $aa						LDX SPEED_LO
+
+.1124	 45 ab		eor $ab						EOR SPEED_HI 	; set direction
+
+.1126	 86 08		stx $08						STX ab08
+
+.1128	 85 09		sta $09						STA ab09
+
+.112a	 a6 3e		ldx $3e						LDX COS_LO
+
+.112c	 a4 3f		ldy $3f						LDY COS_HI
+
+.112e	 20 83 09	jsr $0983					JSR FPMUL
+
+.1131	 20 ed 0a	jsr $0aed					JSR FPTO16BIT
+
+.1134	 98		tya						TYA 
+
+.1135	 18		clc						CLC 
+
+.1136	 65 78		adc $78						ADC CURR_Z_LSB
+
+.1138	 85 78		sta $78						STA CURR_Z_LSB
+
+.113a	 8a		txa						TXA 
+
+.113b	 65 79		adc $79						ADC CURR_Z_MSB
+
+.113d	 85 79		sta $79						STA CURR_Z_MSB
+
+.113f	 8a		txa						TXA 
+
+.1140	 10 04		bpl $1146					BPL _Z_PLUS 		; if +
+
+.1142	 a9 ff		lda #$ff						LDA #$FF		; set to 255 for -
+
+.1144	 30 02		bmi $1148						BMI _Z_NEG_CONT	; jmp
+
+.1146	 a9 00		lda #$00	_Z_PLUS   		LDA #$00			; set to 0 for +
+
+.1148	 65 7a		adc $7a		_Z_NEG_CONT 	ADC CURR_Z_HSB		; either add or sub depending on + or -
+
+.114a	 85 7a		sta $7a						STA CURR_Z_HSB
+
+.114c	 68		pla						PLA 			; pop sign
+
+.114d	 a6 aa		ldx $aa						LDX SPEED_LO
+
+.114f	 45 ab		eor $ab						EOR SPEED_HI	; set direction
+
+.1151	 86 08		stx $08						STX ab08
+
+.1153	 85 09		sta $09						STA ab09
+
+.1155	 a6 3c		ldx $3c						LDX SIN_LO
+
+.1157	 a4 3d		ldy $3d						LDY SIN_HI
+
+.1159	 20 83 09	jsr $0983					JSR FPMUL
+
+.115c	 20 ed 0a	jsr $0aed					JSR FPTO16BIT
+
+.115f	 98		tya						TYA 
+
+.1160	 18		clc						CLC 
+
+.1161	 65 72		adc $72						ADC CURR_X_LSB
+
+.1163	 85 72		sta $72						STA CURR_X_LSB
+
+.1165	 8a		txa						TXA 
+
+.1166	 65 73		adc $73						ADC CURR_X_MSB
+
+.1168	 85 73		sta $73						STA CURR_X_MSB
+
+.116a	 8a		txa						TXA 
+
+.116b	 10 04		bpl $1171					BPL _X_PLUS			; positive
+
+.116d	 a9 ff		lda #$ff						LDA #$FF		; negative so set to 255
+
+.116f	 30 02		bmi $1173						BMI _X_NEG_CONT ; jump to calc
+
+.1171	 a9 00		lda #$00	_X_PLUS	   		LDA #$00			; positive so set to 0
+
+.1173	 65 74		adc $74		_X_NEG_CONT    	ADC CURR_X_HSB		; calc
+
+.1175	 85 74		sta $74						STA CURR_X_HSB
+
+.1177	 60		rts						RTS 
+
+.1178	 a6 2c		ldx $2c		SIN_COS	LDX ROT_LO
+
+.117a	 a4 2d		ldy $2d		        LDY ROT_HI
+
+.117c	 20 a8 0a	jsr $0aa8	        JSR SIN_FP
+
+.117f	 86 3c		stx $3c		        STX SIN_LO ; sin_lo
+
+.1181	 84 3d		sty $3d		        STY SIN_HI ; sin_hi
+
+.1183	 a6 2c		ldx $2c		        LDX ROT_LO
+
+.1185	 a4 2d		ldy $2d		        LDY ROT_HI
+
+.1187	 20 a7 0a	jsr $0aa7	        JSR COS_FP
+
+.118a	 86 3e		stx $3e		        STX COS_LO ; cos_lo
+
+.118c	 84 3f		sty $3f		        STY COS_HI ; cos_hi
+
+.118e	 60		rts		        RTS 
+
+.118f	 a4 ad		ldy $ad		PROCESS_POINT_TO_FP	LDY OBJECT_POINTER_POS 	; get point then *16 then conveert to 24bit fp
+
+.1191	 c8		iny							INY 
+
+.1192	 b1 1d		lda ($1d),y						LDA (OBJECT_POINTER),Y ; get x
+
+.1194	 85 cf		sta $cf							STA OBJ_PNT_X
+
+.1196	 c8		iny							INY 
+
+.1197	 b1 1d		lda ($1d),y						LDA (OBJECT_POINTER),Y ; get y
+
+.1199	 85 d1		sta $d1							STA OBJ_PNT_Y
+
+.119b	 c8		iny							INY 
+
+.119c	 b1 1d		lda ($1d),y						LDA (OBJECT_POINTER),Y ; get z
+
+.119e	 85 d3		sta $d3							STA OBJ_PNT_Z
+
+.11a0	 84 ad		sty $ad							STY OBJECT_POINTER_POS
+
+.11a2	 20 e8 11	jsr $11e8						JSR POINT_X16
+
+.11a5	 a5 d5		lda $d5							LDA DIFF_X_LSB
+
+.11a7	 18		clc							CLC  			; clear
+
+.11a8	 65 cf		adc $cf							ADC OBJ_PNT_X 	; x lsb
+
+.11aa	 a8		tay							TAY
+
+.11ab	 a5 d6		lda $d6							LDA DIFF_X_MSB
+
+.11ad	 65 d0		adc $d0							ADC OBJ_PNT_X_MSB
+
+.11af	 aa		tax							TAX 
+
+.11b0	 a5 d7		lda $d7							LDA DIFF_X_HSB
+
+.11b2	 69 00		adc #$00						ADC #$00
+
+.11b4	 20 55 0b	jsr $0b55						JSR BIT24TOFP
+
+.11b7	 85 52		sta $52							STA X_POS_HI
+
+.11b9	 86 53		stx $53							STX X_POS_LO
+
+.11bb	 a5 d8		lda $d8							LDA DIFF_Y_LSB
+
+.11bd	 18		clc							CLC 
+
+.11be	 65 d1		adc $d1							ADC OBJ_PNT_Y ; y lsb
+
+.11c0	 a8		tay							TAY
+
+.11c1	 a5 d9		lda $d9							LDA DIFF_Y_MSB
+
+.11c3	 65 d2		adc $d2							ADC OBJ_PNT_Y_MSB
+
+.11c5	 aa		tax							TAX 
+
+.11c6	 a5 da		lda $da							LDA DIFF_Y_HSB
+
+.11c8	 69 00		adc #$00						ADC #$00
+
+.11ca	 20 55 0b	jsr $0b55						JSR BIT24TOFP
+
+.11cd	 85 54		sta $54							STA Y_POS_HI
+
+.11cf	 86 55		stx $55							STX Y_POS_LO
+
+.11d1	 a5 db		lda $db							LDA DIFF_Z_LSB
+
+.11d3	 18		clc							CLC 
+
+.11d4	 65 d3		adc $d3							ADC OBJ_PNT_Z ; z lsb
+
+.11d6	 a8		tay							TAY
+
+.11d7	 a5 dc		lda $dc							LDA DIFF_Z_MSB
+
+.11d9	 65 d4		adc $d4							ADC OBJ_PNT_Z_MSB
+
+.11db	 aa		tax							TAX 
+
+.11dc	 a5 dd		lda $dd							LDA DIFF_Z_HSB
+
+.11de	 69 00		adc #$00						ADC #$00
+
+.11e0	 20 55 0b	jsr $0b55						JSR BIT24TOFP
+
+.11e3	 85 56		sta $56							STA Z_POS_HI
+
+.11e5	 86 57		stx $57							STX Z_POS_LO
+
+.11e7	 60		rts							RTS 
+
+.11e8					point_x16
+.11e8	 a9 00		lda #$00			LDA #$00
+
+.11ea	 85 d0		sta $d0		        STA OBJ_PNT_X_MSB
+
+.11ec	 85 d2		sta $d2		        STA OBJ_PNT_Y_MSB
+
+.11ee	 85 d4		sta $d4		        STA OBJ_PNT_Z_MSB
+
+.11f0	 a6 af		ldx $af		        LDX CURRENT_OBJECT
+
+.11f2	 a5 cf		lda $cf				LDA OBJ_PNT_X
+
+.11f4	 49 80		eor #$80	        EOR #$80 ; change the sign?
+
+.11f6	 0a		asl		        ASL 
+
+.11f7	 26 d0		rol $d0		        ROL OBJ_PNT_X_MSB ; *2
+
+.11f9	 0a		asl		        ASL 
+
+.11fa	 26 d0		rol $d0		        ROL OBJ_PNT_X_MSB ; *4
+
+.11fc	 0a		asl		        ASL 
+
+.11fd	 26 d0		rol $d0		        ROL OBJ_PNT_X_MSB ; *8
+
+.11ff	 0a		asl		        ASL 
+
+.1200	 26 d0		rol $d0		        ROL OBJ_PNT_X_MSB ; *16
+
+.1202	 85 cf		sta $cf		        STA OBJ_PNT_X
+
+.1204	 a5 d1		lda $d1		        LDA OBJ_PNT_Y
+
+.1206	 49 80		eor #$80	        EOR #$80
+
+.1208	 0a		asl		        ASL 
+
+.1209	 26 d2		rol $d2		        ROL OBJ_PNT_Y_MSB
+
+.120b	 0a		asl		        ASL 
+
+.120c	 26 d2		rol $d2		        ROL OBJ_PNT_Y_MSB
+
+.120e	 0a		asl		        ASL 
+
+.120f	 26 d2		rol $d2		        ROL OBJ_PNT_Y_MSB
+
+.1211	 0a		asl		        ASL 
+
+.1212	 26 d2		rol $d2		        ROL OBJ_PNT_Y_MSB
+
+.1214	 85 d1		sta $d1		        STA OBJ_PNT_Y
+
+.1216	 a5 d3		lda $d3		        LDA OBJ_PNT_Z
+
+.1218	 49 80		eor #$80	        EOR #$80
+
+.121a	 0a		asl		        ASL 
+
+.121b	 26 d4		rol $d4		        ROL OBJ_PNT_Z_MSB
+
+.121d	 0a		asl		        ASL 
+
+.121e	 26 d4		rol $d4		        ROL OBJ_PNT_Z_MSB
+
+.1220	 0a		asl		        ASL 
+
+.1221	 26 d4		rol $d4		        ROL OBJ_PNT_Z_MSB
+
+.1223	 0a		asl		        ASL 
+
+.1224	 26 d4		rol $d4		        ROL OBJ_PNT_Z_MSB
+
+.1226	 85 d3		sta $d3		        STA OBJ_PNT_Z
+
+.1228	 60		rts		        RTS 
+
+.1229	 a6 52		ldx $52		ROTATE_PERS LDX X_POS_HI		; rotate and perspective
+
+.122b	 bd 00 22	lda $2200,x				LDA LOG_TABLE,X
+
+.122e	 a6 3c		ldx $3c					LDX SIN_LO
+
+.1230	 18		clc					CLC 
+
+.1231	 7d 00 22	adc $2200,x				ADC LOG_TABLE,X
+
+.1234	 a8		tay					TAY 
+
+.1235	 a5 53		lda $53					LDA X_POS_LO
+
+.1237	 90 03		bcc $123c				BCC ROT_X_CONT
+
+.1239	 69 03		adc #$03					ADC #$03
+
+.123b	 18		clc						CLC 
+
+.123c	 65 3d		adc $3d		ROT_X_CONT	ADC SIN_HI
+
+.123e	 29 fd		and #$fd				AND #$FD
+
+.1240	 85 0b		sta $0b					STA X_ROT_HI
+
+.1242	 be 00 23	ldx $2300,y				LDX EXP_TABLE,Y
+
+.1245	 86 0a		stx $0a					STX X_ROT_LO		; X * SIN
+
+.1247	 a6 56		ldx $56					LDX Z_POS_HI
+
+.1249	 bd 00 22	lda $2200,x				LDA LOG_TABLE,X
+
+.124c	 a6 3e		ldx $3e					LDX COS_LO
+
+.124e	 18		clc					CLC 
+
+.124f	 7d 00 22	adc $2200,x				ADC LOG_TABLE,X
+
+.1252	 a8		tay					TAY 
+
+.1253	 a5 57		lda $57					LDA Z_POS_LO
+
+.1255	 90 03		bcc $125a				BCC ROT_Z_CONT
+
+.1257	 69 03		adc #$03					ADC #$03
+
+.1259	 18		clc						CLC
+
+.125a	 65 3f		adc $3f		ROT_Z_CONT	ADC COS_HI
+
+.125c	 29 fd		and #$fd				AND #$FD
+
+.125e	 85 09		sta $09					STA Z_ROT_HI
+
+.1260	 be 00 23	ldx $2300,y				LDX EXP_TABLE,Y
+
+.1263	 86 08		stx $08					STX Z_ROT_LO		; Z * COS
+
+.1265	 a6 0a		ldx $0a		        LDX X_ROT_LO
+
+.1267	 a4 0b		ldy $0b		        LDY X_ROT_HI
+
+.1269	 20 14 0a	jsr $0a14	        JSR s838B				; Z = (X * SIN) + (Z * COS)
+
+.126c	 86 5c		stx $5c		        STX Z_ROTATION_LO	; Z rotation result?
+
+.126e	 98		tya		        TYA 
+
+.126f	 49 01		eor #$01	        EOR #$01
+
+.1271	 85 5d		sta $5d		        STA Z_ROTATION_HI	; Z rotation result?
+
+.1273	 29 01		and #$01	        AND #$01
+
+.1275	 4a		lsr		        LSR 
+
+.1276	 6a		ror		        ROR 
+
+.1277	 85 6e		sta $6e		        STA POINT_CLASSIFY_1
+
+.1279	 a6 52		ldx $52		        LDX X_POS_HI
+
+.127b	 bd 00 22	lda $2200,x	        LDA LOG_TABLE,X
+
+.127e	 a6 3e		ldx $3e		        LDX COS_LO
+
+.1280	 18		clc		        CLC 
+
+.1281	 7d 00 22	adc $2200,x	        ADC LOG_TABLE,X
+
+.1284	 a8		tay		        TAY 
+
+.1285	 a5 53		lda $53		        LDA X_POS_LO
+
+.1287	 90 03		bcc $128c	        BCC _X_CONT
+
+.1289	 69 03		adc #$03				ADC #$03
+
+.128b	 18		clc					CLC 
+
+.128c	 65 3f		adc $3f		_X_CONT ADC COS_HI
+
+.128e	 29 fd		and #$fd	        AND #$FD
+
+.1290	 85 0b		sta $0b		        STA X_ROT_HI
+
+.1292	 be 00 23	ldx $2300,y			LDX EXP_TABLE,Y
+
+.1295	 86 0a		stx $0a		        STX X_ROT_LO			; X * COS
+
+.1297	 a6 56		ldx $56		        LDX Z_POS_HI
+
+.1299	 bd 00 22	lda $2200,x	        LDA LOG_TABLE,X
+
+.129c	 a6 3c		ldx $3c		        LDX SIN_LO
+
+.129e	 18		clc		        CLC 
+
+.129f	 7d 00 22	adc $2200,x	        ADC LOG_TABLE,X
+
+.12a2	 a8		tay		        TAY 
+
+.12a3	 a5 57		lda $57		        LDA Z_POS_LO
+
+.12a5	 90 03		bcc $12aa	        BCC _Z_CONT
+
+.12a7	 69 03		adc #$03				ADC #$03
+
+.12a9	 18		clc					CLC 
+
+.12aa	 65 3d		adc $3d		_Z_CONT ADC SIN_HI
+
+.12ac	 29 fd		and #$fd	        AND #$FD
+
+.12ae	 be 00 23	ldx $2300,y	        LDX EXP_TABLE,Y
+
+.12b1	 86 08		stx $08		        STX Z_ROT_LO			; Z * SIN
+
+.12b3	 49 01		eor #$01	        EOR #$01 				; -Z * SIN
+
+.12b5	 85 09		sta $09		        STA Z_ROT_HI
+
+.12b7	 a6 0a		ldx $0a		        LDX X_ROT_LO
+
+.12b9	 a4 0b		ldy $0b		        LDY X_ROT_HI
+
+.12bb	 20 14 0a	jsr $0a14	        JSR s838B 				; X = (X * COS) + (-Z * SIN)
+
+.12be	 86 58		stx $58		        STX X_ROTATION_LO	; X rotation result?
+
+.12c0	 98		tya		        TYA 
+
+.12c1	 45 f1		eor $f1		        EOR abF1
+
+.12c3	 85 59		sta $59		        STA X_ROTATION_HI	; X rotation result?
+
+.12c5	 a4 6e		ldy $6e		        LDY POINT_CLASSIFY_1
+
+.12c7	 d0 39		bne $1302	        BNE bAA54
+
+.12c9	 85 09		sta $09		        STA ab09
+
+.12cb	 a6 08		ldx $08		        LDX ab08
+
+.12cd	 bd 00 22	lda $2200,x	        LDA LOG_TABLE,X
+
+.12d0	 a6 5c		ldx $5c		        LDX Z_ROTATION_LO
+
+.12d2	 38		sec		        SEC 
+
+.12d3	 fd 00 22	sbc $2200,x	        SBC LOG_TABLE,X
+
+.12d6	 a8		tay		        TAY 
+
+.12d7	 a5 09		lda $09		        LDA ab09
+
+.12d9	 09 02		ora #$02	        ORA #$02
+
+.12db	 b0 03		bcs $12e0	        BCS bAA32
+
+.12dd	 e9 03		sbc #$03				SBC #$03
+
+.12df	 38		sec					SEC 
+
+.12e0	 e5 5d		sbc $5d		bAA32   SBC Z_ROTATION_HI
+
+.12e2	 29 fd		and #$fd	        AND #$FD
+
+.12e4	 85 5f		sta $5f		        STA ab5F
+
+.12e6	 be 00 23	ldx $2300,y	        LDX EXP_TABLE,Y
+
+.12e9	 86 5e		stx $5e		        STX ab5E
+
+.12eb	 18		clc		        CLC 
+
+.12ec	 65 21		adc $21		        ADC ab21
+
+.12ee	 70 0e		bvs $12fe	        BVS bAA50
+
+.12f0	 a8		tay		        TAY 
+
+.12f1	 20 bd 0a	jsr $0abd	        JSR FPTO8BIT
+
+.12f4	 b0 08		bcs $12fe	        BCS bAA50
+
+.12f6	 65 8e		adc $8e		        ADC ab8E
+
+.12f8	 85 6a		sta $6a		        STA LINE_START_HOR
+
+.12fa	 c9 a0		cmp #$a0	        CMP #CLIP_TEST_RIGHT ; clip test
+
+.12fc	 90 04		bcc $1302	        BCC bAA54 ; off right
+
+.12fe	 a9 01		lda #$01	bAA50   LDA #PNT_OFF_RIGHT ; right clip
+
+.1300	 85 6e		sta $6e		        STA POINT_CLASSIFY_1
+
+.1302	 a6 54		ldx $54		bAA54   LDX Y_POS_HI
+
+.1304	 a5 55		lda $55		        LDA Y_POS_LO
+
+.1306	 49 01		eor #$01	        EOR #$01
+
+.1308	 a8		tay		        TAY 
+
+.1309	 86 08		stx $08		        STX ab08
+
+.130b	 84 09		sty $09		        STY ab09
+
+.130d	 86 5a		stx $5a		jA8E9   STX Y_ROTATION_LO
+
+.130f	 98		tya		        TYA 
+
+.1310	 18		clc		        CLC 
+
+.1311	 69 04		adc #$04	        ADC #$04
+
+.1313	 70 01		bvs $1316	        BVS bA8F2
+
+.1315	 a8		tay					TAY 
+
+.1316	 84 5b		sty $5b		bA8F2   STY Y_ROTATION_HI
+
+.1318	 84 09		sty $09		        STY ab09
+
+.131a	 a5 6e		lda $6e		        LDA POINT_CLASSIFY_1
+
+.131c	 30 39		bmi $1357	        BMI bA933
+
+.131e	 a6 08		ldx $08		        LDX ab08
+
+.1320	 bd 00 22	lda $2200,x	        LDA LOG_TABLE,X
+
+.1323	 a6 5c		ldx $5c		        LDX Z_ROTATION_LO
+
+.1325	 38		sec		        SEC 
+
+.1326	 fd 00 22	sbc $2200,x	        SBC LOG_TABLE,X
+
+.1329	 a8		tay		        TAY 
+
+.132a	 a5 09		lda $09		        LDA ab09
+
+.132c	 09 02		ora #$02	        ORA #$02
+
+.132e	 b0 03		bcs $1333	        BCS bA90F
+
+.1330	 e9 03		sbc #$03				SBC #$03
+
+.1332	 38		sec					SEC 
+
+.1333	 e5 5d		sbc $5d		bA90F   SBC Z_ROTATION_HI
+
+.1335	 29 fd		and #$fd	        AND #$FD
+
+.1337	 85 61		sta $61		        STA ab61
+
+.1339	 be 00 23	ldx $2300,y	        LDX EXP_TABLE,Y
+
+.133c	 86 60		stx $60		        STX ab60
+
+.133e	 18		clc		        CLC 
+
+.133f	 65 21		adc $21		        ADC ab21
+
+.1341	 70 0e		bvs $1351	        BVS bA92D
+
+.1343	 a8		tay					TAY 
+
+.1344	 20 bd 0a	jsr $0abd				JSR FPTO8BIT
+
+.1347	 b0 08		bcs $1351	        BCS bA92D
+
+.1349	 65 8f		adc $8f					ADC ab8F
+
+.134b	 85 6b		sta $6b					STA LINE_START_VER
+
+.134d	 c9 88		cmp #$88				CMP #CLIP_TEST_BOTTOM ; clip test
+
+.134f	 90 06		bcc $1357				BCC bA933
+
+.1351	 a5 6e		lda $6e		bA92D   LDA POINT_CLASSIFY_1
+
+.1353	 09 02		ora #$02	        ORA #PNT_OFF_BOTTOM
+
+.1355	 85 6e		sta $6e		        STA POINT_CLASSIFY_1
+
+.1357	 a4 19		ldy $19		bA933   LDY POINT_LINE_COUNT						; point position?
+
+.1359	 a5 6e		lda $6e		        LDA POINT_CLASSIFY_1
+
+.135b	 99 00 07	sta $0700,y	        STA POINT_CLASSIFICATION,Y
+
+.135e	 30 1e		bmi $137e	        BMI bA95A					; behind
+
+.1360	 a5 5e		lda $5e		        LDA ab5E
+
+.1362	 99 00 06	sta $0600,y	        STA PERS_POINT_TAB_2,Y	; pers point?
+
+.1365	 a5 5f		lda $5f		        LDA ab5F
+
+.1367	 99 c0 03	sta $03c0,y	        STA PERS_POINT_TAB_3,Y	; pers point?
+
+.136a	 a5 60		lda $60		        LDA ab60
+
+.136c	 99 a0 27	sta $27a0,y	        STA PERS_POINT_TAB_4,Y	; pers point?
+
+.136f	 a5 61		lda $61		        LDA ab61
+
+.1371	 99 40 06	sta $0640,y	        STA PERS_POINT_TAB_5,Y	; pers point?
+
+.1374	 a5 6a		lda $6a		        LDA LINE_START_HOR 			; get perspective ver
+
+.1376	 99 80 06	sta $0680,y			STA PERS_HOR,Y 				; put perspective ver
+
+.1379	 a5 6b		lda $6b		        LDA LINE_START_VER 			; get perspective hor
+
+.137b	 99 c0 06	sta $06c0,y	        STA PERS_VER,Y 				; put perspective hor
+
+.137e	 a5 58		lda $58		bA95A   LDA X_ROTATION_LO
+
+.1380	 99 00 01	sta $0100,y	        STA X_ROT_TAB_LO,Y 	; X rotation result x pos lo
+
+.1383	 a5 59		lda $59		        LDA X_ROTATION_HI
+
+.1385	 99 40 01	sta $0140,y	        STA X_ROT_TAB_HI,Y 	; X rotation result x pos hi
+
+.1388	 a5 5a		lda $5a		        LDA Y_ROTATION_LO
+
+.138a	 99 80 01	sta $0180,y	        STA Y_ROT_TAB_LO,Y	; rotation result y pos lo
+
+.138d	 a5 5b		lda $5b		        LDA Y_ROTATION_HI
+
+.138f	 99 c0 02	sta $02c0,y	        STA Y_ROT_TAB_HI,Y	; rotation result y pos hi
+
+.1392	 a5 5c		lda $5c		        LDA Z_ROTATION_LO
+
+.1394	 99 40 03	sta $0340,y	        STA Z_ROT_TAB_LO,Y	; rotation result z pos lo
+
+.1397	 a5 5d		lda $5d		        LDA Z_ROTATION_HI
+
+.1399	 99 80 03	sta $0380,y	        STA Z_ROT_TAB_HI,Y	; rotation result z pos hi
+
+.139c	 60		rts		        RTS 
+
+.139d	 e8		inx		LINE_DRAW_0_LOOP  	INX 
+
+.139e	 a5 08		lda $08							LDA LINE_FRACTION_ab08
+
+.13a0	 65 66		adc $66							ADC LINE_INC
+
+.13a2	 85 08		sta $08							STA LINE_FRACTION_ab08
+
+.13a4	 90 05		bcc $13ab						BCC LINE_DRAW_0
+
+.13a6	 c8		iny								INY 
+
+.13a7	 c0 88		cpy #$88							CPY #CLIP_TEST_BOTTOM
+
+.13a9	 f0 20		beq $13cb							BEQ LINE_DRAW_0_EXIT
+
+.13ab	 b9 90 24	lda $2490,y	LINE_DRAW_0			LDA VER_POS_LO,Y ; LINE-DRAW-START
+
+.13ae	 85 02		sta $02							STA SCREEN_POS_LO
+
+.13b0	 8a		txa							TXA 
+
+.13b1	 0a		asl							ASL 
+
+.13b2	 b9 00 24	lda $2400,y						LDA VER_POS_HI,Y
+
+.13b5	 65 25		adc $25							ADC SCREEN_BANK
+
+.13b7	 85 03		sta $03							STA SCREEN_POS_HI
+
+.13b9	 84 06		sty $06							STY ab06
+
+.13bb	 bc 20 25	ldy $2520,x						LDY HOR_SCR_POS,X
+
+.13be	 b1 02		lda ($02),y						LDA (SCREEN_POS_PTR),Y
+
+.13c0	 3d 00 27	and $2700,x	LINE_DRAW_0_TYPE	AND PIXEL_POS,X
+
+.13c3	 91 02		sta ($02),y						STA (SCREEN_POS_PTR),Y
+
+.13c5	 a4 06		ldy $06							LDY ab06
+
+.13c7	 e4 6c		cpx $6c							CPX ab6C
+
+.13c9	 d0 d2		bne $139d						BNE LINE_DRAW_0_LOOP
+
+.13cb	 60		rts		LINE_DRAW_0_EXIT   RTS 
+
+.13cc	 c8		iny		LINE_DRAW_1_LOOP   INY  ; LINE-DRAW
+
+.13cd	 a5 08		lda $08							LDA LINE_FRACTION_ab08
+
+.13cf	 65 66		adc $66							ADC LINE_INC
+
+.13d1	 85 08		sta $08							STA LINE_FRACTION_ab08
+
+.13d3	 90 05		bcc $13da						BCC LINE_DRAW_1
+
+.13d5	 e8		inx								INX 
+
+.13d6	 e0 a0		cpx #$a0							CPX #CLIP_TEST_RIGHT ; clip test
+
+.13d8	 f0 20		beq $13fa							BEQ LINE_DRAW_1_EXIT
+
+.13da	 b9 90 24	lda $2490,y	LINE_DRAW_1			LDA VER_POS_LO,Y ; LINE-DRAW-START
+
+.13dd	 85 02		sta $02							STA SCREEN_POS_LO
+
+.13df	 8a		txa							TXA 
+
+.13e0	 0a		asl							ASL 
+
+.13e1	 b9 00 24	lda $2400,y						LDA VER_POS_HI,Y
+
+.13e4	 65 25		adc $25							ADC SCREEN_BANK
+
+.13e6	 85 03		sta $03							STA SCREEN_POS_HI
+
+.13e8	 84 06		sty $06							STY ab06
+
+.13ea	 bc 20 25	ldy $2520,x						LDY HOR_SCR_POS,X
+
+.13ed	 b1 02		lda ($02),y						LDA (SCREEN_POS_PTR),Y
+
+.13ef	 3d 00 27	and $2700,x	LINE_DRAW_1_TYPE	AND PIXEL_POS,X
+
+.13f2	 91 02		sta ($02),y						STA (SCREEN_POS_PTR),Y
+
+.13f4	 a4 06		ldy $06							LDY ab06
+
+.13f6	 c4 6d		cpy $6d							CPY ab6D
+
+.13f8	 d0 d2		bne $13cc						BNE LINE_DRAW_1_LOOP ; GOTO LINE-DRAW
+
+.13fa	 60		rts		LINE_DRAW_1_EXIT   	RTS 
+
+.13fb	 c8		iny		LINE_DRAW_2_LOOP   	INY  ; LINE-DRAW
+
+.13fc	 a5 08		lda $08							LDA LINE_FRACTION_ab08
+
+.13fe	 65 66		adc $66							ADC LINE_INC
+
+.1400	 85 08		sta $08							STA LINE_FRACTION_ab08
+
+.1402	 90 05		bcc $1409						BCC LINE_DRAW_2
+
+.1404	 ca		dex								DEX 
+
+.1405	 e0 ff		cpx #$ff							CPX #$FF
+
+.1407	 f0 20		beq $1429							BEQ LINE_DRAW_2_EXIT
+
+.1409	 b9 90 24	lda $2490,y	LINE_DRAW_2			LDA VER_POS_LO,Y ; LINE-DRAW-START
+
+.140c	 85 02		sta $02							STA SCREEN_POS_LO
+
+.140e	 8a		txa							TXA 
+
+.140f	 0a		asl							ASL 
+
+.1410	 b9 00 24	lda $2400,y						LDA VER_POS_HI,Y
+
+.1413	 65 25		adc $25							ADC SCREEN_BANK
+
+.1415	 85 03		sta $03							STA SCREEN_POS_HI
+
+.1417	 84 06		sty $06							STY ab06
+
+.1419	 bc 20 25	ldy $2520,x						LDY HOR_SCR_POS,X
+
+.141c	 b1 02		lda ($02),y						LDA (SCREEN_POS_PTR),Y
+
+.141e	 3d 00 27	and $2700,x	LINE_DRAW_2_TYPE	AND PIXEL_POS,X
+
+.1421	 91 02		sta ($02),y						STA (SCREEN_POS_PTR),Y
+
+.1423	 a4 06		ldy $06							LDY ab06
+
+.1425	 c4 6d		cpy $6d							CPY ab6D
+
+.1427	 d0 d2		bne $13fb						BNE LINE_DRAW_2_LOOP ; GOTO LINE-DRAW
+
+.1429	 60		rts		LINE_DRAW_2_EXIT   	RTS 
+
+.142a	 ca		dex		LINE_DRAW_3_LOOP  	DEX ; LINE-DRAW
+
+.142b	 a5 08		lda $08							LDA LINE_FRACTION_ab08
+
+.142d	 e5 66		sbc $66							SBC LINE_INC
+
+.142f	 85 08		sta $08							STA LINE_FRACTION_ab08
+
+.1431	 b0 05		bcs $1438						BCS LINE_DRAW_3
+
+.1433	 c8		iny								INY 
+
+.1434	 c0 88		cpy #$88							CPY #CLIP_TEST_BOTTOM
+
+.1436	 f0 20		beq $1458							BEQ LINE_DRAW_3_EXIT
+
+.1438	 b9 90 24	lda $2490,y	LINE_DRAW_3			LDA VER_POS_LO,Y ; LINE-DRAW-START
+
+.143b	 85 02		sta $02							STA SCREEN_POS_LO
+
+.143d	 8a		txa							TXA 
+
+.143e	 0a		asl							ASL 
+
+.143f	 b9 00 24	lda $2400,y						LDA VER_POS_HI,Y
+
+.1442	 65 25		adc $25							ADC SCREEN_BANK
+
+.1444	 85 03		sta $03							STA SCREEN_POS_HI
+
+.1446	 84 06		sty $06							STY ab06
+
+.1448	 bc 20 25	ldy $2520,x						LDY HOR_SCR_POS,X
+
+.144b	 b1 02		lda ($02),y						LDA (SCREEN_POS_PTR),Y
+
+.144d	 3d 00 27	and $2700,x	LINE_DRAW_3_TYPE	AND PIXEL_POS,X
+
+.1450	 91 02		sta ($02),y						STA (SCREEN_POS_PTR),Y
+
+.1452	 a4 06		ldy $06							LDY ab06
+
+.1454	 e4 6c		cpx $6c							CPX ab6C
+
+.1456	 d0 d2		bne $142a						BNE LINE_DRAW_3_LOOP ; GOTO LINE-DRAW
+
+.1458	 60		rts		LINE_DRAW_3_EXIT   	RTS 
+
+.1459	 ca		dex		LINE_DRAW_4_LOOP   	DEX  ; LINE-DRAW
+
+.145a	 a5 08		lda $08							LDA LINE_FRACTION_ab08
+
+.145c	 e5 66		sbc $66							SBC LINE_INC
+
+.145e	 85 08		sta $08							STA LINE_FRACTION_ab08
+
+.1460	 b0 05		bcs $1467						BCS LINE_DRAW_4
+
+.1462	 88		dey								DEY 
+
+.1463	 c0 ff		cpy #$ff							CPY #$FF
+
+.1465	 f0 20		beq $1487							BEQ LINE_DRAW_4_EXIT
+
+.1467	 b9 90 24	lda $2490,y	LINE_DRAW_4			LDA VER_POS_LO,Y ; LINE-DRAW-START
+
+.146a	 85 02		sta $02							STA SCREEN_POS_LO
+
+.146c	 8a		txa							TXA 
+
+.146d	 0a		asl							ASL 
+
+.146e	 b9 00 24	lda $2400,y						LDA VER_POS_HI,Y
+
+.1471	 65 25		adc $25							ADC SCREEN_BANK
+
+.1473	 85 03		sta $03							STA SCREEN_POS_HI
+
+.1475	 84 06		sty $06							STY ab06
+
+.1477	 bc 20 25	ldy $2520,x						LDY HOR_SCR_POS,X
+
+.147a	 b1 02		lda ($02),y						LDA (SCREEN_POS_PTR),Y
+
+.147c	 3d 00 27	and $2700,x	LINE_DRAW_4_TYPE  	AND PIXEL_POS,X
+
+.147f	 91 02		sta ($02),y						STA (SCREEN_POS_PTR),Y
+
+.1481	 a4 06		ldy $06							LDY ab06
+
+.1483	 e4 6c		cpx $6c							CPX ab6C
+
+.1485	 d0 d2		bne $1459						BNE LINE_DRAW_4_LOOP ; GOTO LINE-DRAW
+
+.1487	 60		rts		LINE_DRAW_4_EXIT   	RTS 
+
+.1488	 88		dey		LINE_DRAW_5_LOOP   	DEY  ; LINE-DRAW
+
+.1489	 a5 08		lda $08							LDA LINE_FRACTION_ab08
+
+.148b	 65 66		adc $66							ADC LINE_INC
+
+.148d	 85 08		sta $08							STA LINE_FRACTION_ab08
+
+.148f	 90 05		bcc $1496						BCC LINE_DRAW_5
+
+.1491	 ca		dex								DEX 
+
+.1492	 e0 ff		cpx #$ff							CPX #$FF
+
+.1494	 f0 20		beq $14b6							BEQ LINE_DRAW_5_EXIT
+
+.1496	 b9 90 24	lda $2490,y	LINE_DRAW_5			LDA VER_POS_LO,Y ; LINE-DRAW-START
+
+.1499	 85 02		sta $02							STA SCREEN_POS_LO
+
+.149b	 8a		txa							TXA 
+
+.149c	 0a		asl							ASL 
+
+.149d	 b9 00 24	lda $2400,y						LDA VER_POS_HI,Y
+
+.14a0	 65 25		adc $25							ADC SCREEN_BANK
+
+.14a2	 85 03		sta $03							STA SCREEN_POS_HI
+
+.14a4	 84 06		sty $06							STY ab06
+
+.14a6	 bc 20 25	ldy $2520,x						LDY HOR_SCR_POS,X
+
+.14a9	 b1 02		lda ($02),y						LDA (SCREEN_POS_PTR),Y
+
+.14ab	 3d 00 27	and $2700,x	LINE_DRAW_5_TYPE  	AND PIXEL_POS,X
+
+.14ae	 91 02		sta ($02),y						STA (SCREEN_POS_PTR),Y
+
+.14b0	 a4 06		ldy $06							LDY ab06
+
+.14b2	 c4 6d		cpy $6d							CPY ab6D
+
+.14b4	 d0 d2		bne $1488						BNE LINE_DRAW_5_LOOP ; GOTO LINE-DRAW
+
+.14b6	 60		rts		LINE_DRAW_5_EXIT  	RTS
+
+.14b7	 88		dey		LINE_DRAW_6_LOOP   	DEY  ; LINE-DRAW
+
+.14b8	 a5 08		lda $08							LDA LINE_FRACTION_ab08
+
+.14ba	 e5 66		sbc $66							SBC LINE_INC
+
+.14bc	 85 08		sta $08							STA LINE_FRACTION_ab08
+
+.14be	 b0 05		bcs $14c5						BCS LINE_DRAW_6
+
+.14c0	 e8		inx								INX             ; NEXT VER
+
+.14c1	 e0 a0		cpx #$a0							CPX #$A0        ; OFF BOTTOM
+
+.14c3	 f0 20		beq $14e5							BEQ LINE_DRAW_6_EXIT       ; EXIT
+
+.14c5	 b9 90 24	lda $2490,y	LINE_DRAW_6			LDA VER_POS_LO,Y ; LINE-DRAW-START
+
+.14c8	 85 02		sta $02							STA SCREEN_POS_LO
+
+.14ca	 8a		txa							TXA 
+
+.14cb	 0a		asl							ASL 
+
+.14cc	 b9 00 24	lda $2400,y						LDA VER_POS_HI,Y
+
+.14cf	 65 25		adc $25							ADC SCREEN_BANK
+
+.14d1	 85 03		sta $03							STA SCREEN_POS_HI
+
+.14d3	 84 06		sty $06							STY ab06
+
+.14d5	 bc 20 25	ldy $2520,x						LDY HOR_SCR_POS,X
+
+.14d8	 b1 02		lda ($02),y						LDA (SCREEN_POS_PTR),Y
+
+.14da	 3d 00 27	and $2700,x	LINE_DRAW_6_TYPE	AND PIXEL_POS,X
+
+.14dd	 91 02		sta ($02),y						STA (SCREEN_POS_PTR),Y
+
+.14df	 a4 06		ldy $06							LDY ab06
+
+.14e1	 c4 6d		cpy $6d							CPY ab6D
+
+.14e3	 d0 d2		bne $14b7						BNE LINE_DRAW_6_LOOP ; GOTO LINE-DRAW 
+
+.14e5	 60		rts		LINE_DRAW_6_EXIT	RTS 
+
+.14e6	 e8		inx		LINE_DRAW_7_LOOP   	INX	; LINE-DRAW
+
+.14e7	 a5 08		lda $08							LDA	LINE_FRACTION_ab08
+
+.14e9	 65 66		adc $66							ADC	LINE_INC
+
+.14eb	 85 08		sta $08							STA	LINE_FRACTION_ab08
+
+.14ed	 90 05		bcc $14f4						BCC	LINE_DRAW_7
+
+.14ef	 88		dey								DEY 
+
+.14f0	 c0 ff		cpy #$ff							CPY	#$FF
+
+.14f2	 f0 20		beq $1514							BEQ	LINE_DRAW_7_EXIT
+
+.14f4	 b9 90 24	lda $2490,y	LINE_DRAW_7			LDA	VER_POS_LO,Y ; LINE-DRAW-START
+
+.14f7	 85 02		sta $02							STA	SCREEN_POS_LO
+
+.14f9	 8a		txa							TXA 
+
+.14fa	 0a		asl							ASL 
+
+.14fb	 b9 00 24	lda $2400,y						LDA VER_POS_HI,Y
+
+.14fe	 65 25		adc $25							ADC SCREEN_BANK
+
+.1500	 85 03		sta $03							STA SCREEN_POS_HI
+
+.1502	 84 06		sty $06							STY ab06
+
+.1504	 bc 20 25	ldy $2520,x						LDY HOR_SCR_POS,X
+
+.1507	 b1 02		lda ($02),y						LDA (SCREEN_POS_PTR),Y
+
+.1509	 3d 00 27	and $2700,x	LINE_DRAW_7_TYPE	AND PIXEL_POS,X
+
+.150c	 91 02		sta ($02),y						STA (SCREEN_POS_PTR),Y
+
+.150e	 a4 06		ldy $06							LDY ab06
+
+.1510	 e4 6c		cpx $6c							CPX ab6C
+
+.1512	 d0 d2		bne $14e6						BNE LINE_DRAW_7_LOOP ; GOTO LINE DRAW
+
+.1514	 60		rts		LINE_DRAW_7_EXIT   	RTS 
+
+.1515	 a9 27		lda #$27	COLOUR_SETUP_WHITE	LDA #>PIXEL_POS ; #$77 ; todo - currently hardcoded - needs to point to high value of and_pixel_table #>PIXEL_POS1
+
+.1517	 a2 3d		ldx #$3d						LDX #$3D
+
+.1519	 d0 04		bne $151f						BNE COLOUR_SETUP ; JUMP
+
+.151b	 a9 56		lda #$56	COLOUR_SETUP_BLACK	LDA #$56
+
+.151d	 a2 1d		ldx #$1d						LDX #$1D
+
+.151f	 8d c2 13	sta $13c2	COLOUR_SETUP		STA LINE_DRAW_0_TYPE +2
+
+.1522	 8d f1 13	sta $13f1						STA LINE_DRAW_1_TYPE +2
+
+.1525	 8d 20 14	sta $1420						STA LINE_DRAW_2_TYPE +2
+
+.1528	 8d 4f 14	sta $144f						STA LINE_DRAW_3_TYPE +2
+
+.152b	 8d 7e 14	sta $147e						STA LINE_DRAW_4_TYPE +2
+
+.152e	 8d ad 14	sta $14ad						STA LINE_DRAW_5_TYPE +2
+
+.1531	 8d dc 14	sta $14dc						STA LINE_DRAW_6_TYPE +2
+
+.1534	 8d 0b 15	sta $150b						STA LINE_DRAW_7_TYPE +2
+
+.1537	 8d 25 0c	sta $0c25						STA LINE_DRAW_8_TYPE +2
+
+.153a	 8e c0 13	stx $13c0						STX LINE_DRAW_0_TYPE
+
+.153d	 8e ef 13	stx $13ef						STX LINE_DRAW_1_TYPE
+
+.1540	 8e 1e 14	stx $141e						STX LINE_DRAW_2_TYPE
+
+.1543	 8e 4d 14	stx $144d						STX LINE_DRAW_3_TYPE
+
+.1546	 8e 7c 14	stx $147c						STX LINE_DRAW_4_TYPE
+
+.1549	 8e ab 14	stx $14ab						STX LINE_DRAW_5_TYPE
+
+.154c	 8e da 14	stx $14da						STX LINE_DRAW_6_TYPE
+
+.154f	 8e 09 15	stx $1509						STX LINE_DRAW_7_TYPE
+
+.1552	 8e 23 0c	stx $0c23						STX LINE_DRAW_8_TYPE
+
+.1555	 60		rts							RTS
+
+.1556	 a9 e0		lda #$e0	DRAW_SCREEN			LDA	#$E0
+
+.1558	 cd 12 d0	cmp $d012	WAIT_RASTER			CMP	$D012
+
+.155b	 d0 fb		bne $1558						BNE WAIT_RASTER
+
+.155d	 e6 24		inc $24				INC	SCREEN_FLIP	; INCREMENT SCREEN FLIP
+
+.155f	 a5 24		lda $24		        LDA	SCREEN_FLIP	; GET SCREEN FLIP
+
+.1561	 4a		lsr		        LSR 				; SHIFT BIT0 INTO CARRY
+
+.1562	 b0 0a		bcs $156e	        BCS	SCRN_2			; CARRY SET ?
+
+.1564	 a9 40		lda #$40			LDA	#SCREEN_0			; SCREEN 1 OFFSET
+
+.1566	 85 25		sta $25				STA	SCREEN_BANK		; SCREEN 1 OFFSET
+
+.1568	 a9 78		lda #$78			LDA	#$78
+
+.156a	 85 c7		sta $c7				STA	VIC_SCREEN_BANK
+
+.156c	 d0 08		bne $1576			BNE	SCNCLR			; JUMP
+
+.156e	 a9 60		lda #$60	SCRN_2  LDA	#SCREEN_1		; SCREEN 2 OFFSET
+
+.1570	 85 25		sta $25		        STA	SCREEN_BANK		; SCREEN 2 OFFSET
+
+.1572	 a9 70		lda #$70	        LDA	#$70
+
+.1574	 85 c7		sta $c7		        STA	VIC_SCREEN_BANK
+
+.1576	 a9 a5		lda #$a5	SCNCLR  LDA #$A5
+
+.1578	 a2 88		ldx #$88	        LDX #136
+
+.157a	 a4 25		ldy $25		        LDY SCREEN_BANK
+
+.157c	 c0 60		cpy #$60	        CPY #SCREEN_1
+
+.157e	 f0 7c		beq $15fc	        BEQ CLSN1LP
+
+.1580	 9d ff 3f	sta $3fff,x	CLSN0LP	STA SCREEN0-1+(136*00),X ; 1
+
+.1583	 9d 87 40	sta $4087,x	        STA SCREEN0-1+(136*01),X ;f40F7,X ; 2
+
+.1586	 9d 0f 41	sta $410f,x	        STA SCREEN0-1+(136*02),X ;f41EF,X ;3
+
+.1589	 9d 97 41	sta $4197,x	        STA SCREEN0-1+(136*03),X ;f42E7,X ;4
+
+.158c	 9d 1f 42	sta $421f,x	        STA SCREEN0-1+(136*04),X ;f43DF,X ;5
+
+.158f	 9d a7 42	sta $42a7,x	        STA SCREEN0-1+(136*05),X ;f44D7,X ;6
+
+.1592	 9d 2f 43	sta $432f,x	        STA SCREEN0-1+(136*06),X ;f45CF,X ;7
+
+.1595	 9d b7 43	sta $43b7,x	        STA SCREEN0-1+(136*07),X ;f46C7,X ;8
+
+.1598	 9d 3f 44	sta $443f,x	        STA SCREEN0-1+(136*08),X ;f47BF,X ;9
+
+.159b	 9d c7 44	sta $44c7,x	        STA SCREEN0-1+(136*09),X ;f48B7,X ;10
+
+.159e	 9d 4f 45	sta $454f,x	        STA SCREEN0-1+(136*10),X ;f49AF,X ;11
+
+.15a1	 9d d7 45	sta $45d7,x	        STA SCREEN0-1+(136*11),X ;f4AA7,X ;12
+
+.15a4	 9d 5f 46	sta $465f,x	        STA SCREEN0-1+(136*12),X ;f4B9F,X ;13
+
+.15a7	 9d e7 46	sta $46e7,x	        STA SCREEN0-1+(136*13),X ;f4C97,X ;14
+
+.15aa	 9d 6f 47	sta $476f,x	        STA SCREEN0-1+(136*14),X ;f4D8F,X ;15
+
+.15ad	 9d f7 47	sta $47f7,x	        STA SCREEN0-1+(136*15),X ;f4E87,X ;16
+
+.15b0	 9d 7f 48	sta $487f,x	        STA SCREEN0-1+(136*16),X ;f4F7F,X ;17
+
+.15b3	 9d 07 49	sta $4907,x	        STA SCREEN0-1+(136*17),X ;f5077,X ;18
+
+.15b6	 9d 8f 49	sta $498f,x	        STA SCREEN0-1+(136*18),X ;f516F,X ;19
+
+.15b9	 9d 17 4a	sta $4a17,x	        STA SCREEN0-1+(136*19),X ;f5267,X ;20
+
+.15bc	 9d 9f 4a	sta $4a9f,x	        STA SCREEN0-1+(136*20),X ;f535F,X ;21
+
+.15bf	 9d 27 4b	sta $4b27,x	        STA SCREEN0-1+(136*21),X ;f5447,X ;22
+
+.15c2	 9d af 4b	sta $4baf,x			sta SCREEN0-1+(136*22),X ;f5447,x ;23
+
+.15c5	 9d 37 4c	sta $4c37,x			sta SCREEN0-1+(136*23),X ;f5447,x ;24
+
+.15c8	 9d bf 4c	sta $4cbf,x			sta SCREEN0-1+(136*24),X ;f5447,x ;25
+
+.15cb	 9d 47 4d	sta $4d47,x			sta SCREEN0-1+(136*25),X ;f5447,x ;26
+
+.15ce	 9d cf 4d	sta $4dcf,x			sta SCREEN0-1+(136*26),X ;f5447,x ;27
+
+.15d1	 9d 57 4e	sta $4e57,x			sta SCREEN0-1+(136*27),X ;f5447,x ;28
+
+.15d4	 9d df 4e	sta $4edf,x			sta SCREEN0-1+(136*28),X ;f5447,x ;29
+
+.15d7	 9d 67 4f	sta $4f67,x			sta SCREEN0-1+(136*29),X ;f5447,x ;30
+
+.15da	 9d ef 4f	sta $4fef,x			sta SCREEN0-1+(136*30),X ;f5447,x ;31
+
+.15dd	 9d 77 50	sta $5077,x			sta SCREEN0-1+(136*31),X ;f5447,x ;32
+
+.15e0	 9d ff 50	sta $50ff,x			sta SCREEN0-1+(136*32),X ;f5447,x ;33
+
+.15e3	 9d 87 51	sta $5187,x			sta SCREEN0-1+(136*33),X ;f5447,x ;34
+
+.15e6	 9d 0f 52	sta $520f,x			sta SCREEN0-1+(136*34),X ;f5447,x ;35
+
+.15e9	 9d 97 52	sta $5297,x			sta SCREEN0-1+(136*35),X ;f5447,x ;36
+
+.15ec	 9d 1f 53	sta $531f,x			sta SCREEN0-1+(136*36),X ;f5447,x ;37
+
+.15ef	 9d a7 53	sta $53a7,x			sta SCREEN0-1+(136*37),X ;f5447,x ;38
+
+.15f2	 9d 2f 54	sta $542f,x			sta SCREEN0-1+(136*38),X ;f5447,x ;39
+
+.15f5	 9d b7 54	sta $54b7,x			sta SCREEN0-1+(136*39),X ;f5447,x ;40
+
+.15f8	 ca		dex		        DEX 
+
+.15f9	 d0 85		bne $1580	        BNE CLSN0LP
+
+.15fb	 60		rts		        RTS 
+
+.15fc	 9d ff 5f	sta $5fff,x	CLSN1LP	STA SCREEN1-1+(136*00),X ; 1
+
+.15ff	 9d 87 60	sta $6087,x	        STA SCREEN1-1+(136*01),X ;f40F7,X ; 2
+
+.1602	 9d 0f 61	sta $610f,x	        STA SCREEN1-1+(136*02),X ;f41EF,X ;3
+
+.1605	 9d 97 61	sta $6197,x	        STA SCREEN1-1+(136*03),X ;f42E7,X ;4
+
+.1608	 9d 1f 62	sta $621f,x	        STA SCREEN1-1+(136*04),X ;f43DF,X ;5
+
+.160b	 9d a7 62	sta $62a7,x	        STA SCREEN1-1+(136*05),X ;f44D7,X ;6
+
+.160e	 9d 2f 63	sta $632f,x	        STA SCREEN1-1+(136*06),X ;f45CF,X ;7
+
+.1611	 9d b7 63	sta $63b7,x	        STA SCREEN1-1+(136*07),X ;f46C7,X ;8
+
+.1614	 9d 3f 64	sta $643f,x	        STA SCREEN1-1+(136*08),X ;f47BF,X ;9
+
+.1617	 9d c7 64	sta $64c7,x	        STA SCREEN1-1+(136*09),X ;f48B7,X ;10
+
+.161a	 9d 4f 65	sta $654f,x	        STA SCREEN1-1+(136*10),X ;f49AF,X ;11
+
+.161d	 9d d7 65	sta $65d7,x	        STA SCREEN1-1+(136*11),X ;f4AA7,X ;12
+
+.1620	 9d 5f 66	sta $665f,x	        STA SCREEN1-1+(136*12),X ;f4B9F,X ;13
+
+.1623	 9d e7 66	sta $66e7,x	        STA SCREEN1-1+(136*13),X ;f4C97,X ;14
+
+.1626	 9d 6f 67	sta $676f,x	        STA SCREEN1-1+(136*14),X ;f4D8F,X ;15
+
+.1629	 9d f7 67	sta $67f7,x	        STA SCREEN1-1+(136*15),X ;f4E87,X ;16
+
+.162c	 9d 7f 68	sta $687f,x	        STA SCREEN1-1+(136*16),X ;f4F7F,X ;17
+
+.162f	 9d 07 69	sta $6907,x	        STA SCREEN1-1+(136*17),X ;f5077,X ;18
+
+.1632	 9d 8f 69	sta $698f,x	        STA SCREEN1-1+(136*18),X ;f516F,X ;19
+
+.1635	 9d 17 6a	sta $6a17,x	        STA SCREEN1-1+(136*19),X ;f5267,X ;20
+
+.1638	 9d 9f 6a	sta $6a9f,x	        STA SCREEN1-1+(136*20),X ;f535F,X ;21
+
+.163b	 9d 27 6b	sta $6b27,x	        STA SCREEN1-1+(136*21),X ;f5447,X ;22
+
+.163e	 9d af 6b	sta $6baf,x			sta SCREEN1-1+(136*22),X ;f5447,x ;23
+
+.1641	 9d 37 6c	sta $6c37,x			sta SCREEN1-1+(136*23),X ;f5447,x ;24
+
+.1644	 9d bf 6c	sta $6cbf,x			sta SCREEN1-1+(136*24),X ;f5447,x ;25
+
+.1647	 9d 47 6d	sta $6d47,x			sta SCREEN1-1+(136*25),X ;f5447,x ;26
+
+.164a	 9d cf 6d	sta $6dcf,x			sta SCREEN1-1+(136*26),X ;f5447,x ;27
+
+.164d	 9d 57 6e	sta $6e57,x			sta SCREEN1-1+(136*27),X ;f5447,x ;28
+
+.1650	 9d df 6e	sta $6edf,x			sta SCREEN1-1+(136*28),X ;f5447,x ;29
+
+.1653	 9d 67 6f	sta $6f67,x			sta SCREEN1-1+(136*29),X ;f5447,x ;30
+
+.1656	 9d ef 6f	sta $6fef,x			sta SCREEN1-1+(136*30),X ;f5447,x ;31
+
+.1659	 9d 77 70	sta $7077,x			sta SCREEN1-1+(136*31),X ;f5447,x ;32
+
+.165c	 9d ff 70	sta $70ff,x			sta SCREEN1-1+(136*32),X ;f5447,x ;33
+
+.165f	 9d 87 71	sta $7187,x			sta SCREEN1-1+(136*33),X ;f5447,x ;34
+
+.1662	 9d 0f 72	sta $720f,x			sta SCREEN1-1+(136*34),X ;f5447,x ;35
+
+.1665	 9d 97 72	sta $7297,x			sta SCREEN1-1+(136*35),X ;f5447,x ;36
+
+.1668	 9d 1f 73	sta $731f,x			sta SCREEN1-1+(136*36),X ;f5447,x ;37
+
+.166b	 9d a7 73	sta $73a7,x			sta SCREEN1-1+(136*37),X ;f5447,x ;38
+
+.166e	 9d 2f 74	sta $742f,x			sta SCREEN1-1+(136*38),X ;f5447,x ;39
+
+.1671	 9d b7 74	sta $74b7,x			sta SCREEN1-1+(136*39),X ;f5447,x ;40
+
+.1674	 ca		dex		        DEX 
+
+.1675	 d0 85		bne $15fc	        BNE CLSN1LP
+
+.1677	 60		rts		        RTS 
+
+.1678					read_joystick_keyboard
+.1678	 a9 00		lda #$00	        LDA #$00
+
+.167a	 8d 02 dc	sta $dc02	        STA $DC02    ;CIA1: Data Direction Register A
+
+.167d	 af 00 dc	lax $dc00	        LAX $DC00    ;CIA1: Data Port Register A into A and X
+
+.1680	 29 0f		and #$0f	        AND #$0F
+
+.1682	 85 80		sta $80		        STA JOYSTICK_MOVEMENT ; JOYSTICK MOVEMENT
+
+.1684	 8a		txa		        TXA 
+
+.1685	 4a		lsr		        LSR 
+
+.1686	 4a		lsr		        LSR 
+
+.1687	 4a		lsr		        LSR 
+
+.1688	 4a		lsr		        LSR 
+
+.1689	 29 01		and #$01	        AND #$01
+
+.168b	 d0 0b		bne $1698			bne rjk
+
+.168d	 ad 42 1a	lda $1a42				lda OBJECTS_TO_DRAW+1
+
+.1690	 18		clc					clc
+
+.1691	 69 01		adc #$01				adc #1
+
+.1693	 29 1f		and #$1f				and #31
+
+.1695	 8d 42 1a	sta $1a42				sta OBJECTS_TO_DRAW+1
+
+.1698	 60		rts		rjk		RTS 
+
+.1699	 b9 31 17	lda $1731,y	HEXCHAR		LDA		HEX0,Y
+
+.169c	 9d cd ab	sta $abcd,x	HEX_NUMBER0	STA		$ABCD,X
+
+.169f	 b9 41 17	lda $1741,y				LDA		HEX1,Y
+
+.16a2	 9d cd ab	sta $abcd,x	HEX_NUMBER1	STA		$ABCD,X
+
+.16a5	 b9 51 17	lda $1751,y				LDA		HEX2,Y
+
+.16a8	 9d cd ab	sta $abcd,x	HEX_NUMBER2	STA		$ABCD,X
+
+.16ab	 b9 61 17	lda $1761,y				LDA		HEX3,Y
+
+.16ae	 9d cd ab	sta $abcd,x	HEX_NUMBER3	STA		$ABCD,X
+
+.16b1	 b9 71 17	lda $1771,y				LDA		HEX4,Y
+
+.16b4	 9d cd ab	sta $abcd,x	HEX_NUMBER4	STA		$ABCD,X
+
+.16b7	 60		rts					RTS
+
+.16b8					hex16
+.16b8	 84 20		sty $20					STY		REGY
+
+.16ba	 86 0f		stx $0f					STX		REGX		
+
+.16bc	 a2 00		ldx #$00				LDX		#0
+
+.16be	 20 cb 16	jsr $16cb				JSR		HEX8
+
+.16c1	 a5 0f		lda $0f					LDA		REGX
+
+.16c3	 a4 20		ldy $20					LDY		REGY
+
+.16c5	 a2 10		ldx #$10				LDX		#16
+
+.16c7	 20 cb 16	jsr $16cb				JSR		HEX8
+
+.16ca	 60		rts					RTS
+
+.16cb					hex8
+.16cb	 18		clc					CLC
+
+.16cc	 85 0e		sta $0e					STA		REGA
+
+.16ce	 b9 90 24	lda $2490,y				LDA		VER_POS_LO+0,Y
+
+.16d1	 8d 9d 16	sta $169d				STA		HEX_NUMBER0+1
+
+.16d4	 b9 00 24	lda $2400,y				LDA		VER_POS_HI+0,Y
+
+.16d7	 18		clc					CLC
+
+.16d8	 65 25		adc $25					ADC 	SCREEN_BANK
+
+.16da	 8d 9e 16	sta $169e				STA		HEX_NUMBER0+2
+
+.16dd	 b9 91 24	lda $2491,y				LDA		VER_POS_LO+1,Y
+
+.16e0	 8d a3 16	sta $16a3				STA		HEX_NUMBER1+1
+
+.16e3	 b9 01 24	lda $2401,y				LDA		VER_POS_HI+1,Y 
+
+.16e6	 18		clc					CLC
+
+.16e7	 65 25		adc $25					ADC 	SCREEN_BANK
+
+.16e9	 8d a4 16	sta $16a4				STA		HEX_NUMBER1+2
+
+.16ec	 b9 92 24	lda $2492,y				LDA		VER_POS_LO+2,Y
+
+.16ef	 8d a9 16	sta $16a9				STA		HEX_NUMBER2+1
+
+.16f2	 b9 02 24	lda $2402,y				LDA		VER_POS_HI+2,Y 
+
+.16f5	 18		clc					CLC
+
+.16f6	 65 25		adc $25					ADC 	SCREEN_BANK
+
+.16f8	 8d aa 16	sta $16aa				STA		HEX_NUMBER2+2
+
+.16fb	 b9 93 24	lda $2493,y				LDA		VER_POS_LO+3,Y
+
+.16fe	 8d af 16	sta $16af				STA		HEX_NUMBER3+1
+
+.1701	 b9 03 24	lda $2403,y				LDA		VER_POS_HI+3,Y 
+
+.1704	 18		clc					CLC
+
+.1705	 65 25		adc $25					ADC 	SCREEN_BANK
+
+.1707	 8d b0 16	sta $16b0				STA		HEX_NUMBER3+2
+
+.170a	 b9 94 24	lda $2494,y				LDA		VER_POS_LO+4,Y
+
+.170d	 8d b5 16	sta $16b5				STA		HEX_NUMBER4+1
+
+.1710	 b9 04 24	lda $2404,y				LDA		VER_POS_HI+4,Y 
+
+.1713	 18		clc					CLC
+
+.1714	 65 25		adc $25					ADC 	SCREEN_BANK
+
+.1716	 8d b6 16	sta $16b6				STA		HEX_NUMBER4+2
+
+.1719	 a5 0e		lda $0e					LDA		REGA
+
+.171b	 4a		lsr					LSR
+
+.171c	 4a		lsr					LSR
+
+.171d	 4a		lsr					LSR
+
+.171e	 4a		lsr					LSR
+
+.171f	 a8		tay					TAY
+
+.1720	 20 99 16	jsr $1699				JSR		HEXCHAR
+
+.1723	 8a		txa					TXA
+
+.1724	 18		clc					CLC
+
+.1725	 69 08		adc #$08				ADC 	#8
+
+.1727	 aa		tax					TAX
+
+.1728	 a5 0e		lda $0e					LDA		REGA
+
+.172a	 29 0f		and #$0f				AND		#15
+
+.172c	 a8		tay					TAY
+
+.172d	 20 99 16	jsr $1699				JSR		HEXCHAR
+
+.1730	 60		rts					RTS
+
+=0100					X_ROT_TAB_LO =$0100 ; UNKNOWN_POINT_TAB_6
+
+=0140					X_ROT_TAB_HI = $0140
+
+=0180					Y_ROT_TAB_LO = $0180
+
+=02c0					Y_ROT_TAB_HI = $02C0
+
+=0340					Z_ROT_TAB_LO = $0340 
+
+=0380					Z_ROT_TAB_HI = $0380
+
+=03c0					PERS_POINT_TAB_3 = $03C0
+
+=0600					PERS_POINT_TAB_2 = $0600
+
+=0640					PERS_POINT_TAB_5 = $0640
+
+=0680					PERS_HOR = $0680
+
+=06c0					PERS_VER = $06C0
+
+=0700					POINT_CLASSIFICATION = $0700 ; 00 = point is onscreen - 01 = point needs off left/right - 02 = point is off top/bottom - 03 = point is off left/right + top/bottom - 80 / minus = point is behind
+
+=0a5c					f0A5C = $0A5C   
+
+=167a					f167A = $167A   
+
+=20a0					f20A0 = $20A0   
+
+=20e0					f20E0 = $20E0   
+
+=2120					f2120 = $2120   
+
+=2210					f2210 = $2210
+
+
+>1731	 80 a2 80 80 88 80 80 80 	HEX0	.BYTE %10000000,%10100010,%10000000,%10000000,%10001000,%10000000,%10000000,%10000000,%10000000,%10000000,%10000000,%10000000,%10000000,%10000010,%10000000,%10000000 
+
+>1739	 80 80 80 80 80 82 80 80 
+>1741	 88 82 a8 a8 88 8a 8a a8 	HEX1	.BYTE %10001000,%10000010,%10101000,%10101000,%10001000,%10001010,%10001010,%10101000,%10001000,%10001000,%10001000,%10001000,%10001010,%10001000,%10001010,%10001010 
+
+>1749	 88 88 88 88 8a 88 8a 8a 
+>1751	 88 a2 80 80 80 80 80 a8 	HEX2	.BYTE %10001000,%10100010,%10000000,%10000000,%10000000,%10000000,%10000000,%10101000,%10000000,%10000000,%10000000,%10000010,%10001010,%10001000,%10000000,%10000000
+
+>1759	 80 80 80 82 8a 88 80 80 
+>1761	 88 a2 8a a8 a8 a8 88 a8 	HEX3	.BYTE %10001000,%10100010,%10001010,%10101000,%10101000,%10101000,%10001000,%10101000,%10001000,%10101000,%10001000,%10001000,%10001010,%10001000,%10001010,%10001010
+
+>1769	 88 a8 88 88 8a 88 8a 8a 
+>1771	 80 80 80 80 a8 80 80 a8 	HEX4	.BYTE %10000000,%10000000,%10000000,%10000000,%10101000,%10000000,%10000000,%10101000,%10000000,%10000000,%10001000,%10000000,%10100000,%10000010,%10000000,%10001010
+
+>1779	 80 80 88 80 a0 82 80 8a 
+
+.1781					obj_x_msb
+.17c1					obj_y_msb
+.1801					obj_z_msb
+.1841					obj_x_hsb
+.1881					obj_y_hsb
+.18c1					obj_z_hsb
+.1901					object_shape_ptr_lo
+
+>1901	 81 cb 0a 36 53 70 b7 dd  		.BYTE <OBJ_01,<OBJ_02,<OBJ_03,<OBJ_04,<OBJ_05,<OBJ_06,<OBJ_07,<OBJ_08
+
+>1909	 0e 2b 49 71 97 c6 f5 1b  	    .BYTE <OBJ_09,<OBJ_10,<OBJ_11,<OBJ_12,<OBJ_13,<OBJ_14,<OBJ_15,<OBJ_16
+
+>1911	 53 8b b9 e9 81 cb 0a 36  		.BYTE <OBJ_17,<OBJ_18,<OBJ_19,<OBJ_20,<OBJ_01,<OBJ_02,<OBJ_03,<OBJ_04
+
+>1919	 53 70 b7 dd 0e 2b 49 71  		.BYTE <OBJ_05,<OBJ_06,<OBJ_07,<OBJ_08,<OBJ_09,<OBJ_10,<OBJ_11,<OBJ_12
+
+>1921	 97 c6 f5 1b 53 8b b9 e9  		.BYTE <OBJ_13,<OBJ_14,<OBJ_15,<OBJ_16,<OBJ_17,<OBJ_18,<OBJ_19,<OBJ_20
+
+>1929	 80 06 74 76 e5 28 b8 87  	        .BYTE $80,$06,$74,$76,$E5,$28,$B8,$87
+
+>1931	 fa cf 5e 0c be 61 8f bf  	        .BYTE $FA,$CF,$5E,$0C,$BE,$61,$8F,$BF
+
+>1939	 45 f8 00 00 f8 4a 4a 8d  	        .BYTE $45,$F8,$00,$00,$F8,$4A,$4A,$8D
+
+
+.1941					object_shape_ptr_hi
+
+>1941	 1b 1b 1c 1c 1c 1c 1c 1c  		.BYTE >OBJ_01,>OBJ_02,>OBJ_03,>OBJ_04,>OBJ_05,>OBJ_06,>OBJ_07,>OBJ_08
+
+>1949	 1d 1d 1d 1d 1d 1d 1d 1e  	    .BYTE >OBJ_09,>OBJ_10,>OBJ_11,>OBJ_12,>OBJ_13,>OBJ_14,>OBJ_15,>OBJ_16
+
+>1951	 1e 1e 1e 1e 1b 1b 1c 1c  		.BYTE >OBJ_17,>OBJ_18,>OBJ_19,>OBJ_20,>OBJ_01,>OBJ_02,>OBJ_03,>OBJ_04
+
+>1959	 1c 1c 1c 1c 1d 1d 1d 1d  		.BYTE >OBJ_05,>OBJ_06,>OBJ_07,>OBJ_08,>OBJ_09,>OBJ_10,>OBJ_11,>OBJ_12
+
+>1961	 1d 1d 1d 1e 1e 1e 1e 1e  		.BYTE >OBJ_13,>OBJ_14,>OBJ_15,>OBJ_16,>OBJ_17,>OBJ_18,>OBJ_19,>OBJ_20
+
+>1969	 1a 19 19 1d 1a 1b 1a 18  	        .BYTE $1A,$19,$19,$1D,$1A,$1B,$1A,$18
+
+>1971	 17 1e 1b 1f 1c 3e 3e 3e  	        .BYTE $17,$1E,$1B,$1F,$1C,$3E,$3E,$3E
+
+>1979	 1b 3e 17 17 3e 3f 3f 3f  	        .BYTE $1B,$3E,$17,$17,$3E,$3F,$3F,$3F
+
+
+.1981					obj_x_lsb
+.19c1					obj_y_lsb
+.1a01					obj_z_lsb
+.1a41					objects_to_draw
+
+>1a41	 00                       			.BYTE $00
+
+>1a42	 06                       			.BYTE $06 ; object being drawn
+
+>1a43	 3e 3d 38 32 0a 02 01     			.BYTE $3E,$3D,$38,$32,$0A,$02,$01
+
+>1a4a	 00 01 00 00 00 00 00 00  	        .BYTE $00,$01,$00,$00,$00,$00,$00,$00
+
+>1a52	 00 00 00 00 00 00 00 00  	        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+
+>1a5a	 00 00 00 00 00 00 00 00  	        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+
+>1a62	 00 00 00 00 00 00 00 00  	        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+
+>1a6a	 00 00 00 00 00 00 00 00  	        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+
+>1a72	 00 00 00 00 00 00 00 00  	        .BYTE $00,$00,$00,$00,$00,$00,$00,$00
+
+>1a7a	 00 00 00 00 00 00 00     	        .BYTE $00,$00,$00,$00,$00,$00,$00
+
+
+.1a81					f2a00
+
+>1b81	 0f                       	OBJ_01	.BYTE $0F
+
+>1b82	 f8 00 10                 			.BYTE $F8,$00,$10
+
+>1b85	 fa 0c 0c                 			.BYTE $FA,$0C,$0C
+
+>1b88	 fa 0c 00                 			.BYTE $FA,$0C,$00
+
+>1b8b	 f9 06 fd                 			.BYTE $F9,$06,$FD
+
+>1b8e	 f9 04 f4                 			.BYTE $F9,$04,$F4
+
+>1b91	 fc 04 f0                 			.BYTE $FC,$04,$F0
+
+>1b94	 fc 00 f0                 			.BYTE $FC,$00,$F0
+
+>1b97	 f9 00 f4                 	        .BYTE $F9,$00,$F4
+
+>1b9a	 08 00 10                 			.BYTE $08,$00,$10
+
+>1b9d	 06 0c 0c                 			.BYTE $06,$0C,$0C
+
+>1ba0	 06 0c 00                 			.BYTE $06,$0C,$00
+
+>1ba3	 07 06 fd                 			.BYTE $07,$06,$FD
+
+>1ba6	 07 04 f4                 			.BYTE $07,$04,$F4
+
+>1ba9	 04 04 f0                 			.BYTE $04,$04,$F0
+
+>1bac	 04 00 f0                 			.BYTE $04,$00,$F0
+
+>1baf	 07 00 f4                 	        .BYTE $07,$00,$F4
+
+>1bb2	 17                       			.BYTE $17
+
+>1bb3	 01 12 23 34 45 56 67 70 			.BYTE $01,$12,$23,$34,$45,$56,$67,$70,$89,$9A,$AB,$BC,$CD,$DE,$EF,$F8,$47,$CF,$08,$19,$2A,$3B,$5D,$6E
+
+>1bbb	 89 9a ab bc cd de ef f8 
+>1bc3	 47 cf 08 19 2a 3b 5d 6e 
+>1bcb	 0f                       	OBJ_02	.BYTE $0F
+
+>1bcc	 f8 04 18                 			.BYTE $F8,$04,$18
+
+>1bcf	 08 04 18                 	        .BYTE $08,$04,$18
+
+>1bd2	 00 04 e8                 			.BYTE $00,$04,$E8
+
+>1bd5	 00 0c 18                 			.BYTE $00,$0C,$18
+
+>1bd8	 e2 04 18                 			.BYTE $E2,$04,$18
+
+>1bdb	 1e 04 18                 			.BYTE $1E,$04,$18
+
+>1bde	 fc 04 00                 			.BYTE $FC,$04,$00
+
+>1be1	 04 04 00                 			.BYTE $04,$04,$00
+
+>1be4	 00 14 18                 			.BYTE $00,$14,$18
+
+>1be7	 00 0a 0c                 	        .BYTE $00,$0A,$0C
+
+>1bea	 f2 04 10                 			.BYTE $F2,$04,$10
+
+>1bed	 f2 00 10                 			.BYTE $F2,$00,$10
+
+>1bf0	 0e 04 10                 			.BYTE $0E,$04,$10
+
+>1bf3	 0e 00 10                 			.BYTE $0E,$00,$10
+
+>1bf6	 00 04 f0                 			.BYTE $00,$04,$F0
+
+>1bf9	 00 00 f0                 			.BYTE $00,$00,$F0
+
+>1bfc	 0c                       			.BYTE $0C
+
+>1bfd	 20 23 21 13 03 45 46 57 			.BYTE $20,$23,$21,$13,$03,$45,$46,$57,$38,$89,$AB,$CD,$EF
+
+>1c05	 38 89 ab cd ef 
+>1c0a	 07                       	OBJ_03	.BYTE $07
+
+>1c0b	 00 00 00                 			.BYTE $00,$00,$00
+
+>1c0e	 ec 07 00                 			.BYTE $EC,$07,$00
+
+>1c11	 f6 07 11                 			.BYTE $F6,$07,$11
+
+>1c14	 0a 07 11                 			.BYTE $0A,$07,$11
+
+>1c17	 14 07 00                 	        .BYTE $14,$07,$00
+
+>1c1a	 0a 07 ef                 			.BYTE $0A,$07,$EF
+
+>1c1d	 f6 07 ef                 			.BYTE $F6,$07,$EF
+
+>1c20	 00 10 00                 			.BYTE $00,$10,$00
+
+>1c23	 11                       			.BYTE $11
+
+>1c24	 01 02 03 04 05 06 71 72 			.BYTE $01,$02,$03,$04,$05,$06,$71,$72,$73,$74,$75,$76,$12,$23,$34,$45,$56,$61
+
+>1c2c	 73 74 75 76 12 23 34 45 
+>1c34	 56 61 
+>1c36	 05                       	OBJ_04	.BYTE $05
+
+>1c37	 f4 00 10                 	        .BYTE $F4,$00,$10
+
+>1c3a	 00 00 f0                 			.BYTE $00,$00,$F0
+
+>1c3d	 0c 00 10                 			.BYTE $0C,$00,$10
+
+>1c40	 f4 0a 10                 			.BYTE $F4,$0A,$10
+
+>1c43	 00 0a f0                 			.BYTE $00,$0A,$F0
+
+>1c46	 0c 0a 10                 			.BYTE $0C,$0A,$10
+
+>1c49	 08                       			.BYTE $08
+
+>1c4a	 01 12 20 34 45 53 03 14 			.BYTE $01,$12,$20,$34,$45,$53,$03,$14,$25
+
+>1c52	 25 
+>1c53	 05                       	OBJ_05	.BYTE $05
+
+>1c54	 fb 00 ff                 			.BYTE $FB,$00,$FF
+
+>1c57	 05 00 ff                 			.BYTE $05,$00,$FF
+
+>1c5a	 00 0c ff                 			.BYTE $00,$0C,$FF
+
+>1c5d	 fb 00 01                 			.BYTE $FB,$00,$01
+
+>1c60	 05 00 01                 			.BYTE $05,$00,$01
+
+>1c63	 00 0c 01                 			.BYTE $00,$0C,$01
+
+>1c66	 08                       			.BYTE $08
+
+>1c67	 01 12 20 34 45 53 03 14 			.BYTE $01,$12,$20,$34,$45,$53,$03,$14,$25
+
+>1c6f	 25 
+>1c70	 0f                       	OBJ_06	.BYTE $0F
+
+>1c71	 f0 00 10                 			.BYTE $F0,$00,$10
+
+>1c74	 10 00 10                 	        .BYTE $10,$00,$10
+
+>1c77	 00 00 ec                 			.BYTE $00,$00,$EC
+
+>1c7a	 fc 00 04                 			.BYTE $FC,$00,$04
+
+>1c7d	 04 00 04                 			.BYTE $04,$00,$04
+
+>1c80	 00 00 fc                 			.BYTE $00,$00,$FC
+
+>1c83	 fd 04 03                 			.BYTE $FD,$04,$03
+
+>1c86	 03 04 03                 			.BYTE $03,$04,$03
+
+>1c89	 00 04 fd                 			.BYTE $00,$04,$FD
+
+>1c8c	 fe 14 02                 	        .BYTE $FE,$14,$02
+
+>1c8f	 02 14 02                 			.BYTE $02,$14,$02
+
+>1c92	 00 14 fe                 			.BYTE $00,$14,$FE
+
+>1c95	 ff 04 01                 			.BYTE $FF,$04,$01
+
+>1c98	 01 04 01                 			.BYTE $01,$04,$01
+
+>1c9b	 00 04 ff                 			.BYTE $00,$04,$FF
+
+>1c9e	 00 34 00                 			.BYTE $00,$34,$00
+
+>1ca1	 14                       			.BYTE $14
+
+>1ca2	 f6 f7 f8 90 a1 b2 06 17 			.BYTE $F6,$F7,$F8,$90,$A1,$B2,$06,$17,$28,$C3,$D4,$E5,$34,$45,$53,$67,$78,$86,$CD,$DE,$EC
+
+>1caa	 28 c3 d4 e5 34 45 53 67 
+>1cb2	 78 86 cd de ec 
+>1cb7	 07                       	OBJ_07	.BYTE $07
+
+>1cb8	 f8 f8 f8                 			.BYTE $F8,$F8,$F8
+
+>1cbb	 08 f8 f8                 			.BYTE $08,$F8,$F8
+
+>1cbe	 08 f8 08                 			.BYTE $08,$F8,$08
+
+>1cc1	 f8 f8 08                 			.BYTE $F8,$F8,$08
+
+>1cc4	 f8 08 f8                 			.BYTE $F8,$08,$F8
+
+>1cc7	 08 08 f8                 			.BYTE $08,$08,$F8
+
+>1cca	 08 08 08                 			.BYTE $08,$08,$08
+
+>1ccd	 f8 08 08                 			.BYTE $F8,$08,$08
+
+>1cd0	 0b                       			.BYTE $0B
+
+>1cd1	 01 12 23 30 04 15 26 37 			.BYTE $01,$12,$23,$30,$04,$15,$26,$37,$45,$56,$67,$74
+
+>1cd9	 45 56 67 74 
+>1cdd	 09                       	OBJ_08	.BYTE $09
+
+>1cde	 fc 07 04                 			.BYTE $FC,$07,$04
+
+>1ce1	 04 07 04                 			.BYTE $04,$07,$04
+
+>1ce4	 00 07 fc                 	        .BYTE $00,$07,$FC
+
+>1ce7	 00 0e 00                 			.BYTE $00,$0E,$00
+
+>1cea	 ff 07 01                 			.BYTE $FF,$07,$01
+
+>1ced	 01 07 01                 			.BYTE $01,$07,$01
+
+>1cf0	 00 07 ff                 			.BYTE $00,$07,$FF
+
+>1cf3	 fe 00 02                 			.BYTE $FE,$00,$02
+
+>1cf6	 02 00 02                 			.BYTE $02,$00,$02
+
+>1cf9	 00 00 fe                 			.BYTE $00,$00,$FE
+
+>1cfc	 0e                       	        .BYTE $0E
+
+>1cfd	 01 12 20 03 13 23 45 56 			.BYTE $01,$12,$20,$03,$13,$23,$45,$56,$64,$78,$89,$97,$47,$58,$69,$0F,$F9
+
+>1d05	 64 78 89 97 47 58 69 0f 
+>1d0d	 f9 
+>1d0e	 05                       	OBJ_09  .BYTE $05
+
+>1d0f	 8b 00 8f                 	        .BYTE $8B,$00,$8F
+
+>1d12	 75 00 8f                 	        .BYTE $75,$00,$8F
+
+>1d15	 00 0c 8f                 	        .BYTE $00,$0C,$8F
+
+>1d18	 8b 00 71                 	        .BYTE $8B,$00,$71
+
+>1d1b	 75 00 71                 	        .BYTE $75,$00,$71
+
+>1d1e	 00 0c 71                 	        .BYTE $00,$0C,$71
+
+>1d21	 08                       	        .BYTE $08
+
+>1d22	 01 12 20 34 45 53 03 14 	        .BYTE $01,$12,$20, $34,$45,$53, $03,$14,$25
+
+>1d2a	 25 
+>1d2b	 05                       	OBJ_10  .BYTE $05
+
+>1d2c	 f0 00 20                 			.BYTE $F0,$00,$20
+
+>1d2f	 10 00 20                 			.BYTE $10,$00,$20
+
+>1d32	 fd 02 20                 			.BYTE $FD,$02,$20
+
+>1d35	 03 02 20                 			.BYTE $03,$02,$20
+
+>1d38	 00 0c 20                 			.BYTE $00,$0C,$20
+
+>1d3b	 00 00 e1                 			.BYTE $00,$00,$E1
+
+>1d3e	 09                       			.BYTE $09
+
+>1d3f	 01 13 34 42 20 05 15 25 			.BYTE $01,$13,$34,$42,$20,$05,$15,$25,$35,$45
+
+>1d47	 35 45 
+>1d49	 07                       	OBJ_11	.BYTE $07
+
+>1d4a	 f8 f8 f8                 			.BYTE $F8,$F8,$F8
+
+>1d4d	 08 f8 f8                 			.BYTE $08,$F8,$F8
+
+>1d50	 08 f8 08                 			.BYTE $08,$F8,$08
+
+>1d53	 f8 f8 08                 			.BYTE $F8,$F8,$08
+
+>1d56	 f8 08 f8                 			.BYTE $F8,$08,$F8
+
+>1d59	 08 08 f8                 			.BYTE $08,$08,$F8
+
+>1d5c	 08 08 08                 			.BYTE $08,$08,$08
+
+>1d5f	 f8 08 08                 			.BYTE $F8,$08,$08
+
+>1d62	 0b                       			.BYTE $0B
+
+>1d63	 01 12 23 30 04 15 26 37 			.BYTE $01,$12,$23,$30,$04,$15,$26,$37,$45,$56,$67,$74,$09,$FC
+
+>1d6b	 45 56 67 74 09 fc 
+>1d71	 07                       	OBJ_12	.BYTE $07
+
+>1d72	 ff 00 fc                 			.BYTE $FF,$00,$FC
+
+>1d75	 ff 00 04                 			.BYTE $FF,$00,$04
+
+>1d78	 ff 0c 02                 			.BYTE $FF,$0C,$02
+
+>1d7b	 ff 0c fe                 			.BYTE $FF,$0C,$FE
+
+>1d7e	 01 00 fc                 			.BYTE $01,$00,$FC
+
+>1d81	 01 00 04                 			.BYTE $01,$00,$04
+
+>1d84	 01 0c 02                 			.BYTE $01,$0C,$02
+
+>1d87	 01 0c fe                 			.BYTE $01,$0C,$FE
+
+>1d8a	 0b                       			.BYTE $0B
+
+>1d8b	 01 12 23 30 45 56 67 74 			.BYTE $01,$12,$23,$30,$45,$56,$67,$74,$04,$15,$26,$37
+
+>1d93	 04 15 26 37 
+>1d97	 09                       	OBJ_13	.BYTE $09
+
+>1d98	 04 00 ff                 			.BYTE $04,$00,$FF
+
+>1d9b	 fc 00 ff                 			.BYTE $FC,$00,$FF
+
+>1d9e	 fa 08 ff                 			.BYTE $FA,$08,$FF
+
+>1da1	 00 0c ff                 			.BYTE $00,$0C,$FF
+
+>1da4	 06 08 ff                 			.BYTE $06,$08,$FF
+
+>1da7	 04 00 01                 			.BYTE $04,$00,$01
+
+>1daa	 fc 00 01                 			.BYTE $FC,$00,$01
+
+>1dad	 fa 08 01                 			.BYTE $FA,$08,$01
+
+>1db0	 00 0c 01                 			.BYTE $00,$0C,$01
+
+>1db3	 06 08 01                 			.BYTE $06,$08,$01
+
+>1db6	 0e                       			.BYTE $0E
+
+>1db7	 01 12 23 34 40 56 67 78 			.BYTE $01,$12,$23,$34,$40,$56,$67,$78,$89,$95,$05,$16,$27,$38,$49
+
+>1dbf	 89 95 05 16 27 38 49 
+
+.1dc6					obj_14
+
+>1dc6	 09                       			.BYTE $09
+
+>1dc7	 fd 00 ff                 			.BYTE $FD,$00,$FF
+
+>1dca	 03 00 ff                 			.BYTE $03,$00,$FF
+
+>1dcd	 03 0a ff                 			.BYTE $03,$0A,$FF
+
+>1dd0	 00 0c ff                 			.BYTE $00,$0C,$FF
+
+>1dd3	 fd 0a ff                 			.BYTE $FD,$0A,$FF
+
+>1dd6	 fd 00 01                 			.BYTE $FD,$00,$01
+
+>1dd9	 03 00 01                 			.BYTE $03,$00,$01
+
+>1ddc	 03 0a 01                 			.BYTE $03,$0A,$01
+
+>1ddf	 00 0c 01                 			.BYTE $00,$0C,$01
+
+>1de2	 fd 0a 01                 			.BYTE $FD,$0A,$01
+
+>1de5	 0e                       			.BYTE $0E
+
+>1de6	 01 12 23 34 40 56 67 78 			.BYTE $01,$12,$23,$34,$40,$56,$67,$78,$89,$95,$05,$16,$27,$38,$49
+
+>1dee	 89 95 05 16 27 38 49 
+>1df5	 07                       	OBJ_15	.BYTE $07
+
+>1df6	 fe 00 ff                 			.BYTE $FE,$00,$FF
+
+>1df9	 02 00 ff                 			.BYTE $02,$00,$FF
+
+>1dfc	 04 0c ff                 			.BYTE $04,$0C,$FF
+
+>1dff	 fc 0c ff                 			.BYTE $FC,$0C,$FF
+
+>1e02	 fe 00 01                 			.BYTE $FE,$00,$01
+
+>1e05	 02 00 01                 			.BYTE $02,$00,$01
+
+>1e08	 04 0c 01                 			.BYTE $04,$0C,$01
+
+>1e0b	 fc 0c 01                 			.BYTE $FC,$0C,$01
+
+>1e0e	 0b                       			.BYTE $0B
+
+>1e0f	 01 12 23 30 45 56 67 74 			.BYTE $01,$12,$23,$30,$45,$56,$67,$74,$04,$15,$26,$37
+
+>1e17	 04 15 26 37 
+>1e1b	 0b                       	OBJ_16	.BYTE $0B
+
+>1e1c	 02 00 ff                 			.BYTE $02,$00,$FF
+
+>1e1f	 04 06 ff                 			.BYTE $04,$06,$FF
+
+>1e22	 02 0c ff                 			.BYTE $02,$0C,$FF
+
+>1e25	 fe 0c ff                 			.BYTE $FE,$0C,$FF
+
+>1e28	 fc 06 ff                 			.BYTE $FC,$06,$FF
+
+>1e2b	 fe 00 ff                 			.BYTE $FE,$00,$FF
+
+>1e2e	 02 00 01                 			.BYTE $02,$00,$01
+
+>1e31	 04 06 01                 			.BYTE $04,$06,$01
+
+>1e34	 02 0c 01                 			.BYTE $02,$0C,$01
+
+>1e37	 fe 0c 01                 			.BYTE $FE,$0C,$01
+
+>1e3a	 fc 06 01                 			.BYTE $FC,$06,$01
+
+>1e3d	 fe 00 01                 			.BYTE $FE,$00,$01
+
+>1e40	 11                       			.BYTE $11
+
+>1e41	 01 12 23 34 45 50 67 78 			.BYTE $01,$12,$23,$34,$45,$50,$67,$78,$89,$9A,$AB,$B6,$06,$17,$28,$39,$4A,$5B
+
+>1e49	 89 9a ab b6 06 17 28 39 
+>1e51	 4a 5b 
+>1e53	 0b                       	OBJ_17	.BYTE $0B
+
+>1e54	 03 00 ff                 			.BYTE $03,$00,$FF
+
+>1e57	 03 08 ff                 			.BYTE $03,$08,$FF
+
+>1e5a	 01 0c ff                 			.BYTE $01,$0C,$FF
+
+>1e5d	 ff 0c ff                 			.BYTE $FF,$0C,$FF
+
+>1e60	 fd 08 ff                 			.BYTE $FD,$08,$FF
+
+>1e63	 fd 00 ff                 			.BYTE $FD,$00,$FF
+
+>1e66	 03 00 01                 			.BYTE $03,$00,$01
+
+>1e69	 03 08 01                 			.BYTE $03,$08,$01
+
+>1e6c	 01 0c 01                 			.BYTE $01,$0C,$01
+
+>1e6f	 ff 0c 01                 			.BYTE $FF,$0C,$01
+
+>1e72	 fd 08 01                 			.BYTE $FD,$08,$01
+
+>1e75	 fd 00 01                 			.BYTE $FD,$00,$01
+
+>1e78	 11                       			.BYTE $11
+
+>1e79	 01 12 23 34 45 50 67 78 			.BYTE $01,$12,$23,$34,$45,$50,$67,$78,$89,$9A,$AB,$B6,$06,$17,$28,$39,$4A,$5B
+
+>1e81	 89 9a ab b6 06 17 28 39 
+>1e89	 4a 5b 
+>1e8b	 0b                       	OBJ_18	.BYTE $0B
+
+>1e8c	 f9 00 f3                 			.BYTE $F9,$00,$F3
+
+>1e8f	 07 00 f3                 			.BYTE $07,$00,$F3
+
+>1e92	 07 00 0d                 			.BYTE $07,$00,$0D
+
+>1e95	 f9 00 0d                 			.BYTE $F9,$00,$0D
+
+>1e98	 f9 06 f3                 			.BYTE $F9,$06,$F3
+
+>1e9b	 07 06 f3                 			.BYTE $07,$06,$F3
+
+>1e9e	 07 06 0d                 			.BYTE $07,$06,$0D
+
+>1ea1	 f9 06 0d                 			.BYTE $F9,$06,$0D
+
+>1ea4	 f6 06 f0                 			.BYTE $F6,$06,$F0
+
+>1ea7	 0a 06 f0                 			.BYTE $0A,$06,$F0
+
+>1eaa	 0a 06 10                 			.BYTE $0A,$06,$10
+
+>1ead	 f6 06 10                 			.BYTE $F6,$06,$10
+
+>1eb0	 07                       			.BYTE $07
+
+>1eb1	 04 15 26 37 89 9a ab b8  			.BYTE $04,$15,$26,$37,$89,$9A,$AB,$B8
+
+>1eb9	 0b                       	OBJ_19	.BYTE $0B
+
+>1eba	 fe 00 fe                 			.BYTE $FE,$00,$FE
+
+>1ebd	 fe 00 02                 			.BYTE $FE,$00,$02
+
+>1ec0	 02 00 02                 			.BYTE $02,$00,$02
+
+>1ec3	 02 00 fe                 			.BYTE $02,$00,$FE
+
+>1ec6	 fe 04 fe                 			.BYTE $FE,$04,$FE
+
+>1ec9	 fe 04 02                 			.BYTE $FE,$04,$02
+
+>1ecc	 02 04 02                 			.BYTE $02,$04,$02
+
+>1ecf	 02 04 fe                 			.BYTE $02,$04,$FE
+
+>1ed2	 02 06 02                 			.BYTE $02,$06,$02
+
+>1ed5	 02 06 fe                 			.BYTE $02,$06,$FE
+
+>1ed8	 02 07 02                 			.BYTE $02,$07,$02
+
+>1edb	 02 07 fe                 			.BYTE $02,$07,$FE
+
+>1ede	 09                       			.BYTE $09
+
+>1edf	 04 15 2a 3b 45 56 67 74 			.BYTE $04,$15,$2A,$3B,$45,$56,$67,$74,$89,$AB
+
+>1ee7	 89 ab 
+>1ee9	 0d                       	OBJ_20	.BYTE $0D
+
+>1eea	 f6 00 fb                 			.BYTE $F6,$00,$FB
+
+>1eed	 f6 00 05                 			.BYTE $F6,$00,$05
+
+>1ef0	 0a 00 05                 			.BYTE $0A,$00,$05
+
+>1ef3	 0a 00 fb                 			.BYTE $0A,$00,$FB
+
+>1ef6	 f6 02 fb                 			.BYTE $F6,$02,$FB
+
+>1ef9	 f6 02 05                 			.BYTE $F6,$02,$05
+
+>1efc	 0a 02 05                 			.BYTE $0A,$02,$05
+
+>1eff	 0a 02 fb                 			.BYTE $0A,$02,$FB
+
+>1f02	 f6 04 fb                 			.BYTE $F6,$04,$FB
+
+>1f05	 f6 04 05                 			.BYTE $F6,$04,$05
+
+>1f08	 0a 04 05                 			.BYTE $0A,$04,$05
+
+>1f0b	 0a 04 fb                 			.BYTE $0A,$04,$FB
+
+>1f0e	 0a 08 05                 			.BYTE $0A,$08,$05
+
+>1f11	 0a 08 fb                 			.BYTE $0A,$08,$FB
+
+>1f14	 0c                       			.BYTE $0C
+
+>1f15	 08 19 2c 3d 45 56 67 74 			.BYTE $08,$19,$2C,$3D,$45,$56,$67,$74,$89,$9A,$AB,$B8,$CD
+
+>1f1d	 89 9a ab b8 cd 
+>1f22	 07                       	OBJ_99	.BYTE $07
+
+>1f23	 00 00 00                 			.BYTE 0,0,0
+
+>1f26	 00 00 ff                 			.BYTE 0,0,255
+
+>1f29	 00 ff 00                 			.BYTE 0,255,0
+
+>1f2c	 00 ff ff                 			.BYTE 0,255,255
+
+>1f2f	 ff 00 00                 			.BYTE 255,0,0
+
+>1f32	 ff 00 ff                 			.BYTE 255,0,255
+
+>1f35	 ff ff 00                 			.BYTE 255,255,0
+
+>1f38	 ff ff ff                 			.BYTE 255,255,255
+
+>1f3b	 0b                       	        .BYTE $0B
+
+>1f3c	 01 13 32 20              	        .BYTE $01,$13,$32,$20
+
+>1f40	 45 57 76 64              	        .BYTE $45,$57,$76,$64
+
+>1f44	 04 15 26 37              	        .BYTE $04,$15,$26,$37
+
+
+.2000					sin_lsb
+
+>2000	 92 2e f7 60 c4 14 47 79  			.BYTE $92,$2E,$F7,$60,$C4,$14,$47,$79
+
+>2008	 ab dd 08 21 3a 53 6c 85  	        .BYTE $AB,$DD,$08,$21,$3A,$53,$6C,$85
+
+>2010	 9e b7 d0 e9 01 0d 1a 26  	        .BYTE $9E,$B7,$D0,$E9,$01,$0D,$1A,$26
+
+>2018	 33 3f 4c 58 64 71 7d 89  	        .BYTE $33,$3F,$4C,$58,$64,$71,$7D,$89
+
+>2020	 96 a2 ae bb c7 d3 df ec  	        .BYTE $96,$A2,$AE,$BB,$C7,$D3,$DF,$EC
+
+>2028	 f8 02 08 0e 14 1a 20 26  	        .BYTE $F8,$02,$08,$0E,$14,$1A,$20,$26
+
+>2030	 2c 32 38 3e 44 4a 50 56  	        .BYTE $2C,$32,$38,$3E,$44,$4A,$50,$56
+
+>2038	 5c 62 68 6e 73 79 7f 85  	        .BYTE $5C,$62,$68,$6E,$73,$79,$7F,$85
+
+>2040	 8b 91 96 9c a2 a8 ad b3  	        .BYTE $8B,$91,$96,$9C,$A2,$A8,$AD,$B3
+
+>2048	 b9 be c4 ca cf d5 da e0  	        .BYTE $B9,$BE,$C4,$CA,$CF,$D5,$DA,$E0
+
+>2050	 e5 eb f1 f6 fb 00 03 06  	        .BYTE $E5,$EB,$F1,$F6,$FB,$00,$03,$06
+
+>2058	 09 0b 0e 11 13 16 19 1b  	        .BYTE $09,$0B,$0E,$11,$13,$16,$19,$1B
+
+>2060	 1e 20 23 26 28 2b 2d 30  	        .BYTE $1E,$20,$23,$26,$28,$2B,$2D,$30
+
+>2068	 32 35 37 3a 3c 3f 41 44  	        .BYTE $32,$35,$37,$3A,$3C,$3F,$41,$44
+
+>2070	 46 48 4b 4d 50 52 54 57  	        .BYTE $46,$48,$4B,$4D,$50,$52,$54,$57
+
+>2078	 59 5b 5e 60 62 64 67 69  	        .BYTE $59,$5B,$5E,$60,$62,$64,$67,$69
+
+>2080	 6b 6d 70 72 74 76 78 7a  	        .BYTE $6B,$6D,$70,$72,$74,$76,$78,$7A
+
+>2088	 7c 7f 81 83 85 87 89 8b  	        .BYTE $7C,$7F,$81,$83,$85,$87,$89,$8B
+
+>2090	 8d 8f 91 93 95 97 98 9a  	        .BYTE $8D,$8F,$91,$93,$95,$97,$98,$9A
+
+>2098	 9c 9e a0 a2 a4 a5 a7 a9  	        .BYTE $9C,$9E,$A0,$A2,$A4,$A5,$A7,$A9
+
+>20a0	 ab ac ae b0 b1 b3 b5 b6  	        .BYTE $AB,$AC,$AE,$B0,$B1,$B3,$B5,$B6
+
+>20a8	 b8 ba bb bd be c0 c1 c3  	        .BYTE $B8,$BA,$BB,$BD,$BE,$C0,$C1,$C3
+
+>20b0	 c4 c6 c7 c9 ca cb cd ce  	        .BYTE $C4,$C6,$C7,$C9,$CA,$CB,$CD,$CE
+
+>20b8	 d0 d1 d2 d3 d5 d6 d7 d8  	        .BYTE $D0,$D1,$D2,$D3,$D5,$D6,$D7,$D8
+
+>20c0	 da db dc dd de df e0 e2  	        .BYTE $DA,$DB,$DC,$DD,$DE,$DF,$E0,$E2
+
+>20c8	 e3 e4 e5 e6 e7 e8 e9 e9  	        .BYTE $E3,$E4,$E5,$E6,$E7,$E8,$E9,$E9
+
+>20d0	 ea eb ec ed ee ef ef f0  	        .BYTE $EA,$EB,$EC,$ED,$EE,$EF,$EF,$F0
+
+>20d8	 f1 f2 f3 f3 f4 f5 f5 f6  	        .BYTE $F1,$F2,$F3,$F3,$F4,$F5,$F5,$F6
+
+>20e0	 f6 f7 f8 f8 f9 f9 fa fa  	        .BYTE $F6,$F7,$F8,$F8,$F9,$F9,$FA,$FA
+
+>20e8	 fb fb fc fc fc fd fd fd  	        .BYTE $FB,$FB,$FC,$FC,$FC,$FD,$FD,$FD
+
+>20f0	 fe fe fe fe ff ff ff ff  	        .BYTE $FE,$FE,$FE,$FE,$FF,$FF,$FF,$FF
+
+>20f8	 ff 00 00 00 00 00 00 00  	        .BYTE $FF,$00,$00,$00,$00,$00,$00,$00
+
+
+.2100					sin_msb
+
+>2100	 dc e4 e4 e8 e8 ec ec ec  			.BYTE $DC,$E4,$E4,$E8,$E8,$EC,$EC,$EC
+
+>2108	 ec ec f0 f0 f0 f0 f0 f0  	        .BYTE $EC,$EC,$F0,$F0,$F0,$F0,$F0,$F0
+
+>2110	 f0 f0 f0 f0 f4 f4 f4 f4  	        .BYTE $F0,$F0,$F0,$F0,$F4,$F4,$F4,$F4
+
+>2118	 f4 f4 f4 f4 f4 f4 f4 f4  	        .BYTE $F4,$F4,$F4,$F4,$F4,$F4,$F4,$F4
+
+>2120	 f4 f4 f4 f4 f4 f4 f4 f4  	        .BYTE $F4,$F4,$F4,$F4,$F4,$F4,$F4,$F4
+
+>2128	 f4 f8 f8 f8 f8 f8 f8 f8  	        .BYTE $F4,$F8,$F8,$F8,$F8,$F8,$F8,$F8
+
+>2130	 f8 f8 f8 f8 f8 f8 f8 f8  	        .BYTE $F8,$F8,$F8,$F8,$F8,$F8,$F8,$F8
+
+>2138	 f8 f8 f8 f8 f8 f8 f8 f8  	        .BYTE $F8,$F8,$F8,$F8,$F8,$F8,$F8,$F8
+
+>2140	 f8 f8 f8 f8 f8 f8 f8 f8  	        .BYTE $F8,$F8,$F8,$F8,$F8,$F8,$F8,$F8
+
+>2148	 f8 f8 f8 f8 f8 f8 f8 f8  	        .BYTE $F8,$F8,$F8,$F8,$F8,$F8,$F8,$F8
+
+>2150	 f8 f8 f8 f8 f8 fc fc fc  	        .BYTE $F8,$F8,$F8,$F8,$F8,$FC,$FC,$FC
+
+>2158	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>2160	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>2168	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>2170	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>2178	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>2180	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>2188	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>2190	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>2198	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21a0	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21a8	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21b0	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21b8	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21c0	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21c8	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21d0	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21d8	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21e0	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21e8	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21f0	 fc fc fc fc fc fc fc fc  	        .BYTE $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+
+>21f8	 fc 00 00 00 00 00 00 00  	        .BYTE $FC,$00,$00,$00,$00,$00,$00,$00
+
+
+.2200					log_table
+
+>2200	 00 01 03 04 06 07 09 0a  			.BYTE $00,$01,$03,$04,$06,$07,$09,$0A
+
+>2208	 0b 0d 0e 10 11 12 14 15  	        .BYTE $0B,$0D,$0E,$10,$11,$12,$14,$15
+
+>2210	 16 18 19 1a 1c 1d 1e 20  	        .BYTE $16,$18,$19,$1A,$1C,$1D,$1E,$20
+
+>2218	 21 22 24 25 26 28 29 2a  	        .BYTE $21,$22,$24,$25,$26,$28,$29,$2A
+
+>2220	 2c 2d 2e 2f 31 32 33 34  	        .BYTE $2C,$2D,$2E,$2F,$31,$32,$33,$34
+
+>2228	 36 37 38 39 3b 3c 3d 3e  	        .BYTE $36,$37,$38,$39,$3B,$3C,$3D,$3E
+
+>2230	 3f 41 42 43 44 45 47 48  	        .BYTE $3F,$41,$42,$43,$44,$45,$47,$48
+
+>2238	 49 4a 4b 4d 4e 4f 50 51  	        .BYTE $49,$4A,$4B,$4D,$4E,$4F,$50,$51
+
+>2240	 52 54 55 56 57 58 59 5a  	        .BYTE $52,$54,$55,$56,$57,$58,$59,$5A
+
+>2248	 5c 5d 5e 5f 60 61 62 63  	        .BYTE $5C,$5D,$5E,$5F,$60,$61,$62,$63
+
+>2250	 64 66 67 68 69 6a 6b 6c  	        .BYTE $64,$66,$67,$68,$69,$6A,$6B,$6C
+
+>2258	 6d 6e 6f 70 71 72 74 75  	        .BYTE $6D,$6E,$6F,$70,$71,$72,$74,$75
+
+>2260	 76 77 78 79 7a 7b 7c 7d  	        .BYTE $76,$77,$78,$79,$7A,$7B,$7C,$7D
+
+>2268	 7e 7f 80 81 82 83 84 85  	        .BYTE $7E,$7F,$80,$81,$82,$83,$84,$85
+
+>2270	 86 87 88 89 8a 8b 8c 8d  	        .BYTE $86,$87,$88,$89,$8A,$8B,$8C,$8D
+
+>2278	 8e 8f 90 91 92 93 94 95  	        .BYTE $8E,$8F,$90,$91,$92,$93,$94,$95
+
+>2280	 96 97 98 99 9a 9b 9b 9c  	        .BYTE $96,$97,$98,$99,$9A,$9B,$9B,$9C
+
+>2288	 9d 9e 9f a0 a1 a2 a3 a4  	        .BYTE $9D,$9E,$9F,$A0,$A1,$A2,$A3,$A4
+
+>2290	 a5 a6 a7 a8 a9 a9 aa ab  	        .BYTE $A5,$A6,$A7,$A8,$A9,$A9,$AA,$AB
+
+>2298	 ac ad ae af b0 b1 b2 b2  	        .BYTE $AC,$AD,$AE,$AF,$B0,$B1,$B2,$B2
+
+>22a0	 b3 b4 b5 b6 b7 b8 b9 b9  	        .BYTE $B3,$B4,$B5,$B6,$B7,$B8,$B9,$B9
+
+>22a8	 ba bb bc bd be bf c0 c0  	        .BYTE $BA,$BB,$BC,$BD,$BE,$BF,$C0,$C0
+
+>22b0	 c1 c2 c3 c4 c5 c6 c6 c7  	        .BYTE $C1,$C2,$C3,$C4,$C5,$C6,$C6,$C7
+
+>22b8	 c8 c9 ca cb cb cc cd ce  	        .BYTE $C8,$C9,$CA,$CB,$CB,$CC,$CD,$CE
+
+>22c0	 cf d0 d0 d1 d2 d3 d4 d4  	        .BYTE $CF,$D0,$D0,$D1,$D2,$D3,$D4,$D4
+
+>22c8	 d5 d6 d7 d8 d8 d9 da db  	        .BYTE $D5,$D6,$D7,$D8,$D8,$D9,$DA,$DB
+
+>22d0	 dc dc dd de df e0 e0 e1  	        .BYTE $DC,$DC,$DD,$DE,$DF,$E0,$E0,$E1
+
+>22d8	 e2 e3 e4 e4 e5 e6 e7 e7  	        .BYTE $E2,$E3,$E4,$E4,$E5,$E6,$E7,$E7
+
+>22e0	 e8 e9 ea ea eb ec ed ee  	        .BYTE $E8,$E9,$EA,$EA,$EB,$EC,$ED,$EE
+
+>22e8	 ee ef f0 f1 f1 f2 f3 f4  	        .BYTE $EE,$EF,$F0,$F1,$F1,$F2,$F3,$F4
+
+>22f0	 f4 f5 f6 f7 f7 f8 f9 f9  	        .BYTE $F4,$F5,$F6,$F7,$F7,$F8,$F9,$F9
+
+>22f8	 fa fb fc fc fd fe ff ff  	        .BYTE $FA,$FB,$FC,$FC,$FD,$FE,$FF,$FF
+
+
+.2300					exp_table
+
+>2300	 00 01 01 02 03 03 04 05  			.BYTE $00,$01,$01,$02,$03,$03,$04,$05
+
+>2308	 06 06 07 08 08 09 0a 0b  	        .BYTE $06,$06,$07,$08,$08,$09,$0A,$0B
+
+>2310	 0b 0c 0d 0e 0e 0f 10 10  	        .BYTE $0B,$0C,$0D,$0E,$0E,$0F,$10,$10
+
+>2318	 11 12 13 13 14 15 16 16  	        .BYTE $11,$12,$13,$13,$14,$15,$16,$16
+
+>2320	 17 18 19 19 1a 1b 1c 1d  	        .BYTE $17,$18,$19,$19,$1A,$1B,$1C,$1D
+
+>2328	 1d 1e 1f 20 20 21 22 23  	        .BYTE $1D,$1E,$1F,$20,$20,$21,$22,$23
+
+>2330	 24 24 25 26 27 28 28 29  	        .BYTE $24,$24,$25,$26,$27,$28,$28,$29
+
+>2338	 2a 2b 2c 2c 2d 2e 2f 30  	        .BYTE $2A,$2B,$2C,$2C,$2D,$2E,$2F,$30
+
+>2340	 30 31 32 33 34 35 35 36  	        .BYTE $30,$31,$32,$33,$34,$35,$35,$36
+
+>2348	 37 38 39 3a 3a 3b 3c 3d  	        .BYTE $37,$38,$39,$3A,$3A,$3B,$3C,$3D
+
+>2350	 3e 3f 40 41 41 42 43 44  	        .BYTE $3E,$3F,$40,$41,$41,$42,$43,$44
+
+>2358	 45 46 47 48 48 49 4a 4b  	        .BYTE $45,$46,$47,$48,$48,$49,$4A,$4B
+
+>2360	 4c 4d 4e 4f 50 51 51 52  	        .BYTE $4C,$4D,$4E,$4F,$50,$51,$51,$52
+
+>2368	 53 54 55 56 57 58 59 5a  	        .BYTE $53,$54,$55,$56,$57,$58,$59,$5A
+
+>2370	 5b 5c 5d 5e 5e 5f 60 61  	        .BYTE $5B,$5C,$5D,$5E,$5E,$5F,$60,$61
+
+>2378	 62 63 64 65 66 67 68 69  	        .BYTE $62,$63,$64,$65,$66,$67,$68,$69
+
+>2380	 6a 6b 6c 6d 6e 6f 70 71  	        .BYTE $6A,$6B,$6C,$6D,$6E,$6F,$70,$71
+
+>2388	 72 73 74 75 76 77 78 79  	        .BYTE $72,$73,$74,$75,$76,$77,$78,$79
+
+>2390	 7a 7b 7c 7d 7e 7f 80 81  	        .BYTE $7A,$7B,$7C,$7D,$7E,$7F,$80,$81
+
+>2398	 82 83 84 85 87 88 89 8a  	        .BYTE $82,$83,$84,$85,$87,$88,$89,$8A
+
+>23a0	 8b 8c 8d 8e 8f 90 91 92  	        .BYTE $8B,$8C,$8D,$8E,$8F,$90,$91,$92
+
+>23a8	 93 95 96 97 98 99 9a 9b  	        .BYTE $93,$95,$96,$97,$98,$99,$9A,$9B
+
+>23b0	 9c 9d 9f a0 a1 a2 a3 a4  	        .BYTE $9C,$9D,$9F,$A0,$A1,$A2,$A3,$A4
+
+>23b8	 a5 a6 a8 a9 aa ab ac ad  	        .BYTE $A5,$A6,$A8,$A9,$AA,$AB,$AC,$AD
+
+>23c0	 af b0 b1 b2 b3 b4 b6 b7  	        .BYTE $AF,$B0,$B1,$B2,$B3,$B4,$B6,$B7
+
+>23c8	 b8 b9 ba bc bd be bf c0  	        .BYTE $B8,$B9,$BA,$BC,$BD,$BE,$BF,$C0
+
+>23d0	 c2 c3 c4 c5 c6 c8 c9 ca  	        .BYTE $C2,$C3,$C4,$C5,$C6,$C8,$C9,$CA
+
+>23d8	 cb cd ce cf d0 d2 d3 d4  	        .BYTE $CB,$CD,$CE,$CF,$D0,$D2,$D3,$D4
+
+>23e0	 d6 d7 d8 d9 db dc dd de  	        .BYTE $D6,$D7,$D8,$D9,$DB,$DC,$DD,$DE
+
+>23e8	 e0 e1 e2 e4 e5 e6 e8 e9  	        .BYTE $E0,$E1,$E2,$E4,$E5,$E6,$E8,$E9
+
+>23f0	 ea ec ed ee f0 f1 f2 f4  	        .BYTE $EA,$EC,$ED,$EE,$F0,$F1,$F2,$F4
+
+>23f8	 f5 f6 f8 f9 fa fc fd ff  	        .BYTE $F5,$F6,$F8,$F9,$FA,$FC,$FD,$FF
+
+
+.2400					ver_pos_hi
+
+>2400	 00 00 00 00 00 00 00 00  			.BYTE $00,$00,$00,$00,$00,$00,$00,$00
+
+>2408	 01 01 01 01 01 01 01 01  	        .BYTE $01,$01,$01,$01,$01,$01,$01,$01
+
+>2410	 02 02 02 02 02 02 02 02  	        .BYTE $02,$02,$02,$02,$02,$02,$02,$02
+
+>2418	 03 03 03 03 03 03 03 03  	        .BYTE $03,$03,$03,$03,$03,$03,$03,$03
+
+>2420	 05 05 05 05 05 05 05 05  	        .BYTE $05,$05,$05,$05,$05,$05,$05,$05
+
+>2428	 06 06 06 06 06 06 06 06  	        .BYTE $06,$06,$06,$06,$06,$06,$06,$06
+
+>2430	 07 07 07 07 07 07 07 07  	        .BYTE $07,$07,$07,$07,$07,$07,$07,$07
+
+>2438	 08 08 08 08 08 08 08 08  	        .BYTE $08,$08,$08,$08,$08,$08,$08,$08
+
+>2440	 0a 0a 0a 0a 0a 0a 0a 0a  	        .BYTE $0A,$0A,$0A,$0A,$0A,$0A,$0A,$0A
+
+>2448	 0b 0b 0b 0b 0b 0b 0b 0b  	        .BYTE $0B,$0B,$0B,$0B,$0B,$0B,$0B,$0B
+
+>2450	 0c 0c 0c 0c 0c 0c 0c 0c  	        .BYTE $0C,$0C,$0C,$0C,$0C,$0C,$0C,$0C
+
+>2458	 0d 0d 0d 0d 0d 0d 0d 0d  	        .BYTE $0D,$0D,$0D,$0D,$0D,$0D,$0D,$0D
+
+>2460	 0f 0f 0f 0f 0f 0f 0f 0f  	        .BYTE $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F
+
+>2468	 10 10 10 10 10 10 10 10  	        .BYTE $10,$10,$10,$10,$10,$10,$10,$10
+
+>2470	 11 11 11 11 11 11 11 11  	        .BYTE $11,$11,$11,$11,$11,$11,$11,$11
+
+>2478	 12 12 12 12 12 12 12 12  	        .BYTE $12,$12,$12,$12,$12,$12,$12,$12
+
+>2480	 14 14 14 14 14 14 14 14  	        .BYTE $14,$14,$14,$14,$14,$14,$14,$14
+
+>2488	 aa aa aa aa aa aa aa aa  	        .BYTE $AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+
+
+.2490					ver_pos_lo
+
+>2490	 00 01 02 03 04 05 06 07  			.BYTE $00,$01,$02,$03,$04,$05,$06,$07
+
+>2498	 40 41 42 43 44 45 46 47  	        .BYTE $40,$41,$42,$43,$44,$45,$46,$47
+
+>24a0	 80 81 82 83 84 85 86 87  	        .BYTE $80,$81,$82,$83,$84,$85,$86,$87
+
+>24a8	 c0 c1 c2 c3 c4 c5 c6 c7  	        .BYTE $C0,$C1,$C2,$C3,$C4,$C5,$C6,$C7
+
+>24b0	 00 01 02 03 04 05 06 07  	        .BYTE $00,$01,$02,$03,$04,$05,$06,$07
+
+>24b8	 40 41 42 43 44 45 46 47  	        .BYTE $40,$41,$42,$43,$44,$45,$46,$47
+
+>24c0	 80 81 82 83 84 85 86 87  	        .BYTE $80,$81,$82,$83,$84,$85,$86,$87
+
+>24c8	 c0 c1 c2 c3 c4 c5 c6 c7  			.BYTE $C0,$C1,$C2,$C3,$C4,$C5,$C6,$C7
+
+>24d0	 00 01 02 03 04 05 06 07  			.BYTE $00,$01,$02,$03,$04,$05,$06,$07
+
+>24d8	 40 41 42 43 44 45 46 47  			.BYTE $40,$41,$42,$43,$44,$45,$46,$47
+
+>24e0	 80 81 82 83 84 85 86 87  			.BYTE $80,$81,$82,$83,$84,$85,$86,$87
+
+>24e8	 c0 c1 c2 c3 c4 c5 c6 c7  			.BYTE $C0,$C1,$C2,$C3,$C4,$C5,$C6,$C7
+
+>24f0	 00 01 02 03 04 05 06 07  			.BYTE $00,$01,$02,$03,$04,$05,$06,$07
+
+>24f8	 40 41 42 43 44 45 46 47  			.BYTE $40,$41,$42,$43,$44,$45,$46,$47
+
+>2500	 80 81 82 83 84 85 86 87  			.BYTE $80,$81,$82,$83,$84,$85,$86,$87
+
+>2508	 c0 c1 c2 c3 c4 c5 c6 c7  			.BYTE $C0,$C1,$C2,$C3,$C4,$C5,$C6,$C7
+
+>2510	 00 01 02 03 04 05 06 07  			.BYTE $00,$01,$02,$03,$04,$05,$06,$07
+
+>2518	 aa aa aa aa aa aa aa aa  			.BYTE $AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+
+
+.2520					hor_scr_pos
+
+>2520	 00 00 00 00 08 08 08 08  			.BYTE $00,$00,$00,$00,$08,$08,$08,$08
+
+>2528	 10 10 10 10 18 18 18 18  	        .BYTE $10,$10,$10,$10,$18,$18,$18,$18
+
+>2530	 20 20 20 20 28 28 28 28  	        .BYTE $20,$20,$20,$20,$28,$28,$28,$28
+
+>2538	 30 30 30 30 38 38 38 38  	        .BYTE $30,$30,$30,$30,$38,$38,$38,$38
+
+>2540	 40 40 40 40 48 48 48 48  	        .BYTE $40,$40,$40,$40,$48,$48,$48,$48
+
+>2548	 50 50 50 50 58 58 58 58  	        .BYTE $50,$50,$50,$50,$58,$58,$58,$58
+
+>2550	 60 60 60 60 68 68 68 68  	        .BYTE $60,$60,$60,$60,$68,$68,$68,$68
+
+>2558	 70 70 70 70 78 78 78 78  	        .BYTE $70,$70,$70,$70,$78,$78,$78,$78
+
+>2560	 80 80 80 80 88 88 88 88  	        .BYTE $80,$80,$80,$80,$88,$88,$88,$88
+
+>2568	 90 90 90 90 98 98 98 98  	        .BYTE $90,$90,$90,$90,$98,$98,$98,$98
+
+>2570	 a0 a0 a0 a0 a8 a8 a8 a8  	        .BYTE $A0,$A0,$A0,$A0,$A8,$A8,$A8,$A8
+
+>2578	 b0 b0 b0 b0 b8 b8 b8 b8  	        .BYTE $B0,$B0,$B0,$B0,$B8,$B8,$B8,$B8
+
+>2580	 c0 c0 c0 c0 c8 c8 c8 c8  	        .BYTE $C0,$C0,$C0,$C0,$C8,$C8,$C8,$C8
+
+>2588	 d0 d0 d0 d0 d8 d8 d8 d8  	        .BYTE $D0,$D0,$D0,$D0,$D8,$D8,$D8,$D8
+
+>2590	 e0 e0 e0 e0 e8 e8 e8 e8  	        .BYTE $E0,$E0,$E0,$E0,$E8,$E8,$E8,$E8
+
+>2598	 f0 f0 f0 f0 f8 f8 f8 f8  	        .BYTE $F0,$F0,$F0,$F0,$F8,$F8,$F8,$F8
+
+>25a0	 00 00 00 00 08 08 08 08  	        .BYTE $00,$00,$00,$00,$08,$08,$08,$08
+
+>25a8	 10 10 10 10 18 18 18 18  	        .BYTE $10,$10,$10,$10,$18,$18,$18,$18
+
+>25b0	 20 20 20 20 28 28 28 28  			.BYTE $20,$20,$20,$20,$28,$28,$28,$28
+
+>25b8	 30 30 30 30 38 38 38 38  			.BYTE $30,$30,$30,$30,$38,$38,$38,$38
+
+>25c0	 c0 c0 c0 c0 c0 c0 aa aa  			.BYTE $C0,$C0,$C0,$C0,$C0,$C0,$AA,$AA
+
+>25c8	 aa aa aa aa aa aa aa aa  	        .BYTE $AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+
+>25d0	 25 25 28 29 24 24 aa aa  			.BYTE $25,$25,$28,$29,$24,$24,$AA,$AA
+
+>25d8	 aa aa aa aa aa aa aa aa  	        .BYTE $AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+
+>25e0	 80 80 00 00 80 80 14 15  			.BYTE $80,$80,$00,$00,$80,$80,$14,$15
+
+>25e8	 15 16 16 17 17 0c 00 0c  	        .BYTE $15,$16,$16,$17,$17,$0C,$00,$0C
+
+>25f0	 29 28 19 18 28 29 04 10  			.BYTE $29,$28,$19,$18,$28,$29,$04,$10
+
+>25f8	 05 11 06 12 07 13 08 14  	        .BYTE $05,$11,$06,$12,$07,$13,$08,$14
+
+>2600	 09 15 0a 16 0b 17 18 19  			.BYTE $09,$15,$0A,$16,$0B,$17,$18,$19
+
+>2608	 19 1a 1b 1c 1c 1d 01 3d  	        .BYTE $19,$1A,$1B,$1C,$1C,$1D,$01,$3D
+
+>2610	 1b 3d 1a 3c 1d 3c 22 e2  			.BYTE $1B,$3D,$1A,$3C,$1D,$3C,$22,$E2
+
+>2618	 22 60 1f 60 1f e2 1d 62  			.BYTE $22,$60,$1F,$60,$1F,$E2,$1D,$62
+
+>2620	 00 01 02 03 08 09 0a 0b 	JOYSTICK_MOVEMENT_TAB .BYTE $00,$01,$02,$03,$08,$09,$0A,$0B,$04,$05,$06,$07,$0C,$0D,$0E,$0F
+
+>2628	 04 05 06 07 0c 0d 0e 0f 
+>2630	 ab da 09 38 67 96 c5 f4  	LINE_DRAW_PTR_LO   .BYTE <LINE_DRAW_0,<LINE_DRAW_1,<LINE_DRAW_2,<LINE_DRAW_3,<LINE_DRAW_4,<LINE_DRAW_5,<LINE_DRAW_6,<LINE_DRAW_7 
+
+>2638	 13 13 14 14 14 14 14 14  	LINE_DRAW_PTR_HI   .BYTE >LINE_DRAW_0,>LINE_DRAW_1,>LINE_DRAW_2,>LINE_DRAW_3,>LINE_DRAW_4,>LINE_DRAW_5,>LINE_DRAW_6,>LINE_DRAW_7 
+
+>2640	 00 07 03 04 01 06 02 05  	LINE_DRAW_CONV_PTR .BYTE $00,$07,$03,$04,$01,$06,$02,$05
+
+>2648	 9f 9f 00 00 00 00 9f 9f  	fBBD8   .BYTE $9F,$9F,$00,$00,$00,$00,$9F,$9F
+
+>2650	 87 87 87 87 00 00 00 00  	fBBE0   .BYTE $87,$87,$87,$87,$00,$00,$00,$00
+
+>2658	 40 38 08 00 40 38 28 30  	fBBE8   .BYTE $40,$38,$08,$00,$40,$38,$28,$30
+
+>2660	 40 18 08 10 40 18 28 20  			.BYTE $40,$18,$08,$10,$40,$18,$28,$20
+
+>2668	 00 00 03 00 00 00 02 02  	fBBF8   .BYTE $00,$00,$03,$00,$00,$00,$02,$02
+
+>2670	 00 00 00 06 04 00 00 04  			.BYTE $00,$00,$00,$06,$04,$00,$00,$04
+
+>2678	 0c 00 00 00 08 08 00 00  			.BYTE $0C,$00,$00,$00,$08,$08,$00,$00
+
+>2680	 00 09 00 00 00 01 01 00  			.BYTE $00,$09,$00,$00,$00,$01,$01,$00
+
+>2688	 01 00 00 00 01 01 00 00  	fBC18   .BYTE $01,$00,$00,$00,$01,$01,$00,$00
+
+>2690	 00 01 00 00 00 01 01 00  			.BYTE $00,$01,$00,$00,$00,$01,$01,$00
+
+>2698	 00 00 01 00 00 00 01 01  			.BYTE $00,$00,$01,$00,$00,$00,$01,$01
+
+>26a0	 00 00 00 01 01 00 00 01  			.BYTE $00,$00,$00,$01,$01,$00,$00,$01
+
+
+.2700					pixel_pos
+
+>2700	 3f cf f3 fc 3f cf f3 fc  			.BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2708	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2710	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2718	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2720	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2728	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2730	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2738	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2740	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2748	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2750	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2758	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2760	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2768	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2770	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2778	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2780	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2788	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2790	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+>2798	 3f cf f3 fc 3f cf f3 fc  	        .BYTE $3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+
+
+.27a0					pers_point_tab_4
+
+>27e0	 2f 35 41 62 67 96 09 00  	ZP 	.BYTE $2f,$35,$41,$62,$67,$96,$09,$00
+
+>27e8	 be fd 9f 10 c0 f5 a0 40  		.BYTE $be,$fd,$9f,$10,$c0,$f5,$a0,$40
+
+>27f0	 a7 54 00 00 00 00 92 f4  		.BYTE $a7,$54,$00,$00,$00,$00,$92,$f4
+
+>27f8	 0c ff 78 34 30 b1 3c 81  		.BYTE $0c,$ff,$78,$34,$30,$b1,$3c,$81
+
+>2800	 0a 18 12 0d 09 60 8f 88  		.BYTE $0a,$18,$12,$0d,$09,$60,$8f,$88
+
+>2808	 00 00 00 02 01 01 92 dc  		.BYTE $00,$00,$00,$02,$01,$01,$92,$dc
+
+>2810	 00 00 92 dc 46 20 92 dd  		.BYTE $00,$00,$92,$dc,$46,$20,$92,$dd
+
+>2818	 00 01 92 dc 00 00 2e e5  		.BYTE $00,$01,$92,$dc,$00,$00,$2e,$e5
+
+>2820	 48 fc e0 29 00 1d 39 1c  		.BYTE $48,$fc,$e0,$29,$00,$1d,$39,$1c
+
+>2828	 00 01 1b e1 89 fd 92 dd  		.BYTE $00,$01,$1b,$e1,$89,$fd,$92,$dd
+
+>2830	 48 fc e0 29 00 1d 39 1c  		.BYTE $48,$fc,$e0,$29,$00,$1d,$39,$1c
+
+>2838	 a6 28 00 1d ee 18 89 0d  		.BYTE $a6,$28,$00,$1d,$ee,$18,$89,$0d
+
+>2840	 a3 fd b6 0c 09 01 02 07  		.BYTE $a3,$fd,$b6,$0c,$09,$01,$02,$07
+
+>2848	 15 e5 00 0a 9f 00 04 01  		.BYTE $15,$e5,$00,$0a,$9f,$00,$04,$01
+
+>2850	 1b 1a 42 02 00 80 00 00  		.BYTE $1b,$1a,$42,$02,$00,$80,$00,$00
+
+>2858	 01 01 00 00 a3 01 00 3f  		.BYTE $01,$01,$00,$00,$a3,$01,$00,$3f
+
+>2860	 0f 01 aa 55 ff 03 00 00  		.BYTE $0f,$01,$aa,$55,$ff,$03,$00,$00
+
+>2868	 1c 1c 1f 1f 00 e0 50 44  		.BYTE $1c,$1c,$1f,$1f,$00,$e0,$50,$44
+
+>2870	 40 19 3c 18 10 19 0c 18  		.BYTE $40,$19,$3c,$18,$10,$19,$0c,$18
+
+>2878	 ff b8 2c ab fc 1b fc 00  		.BYTE $ff,$b8,$2c,$ab,$fc,$1b,$fc,$00
+
+>2880	 7b 85 18 01 06 06 0e a9  		.BYTE $7b,$85,$18,$01,$06,$06,$0e,$a9
+
+>2888	 01 80 40 18 10 1c 00 11  		.BYTE $01,$80,$40,$18,$10,$1c,$00,$11
+
+>2890	 05 00 01 00 3f 3c 02 03  		.BYTE $05,$00,$01,$00,$3f,$3c,$02,$03
+
+>2898	 3f 00 00 fe 01 00 00 15  		.BYTE $3f,$00,$00,$fe,$01,$00,$00,$15
+
+>28a0	 5a 00 01 06 06 0e 01 70  		.BYTE $5a,$00,$01,$06,$06,$0e,$01,$70
+
+>28a8	 00 00 00 44 00 03 06 00  		.BYTE $00,$00,$00,$44,$00,$03,$06,$00
+
+>28b0	 08 c0 08 10 0f 75 f7 ff  		.BYTE $08,$c0,$08,$10,$0f,$75,$f7,$ff
+
+>28b8	 80 f7 ff 71 f8 ff 02 00  		.BYTE $80,$f7,$ff,$71,$f8,$ff,$02,$00
+
+>28c0	 00 7d 19 64 0b 02 00 03  		.BYTE $00,$7d,$19,$64,$0b,$02,$00,$03
+
+>28c8	 25 3f ff 00 00 88 ff 00  		.BYTE $25,$3f,$ff,$00,$00,$88,$ff,$00
+
+>28d0	 00 00 43 16 00 00 7e 09  		.BYTE $00,$00,$43,$16,$00,$00,$7e,$09
+
+>28d8	 00 00 00 00 0a 60 21 7d  		.BYTE $00,$00,$00,$00,$0a,$60,$21,$7d
+
+=4000					SCREEN0 = $4000
+
+=5c00					ab5C00 = $5C00 ; SCREEN COLOUR 
+
+=6000					SCREEN1 = $6000
+
+
+;******  end of code
