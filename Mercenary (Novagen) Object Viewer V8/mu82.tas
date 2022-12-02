@@ -170,6 +170,8 @@ PNT_OFF_TOP = 0
 ;        CMP #$A0 ; clip test
 ;        CPX #$A0 ; clip test
 
+OVERFLOW = $E000 ; overflow?
+
         * = $801
 
 STARTUP	; CALL STARTUP BEFORE CALLING MAIN - needs to setup vic pointers?
@@ -246,9 +248,9 @@ STARTUP	; CALL STARTUP BEFORE CALLING MAIN - needs to setup vic pointers?
 	STA $D021
 	LDA #$18
 	STA $D016
-	LDA #<pBA1E
+	LDA #<IRQ_1
 	STA $FFFE
-	LDA #>pBA1E
+	LDA #>IRQ_1
 	STA $FFFF
 
  LDA #$7F
@@ -276,8 +278,25 @@ STARTUP	; CALL STARTUP BEFORE CALLING MAIN - needs to setup vic pointers?
 	LDA		#$18
 	STA		SPEED_HI
 	
-	LDA		#7
+	LDA		#1 ;7
 	STA		DRAW_OBJECT_COUNT
+
+	lda		#$40
+	sta		ab90
+	lda		#$19
+	sta		ab91
+	lda		#$3C
+	sta		ab92
+	lda		#$18
+	sta		ab93
+	lda		#$10
+	sta		ab94
+	lda		#$19
+	sta		ab95
+	lda		#$0c
+	sta		ab96
+	lda		#$18
+	sta		ab97
 
 	LDA		#0
 	STA		ROT_LO
@@ -294,12 +313,12 @@ STARTUP	; CALL STARTUP BEFORE CALLING MAIN - needs to setup vic pointers?
 		
 	CLI
 
-MAIN_LOOP   JSR SIN_COS
-			JSR DRAW_SCREEN
-			JSR COLOUR_SETUP_WHITE ; BLACK
-			JSR DRAW_OBJECTS
-			JSR READ_JOYSTICK_KEYBOARD
-			JSR MOVEMENT
+MAIN_LOOP   JSR		SIN_COS
+			JSR 	DRAW_SCREEN
+			JSR 	COLOUR_SETUP_WHITE ; BLACK
+			JSR 	DRAW_OBJECTS
+			JSR 	READ_JOYSTICK_KEYBOARD
+			JSR 	MOVEMENT
 			
 			LDX CURR_X_MSB
 			LDA CURR_X_HSB
@@ -409,41 +428,41 @@ MAIN_LOOP   JSR SIN_COS
 ;temp5 .byte 0
 ;temp6 .byte 0
 
-pBA1E   PHA
-        LDA #<pB9BB
-        STA IRQ   	;IRQ
-        LDA #>pB9BB
-        STA IRQ+1   ;IRQ
-        LDA #$00
-        STA $D012	;Raster Position
-        LDA #$01
-        STA $D019   ;VIC Interrupt Request Register (IRR)
-        LDA #$7E
-        STA $D018   ;VIC Memory Control Register
-        LDA #$1B
-        STA $D011   ;VIC Control Register 1
-        LDA #$01
-        STA $D021   ;Background Color 0
-        LDA #$08
-        STA $D016   ;VIC Control Register 2
+IRQ_1   PHA
+        LDA 	#<IRQ_2
+        STA 	IRQ   	;IRQ
+        LDA 	#>IRQ_2
+        STA 	IRQ+1   ;IRQ
+        LDA 	#$00
+        STA 	$D012	;Raster Position
+        LDA 	#$01
+        STA 	$D019   ;VIC Interrupt Request Register (IRR)
+        LDA 	#$7E
+        STA 	$D018   ;VIC Memory Control Register
+        LDA 	#$1B
+        STA 	$D011   ;VIC Control Register 1
+        LDA 	#$01
+        STA 	$D021   ;Background Color 0
+        LDA 	#$08
+        STA 	$D016   ;VIC Control Register 2
         PLA 
 NMI_NOP	RTI ; This is the irq handler for the NMI. Just returns without acknowledge. This prevents subsequent NMI's from interfering.
 
-pB9BB  	PHA
-        LDA VIC_SCREEN_BANK
-        STA $D018    ;VIC Memory Control Register
-		LDA #$3B
-        STA $D011    ;VIC Control Register 1
-        LDA #$18
-		STA $D016    ;VIC Control Register 2
-        LDA #<pBA1E
-        STA IRQ   ;IRQ
-        LDA #>pBA1E
-        STA IRQ+1   ;IRQ
-        LDA #$BA
-        STA $D012    ;Raster Position
-        LDA #$01
-        STA $D019    ;VIC Interrupt Request Register (IRR)
+IRQ_2  	PHA
+        LDA 	VIC_SCREEN_BANK
+        STA 	$D018    ;VIC Memory Control Register
+		LDA 	#$3B
+        STA 	$D011    ;VIC Control Register 1
+        LDA 	#$18
+		STA 	$D016    ;VIC Control Register 2
+        LDA 	#<IRQ_1
+        STA 	IRQ   ;IRQ
+        LDA 	#>IRQ_1
+        STA 	IRQ+1   ;IRQ
+        LDA 	#$BA
+        STA 	$D012    ;Raster Position
+        LDA 	#$01
+        STA 	$D019    ;VIC Interrupt Request Register (IRR)
         PLA 
         RTI
 
@@ -696,16 +715,16 @@ j8419   LDX ab08
 COS_FP	INY 
 SIN_FP	TYA 
 		LSR 
-		BCC b8429
-			TXA 
-			EOR #$FF
-			TAX 
-			TYA 
-			LSR 
-b8429   AND #$01
-		ORA SIN_MSB,X
+		BCC 	SIN_CNT
+				TXA 
+				EOR #$FF
+				TAX 
+				TYA 
+				LSR 
+SIN_CNT AND 	#$01
+		ORA 	SIN_MSB,X
 		TAY 
-		LDA SIN_LSB,X
+		LDA 	SIN_LSB,X
 		TAX 
 		RTS 
 
@@ -841,55 +860,52 @@ b850B   	LDX 	#$00		; no
 			LDY 	#$00
 			RTS 
 
-BIT24TOFP ; MATH_24BitToFP (FP.SetToObjectSpaceCoordinate24) ; Enter: A = Coordinate.MSB X = Coordinate.PSB Y = Coordinate.LSB ; Usese: [06].b  Temporary store for coordinate MSB ; Exit:  [08].fp Result, also stored in X:A (exp:man)
-		STY	ab07 ; store lsb
-		STA ab06 ; store msb
-        BPL b8527 ; positive ?
-			LDA #$00 ; negative so 
-			SEC 
-			SBC ab07 ; negate lsb
-			STA ab07
-			TXA 		; negate psb
-			EOR #$FF
-			ADC #$00
+BIT24TOFP 	STY		ab07 ; store lsb	; MATH_24BitToFP (FP.SetToObjectSpaceCoordinate24) ; Enter: A = Coordinate.MSB X = Coordinate.PSB Y = Coordinate.LSB ; Usese: [06].b  Temporary store for coordinate MSB ; Exit:  [08].fp Result, also stored in X:A (exp:man)
+			STA 	ab06 ; store msb
+			BPL 	b8527 ; positive ?
+				LDA 	#$00 ; negative so 
+				SEC 
+				SBC 	ab07 ; negate lsb
+				STA 	ab07
+				TXA 		; negate psb
+				EOR 	#$FF
+				ADC 	#$00
+				TAX 
+				LDA 	#$00
+				SBC 	ab06	; negate msb
+b8527   	BNE 	b8538	; if msb not 0
+				TXA 		; move psb to a
+				BNE 	b854F	; if psb not 0
+					LDA 	ab07	; get lsb
+					BEQ 	b8553	; if lsb not 0
+						LDX 	#$00
+						STX 	ab07
+						LDX 	#$08
+						BNE 	b853C ; jump?
+b8538   	STX 	ab07
+			LDX 	#$18
+b853C   		DEX 
+				ASL 	ab07 ; *2
+				ROL 	 ; *2
+				BCC 	b853C
+			STA 	ab08
+			TXA 
+			ASL 
+			ASL 	ab06
+			ROL 
 			TAX 
-			LDA #$00
-			SBC ab06	; negate msb
-b8527   BNE b8538	; if msb not 0
-			TXA 		; move psb to a
-			BNE b854F	; if psb not 0
-				LDA ab07	; get lsb
-				BEQ b8553	; if lsb not 0
-					LDX #$00
-					STX ab07
-					LDX #$08
-					BNE b853C ; jump?
-b8538   STX ab07
-        LDX #$18
-b853C   	DEX 
-			ASL ab07 ; *2
-			ROL 	 ; *2
-			BCC b853C
-        STA ab08
-        TXA 
-        ASL 
-        ASL ab06
-        ROL 
-        TAX 
-        STX ab09
-        LDA ab08
-        RTS 
+			STX 	ab09
+			LDA 	ab08
+			RTS 
 
-b854F   LDX #$10
-        BNE b853C ; jump?
+b854F   	LDX 	#$10
+			BNE 	b853C ; jump?
 		
-b8553   LDA #<OVERFLOW ; overflow?
-        LDX #>OVERFLOW
-        STA ab08
-        STX ab09
-        RTS 
-
-OVERFLOW = $E000 ; overflow?
+b8553   	LDA 	#<OVERFLOW ; overflow?
+			LDX 	#>OVERFLOW
+			STA 	ab08
+			STX 	ab09
+			RTS 
 
 DRAW_OBJECTS	LDY 	DRAW_OBJECT_COUNT 			; number of objects to draw
 				BEQ 	DRAW_OBJECTS_EXIT 			; exit if none
@@ -933,6 +949,7 @@ DRAW_OBJECT_POINT	LDY		DIFF_X_LSB	; object is a point
 					LDY		DIFF_Y_LSB
 					LDX		DIFF_Y_MSB
 					LDA		DIFF_Y_HSB
+					JSR		BIT24TOFP	; ????
 ;					RTS					; ????
 
 					STA		Y_POS_HI
@@ -1560,39 +1577,39 @@ LINE_DRAW_JMP	LDX 	LINE_START_HOR
 			JMP 	(LINE_JUMP_PTR) 		; LINE_DRAW_01
 b9D98   	RTS 
 
-MOVEMENT	LDA 	#$01                    ; UP
-        BIT JOYSTICK_MOVEMENT
-        BNE bA1A1
-			LDA #$01 ; FORWARD
-			JSR FORWARD_BACK
-bA1A1   LDA #$02					; DOWN
-        BIT JOYSTICK_MOVEMENT
-        BNE bA1AC
-			LDA #$00	; BACKWARD
-			JSR FORWARD_BACK
-bA1AC   LDA #$04					; LEFT
-        BIT JOYSTICK_MOVEMENT
-        BNE bA1C1
-			LDA ROT_LO	; LEFT
-			CLC 
-			ADC ROT_SPD
-			STA ROT_LO
-			LDA ROT_HI
-			ADC #$00
-			AND #$03
-			STA ROT_HI
-bA1C1   LDA #$08					; RIGHT
-        BIT JOYSTICK_MOVEMENT
-        BNE bA1D6
-			LDA ROT_LO	; RIGHT
-			SEC 
-			SBC ROT_SPD
-			STA ROT_LO
-			LDA ROT_HI
-			SBC #$00
-			AND #$03
-			STA ROT_HI
-bA1D6 	RTS
+MOVEMENT	LDA 	#$01
+			BIT 	JOYSTICK_MOVEMENT
+			BNE 	MVE_DWN
+				LDA 	#$01 ; FORWARD
+				JSR 	FORWARD_BACK
+MVE_DWN   	LDA 	#$02
+			BIT 	JOYSTICK_MOVEMENT
+			BNE 	MVE_LFT
+				LDA 	#$00	; BACKWARD
+				JSR 	FORWARD_BACK
+MVE_LFT   	LDA 	#$04
+			BIT 	JOYSTICK_MOVEMENT
+			BNE 	MVE_RGT
+				LDA 	ROT_LO	; LEFT
+				CLC 
+				ADC 	ROT_SPD
+				STA 	ROT_LO
+				LDA 	ROT_HI
+				ADC 	#$00
+				AND 	#$03
+				STA 	ROT_HI
+MVE_RGT   	LDA 	#$08
+			BIT 	JOYSTICK_MOVEMENT
+			BNE 	MVE_EXIT
+				LDA 	ROT_LO	; RIGHT
+				SEC 
+				SBC 	ROT_SPD
+				STA 	ROT_LO
+				LDA 	ROT_HI
+				SBC 	#$00
+				AND 	#$03
+				STA 	ROT_HI
+MVE_EXIT 	RTS
 
 FORWARD_BACK	PHA 			; push sign/direction
 				LDX 	SPEED_LO
@@ -1760,8 +1777,7 @@ POINT_X16	LDA 	#$00			; MULTIPLY POINT *16 ?
 			STA 	OBJ_PNT_Z
 			RTS 
 
-ROTATE_PERS 
-			LDA 	SIN_LO
+ROTATE_PERS LDA 	SIN_LO
 			STA		FP_MULTIPLY_LO
 			LDA 	SIN_HI
 			LDX		X_POS_HI
@@ -2261,26 +2277,25 @@ CLSN1LP		STA 	SCREEN1-1+(136*00),X ; 1
 			RTS 
 
 READ_JOYSTICK_KEYBOARD
-        LDA #$00
-        STA $DC02    ;CIA1: Data Direction Register A
-        LAX $DC00    ;CIA1: Data Port Register A into A and X
+        LDA 	#$00
+        STA 	$DC02    ;CIA1: Data Direction Register A
+        LAX 	$DC00    ;CIA1: Data Port Register A into A and X
 ;        TAX 
-        AND #$0F
-        STA JOYSTICK_MOVEMENT ; JOYSTICK MOVEMENT
+        AND 	#$0F
+        STA 	JOYSTICK_MOVEMENT ; JOYSTICK MOVEMENT
         TXA 
         LSR 
         LSR 
         LSR 
         LSR 
-        AND #$01
-;        STA ab81 ; FIRE BUTTON
-		bne rjk
-			lda OBJECTS_TO_DRAW+1
+        AND 	#$01
+		bne 	rjk
+			lda 	OBJECTS_TO_DRAW+1
 			clc
-			adc #1
-			and #31
-			sta OBJECTS_TO_DRAW+1
-rjk		RTS 
+			adc 	#1
+			and 	#31
+			sta 	OBJECTS_TO_DRAW+1
+rjk		RTS
 
 HEXCHAR		LDA		HEX0,Y
 HEX_NUMBER0	STA		$ABCD,X
@@ -2294,8 +2309,7 @@ HEX_NUMBER3	STA		$ABCD,X
 HEX_NUMBER4	STA		$ABCD,X
 			RTS
 
-HEX16	; Y = YPOS / A = HI / X = LO
-			STY		REGY
+HEX16		STY		REGY	; Y = YPOS / A = HI / X = LO
 			STX		REGX		
 			LDX		#0
 			JSR		HEX8
@@ -2305,8 +2319,7 @@ HEX16	; Y = YPOS / A = HI / X = LO
 			JSR		HEX8
 			RTS
 
-HEX8	; A = NUM / Y = YPOS / X = XPOS
-			CLC
+HEX8		CLC		; A = NUM / Y = YPOS / X = XPOS
 
 			STA		REGA
 			LDA		VER_POS_LO+0,Y
