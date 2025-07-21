@@ -1,0 +1,5226 @@
+; 64tass v1.59.3120
+; 64tass.exe --ascii --case-sensitive -Wall %1.tas -o %1.prg
+; sys 2049
+
+        .cpu    "6502"
+
+L00C8   = $c8
+L00C9   = $c9 ;.byte   $39
+L00CA   = $ca ;.byte   $3E
+L00CB   = $cb ;.byte   $0D
+L00CC   = $cc ;.byte   $00
+L00CD   = $cd ;.byte   $1E
+L00CE   = $ce ;.byte   $FF
+L00CF   = $cf ;.byte   $00
+L00D0   = $d0 ;.byte   $FF
+L00D1   = $d1 ;.byte   $78
+L00D2   = $d2 ;.byte   $FF
+L00D3   = $d3 ;.byte   $02
+L00D4   = $d4 ;.byte   $FF
+L00D5_VIC_PARAM_ADDR   = $d5 ;.byte   $20
+L00D6_VIC_PARAM_ADDR_HI   = $d6 ;.byte   $14
+L00D7   = $d7 ;.byte   $02
+L00D8   = $d8 ;.byte   $71
+L00DB   = $db ;.byte   $2F
+L00DC   = $dc ;.byte   $00
+L00DD   = $dd ;.byte   $5E
+L00DE   = $de ;.byte   $32
+L00DF   = $df ;.byte   $2F
+L00E0   = $e0 ;.byte   $00
+L00E1   = $e1 ;.byte   $20
+L00E2   = $e2 ;.byte   $02
+L00E3   = $e3 ;.byte   $08
+L00E4   = $e4 ;.byte   $1B
+L00E7   = $e7 ;.byte   $01
+L00E8   = $e8 ;.byte   $A4
+L00E9   = $e9 ;.byte   $F0
+L00EA   = $ea ;.byte   $10
+L00EB   = $eb ;.byte   $0C
+L00EC   = $ec ;.byte   $E5
+L00ED   = $ed ;.byte   $04
+L00EE   = $ee ;.byte   $55
+L00EF   = $ef ;.byte   $01
+L00F0   = $f0 ;.byte   $2C
+L00F1   = $f1 ;.byte   $1B
+L00F2_OBJECT_TIMER_LO   = $f2 ;.byte   $EC
+L00F3_OBJECT_TIMER_HI   = $f3 ;.byte   $0E
+
+L00CC_SCN = L00CC
+L00CC_SCN_LO = L00CC_SCN
+L00CD_SCN_HI = L00CC_SCN_LO +1
+
+L00CC_ADDR = L00CC_SCN
+L00CC_ADDR_LO = L00CC_ADDR
+L00CD_ADDR_HI = L00CC_SCN_LO +1
+
+L0400   = $400
+L0401   = $401
+L0402   = $402
+
+*       =       $801
+          .logical $801
+
+;L0801	jmp L0900_START
+;*       =       $900
+L0900_START
+        sei                ;2
+        jsr     L1122_CLEAR_SCREEN_BORDERS ;6
+        jsr     L1917_COPY ;6
+        jsr     L1082_INT_ROM_SETUP ;6
+        ldx     L1432_VIC_SETUP_PARAM_LO      ;4
+        ldy     L1433_VIC_SETUP_PARAM_HI      ;4
+        jsr     L10DE_VIC_SETUP ;6
+        jsr     L1100_VIC_SETUP ;6
+        jsr     L1141_MAIN_SETUP_PROC ;6
+        jsr     L11A0_MAIN_SETUP_BLD_SCN_TABLES ;6
+;        jsr     L1122_CLEAR_SCREEN_BORDERS ;6
+        jsr     L17F1_SETUP_NEXT_SHIP ;6
+L0923_MAIN_LOOP
+        jsr     L1885_MAIN_LOOP_OBJECT_TIMER_PROC ;6
+        jsr     L14C0_MAIN_LOOP_PROC ;6
+        jsr     L1469_CLEAR_SCREEN ;6
+        jsr     L095F_JSR_CALL ; something to do with pressing fire
+        jsr     L093E_MAIN_LOOP_PROC ; if fire pressed next ship
+
+        lda     l1468_SCREEN_PAGE ;4		
+        eor     #$20       ;2
+        sta     l1468_SCREEN_PAGE ;4
+        jmp     L0923_MAIN_LOOP ;3
+
+        nop                ;2
+
+		nop
+		nop
+		nop
+		
+L093D_PREV_JOYSTICK_STATE
+        .byte   $FF
+
+L093E_MAIN_LOOP_PROC
+        ldy     #$FF       ; default joystick value
+        lda     #$00       ;2
+        sta     LDC02      ;4
+        lda     #$FF       ;2
+        sta     LDC03      ;4
+        lda     LDC00      ; current joystick state
+        cmp     L093D_PREV_JOYSTICK_STATE ; 4
+        beq     L0956_CONT ;2+ joystick state not changed so continue
+        sta     L093D_PREV_JOYSTICK_STATE ; joystick state has changed 
+        tay                ; so replace default joystick value with actual joystick value
+L0956_CONT
+        tya                ;2
+        and     #$80       ;2 fire pressed? 
+        bne     L095E_EXIT ;2+ no
+        jmp     L17F1_SETUP_NEXT_SHIP ;3 yes so get next ship
+
+L095E_EXIT
+        rts                ;6
+
+;*       =       $95F
+
+L095F_JSR_CALL
+        lda     LBF80_OBJ_2_TAB      ;4
+        sta     L00D0      ;3
+        ldy     #$00       ;2
+        sty     L00C9      ;3
+L0968_LOOP
+        lda     #$00       ;2
+        sta     L00CD      ;3
+        lda     #$03       ;2
+        sta     L00C8      ;3
+L0970_LOOP
+        lda     LBF81,y    ;4+ VALUE
+        sta     L00D1      ;3  TEMP STORED?
+        asl     a          ;2  MULTIPLY BY 2
+        adc     L00D1      ;3  ADD TEMP STORE TO MULTIPLY BY 3
+        tax                ;2
+        lda     L0402,x    ;4+
+        lsr     a          ;2
+        lsr     a          ;2
+        clc                ;2
+        adc     L00CD      ;3
+        sta     L00CD      ;3
+        iny                ;2
+        dec     L00C8      ;5
+        bne     L0970_LOOP ;2+
+        lda     L00CD      ;3
+        ldx     L00C9      ;3
+        sta     L1B42,x    ;5
+        lda     L00C9      ;3
+        sta     L1B52,x    ;5
+        inc     L00C9      ;5
+        iny                ;2
+        dec     L00D0      ;5
+        bne     L0968_LOOP ;2+
+_L099B  ldx     #$00       ;2
+        stx     L00C8      ;3
+        lda     LBF80_OBJ_2_TAB      ;4
+        sta     L00D0      ;3
+        dec     L00D0      ;5
+        beq     _L09D2     ;2+
+_L09A8  lda     L1B42,x    ;4+
+        cmp     L1B43,x    ;4+
+        bcs     _L09C9     ;2+
+        ldy     L1B43,x    ;4+
+        sta     L1B43,x    ;5
+        tya                ;2
+        sta     L1B42,x    ;5
+        lda     L1B52,x    ;4+
+        ldy     L1B53,x    ;4+
+        sta     L1B53,x    ;5
+        tya                ;2
+        sta     L1B52,x    ;5
+        inc     L00C8      ;5
+_L09C9  inx                ;2
+        dec     L00D0      ;5
+        bne     _L09A8     ;2+
+        lda     L00C8      ;3
+        bne     _L099B     ;2+
+_L09D2  lda     #$00       ;2
+        sta     L00ED      ;3
+_L09D6  ldy     L00ED      ;3
+        lda     L1B52,y    ;4+
+        asl     a          ;2
+        asl     a          ;2
+        sta     L00C9      ;3
+        ldx     #$00       ;2
+_L09E1  ldy     L00C9      ;3
+        lda     LBF81,y    ;4+
+        sta     L00D1      ;3
+        asl     a          ;2
+        adc     L00D1      ;3
+        tay                ;2
+        lda     L0400,y    ;4+
+        sta     L1B62,x    ;5
+        lda     L0401,y    ;4+
+        sta     L1B63,x    ;5
+        inc     L00C9      ;5
+        inx                ;2
+        inx                ;2
+        cpx     #$06       ;2
+        bne     _L09E1     ;2+
+        ldy     L00C9      ;3
+        lda     LBF81,y    ;4+
+        sta     L00EF      ;3
+        jsr     _L0A14     ;6
+        inc     L00ED      ;5
+        lda     L00ED      ;3
+        cmp     LBF80_OBJ_2_TAB      ;4
+        bne     _L09D6     ;3+
+        rts                ;6
+
+_L0A14  jsr     L13C6      ;6
+        ldy     L00EF      ;3
+        lda     L1B74,y    ;4+
+        sta     L00EE      ;3
+        jsr     _L0A24     ;6
+;        jmp     _L0A4A     ;3 not needed as it drops into the code
+
+_L0A4A  jsr     L0DEF      ;6
+        jsr     L0D9B      ;6
+        lda     #$00       ;2
+        sta     L00EA      ;3
+        ldy     L00E7      ;3
+        sty     LC000      ;4
+        lda     _L0A90_JMP_FILL_TAB_LO,y   ;4+
+        sta     _L0A6D +1   ;4
+        lda     _L0A91_JMP_FILL_TAB_HI,y   ;4+
+        sta     _L0A6D +2   ;4
+        ldx     L1B66      ;4
+        ldy     L1B67      ;4
+_L0A6D  jmp     L0E66_DRAW_LOOP      ;3
+
+_L0A24  lda     #$00       ;2
+        sta     L00EA      ;3
+        jsr     _L0B06     ;6
+        jsr     _L0AB3     ;6
+        ldy     L00E7      ;3
+        sty     LC001      ;4
+        lda     _L0A70_FILL_JMP_TAB_LO,y   ;4+ ; todo - parameters for which line loop to draw
+        sta     _L0A47 +1   ;4
+        lda     _L0A71_FILL_JMP_TAB_HI,y   ;4+ ; todo - could be split into hi and lo tables which removes the need for the ASL - or even just JMP (addr)
+        sta     _L0A47+2   ;4
+        ldx     L1B62      ;4
+        ldy     L1B63      ;4
+_L0A47  jmp     L0C30_LINE_LOOP ;3 ; todo - which line loop to draw
+
+ nop ; todo - all spare
+ nop
+ nop
+ nop
+ nop
+ nop
+ nop ; todo - all spare
+;*       =       $0A70
+
+_L0A70_FILL_JMP_TAB_LO
+		.byte   <L0B58_LINE_LOOP ; $58 ; todo - tables of pointers to draw loop
+        .byte   <L0B7C_LINE_LOOP ; $7C
+        .byte   <L0BC4_LINE_LOOP ; $C4
+        .byte   <L0BA0_LINE_LOOP ; $A0
+        .byte   <L0BE8_LINE_LOOP ; $E8
+        .byte   <L0C0C_LINE_LOOP ; $0C
+        .byte   <L0C54_LINE_LOOP ; $54
+        .byte   <L0C30_LINE_LOOP ; $30
+        .byte   <L0D08_LINE_LOOP ; $08
+        .byte   <L0D2C_LINE_LOOP ; $2C
+        .byte   <L0D74_LINE_LOOP ; $74
+        .byte   <L0D50_LINE_LOOP ; $50
+        .byte   <L0C78_LINE_LOOP ; $78
+        .byte   <L0C9C_LINE_LOOP ; $9C
+        .byte   <L0CE4_LINE_LOOP ; $E4
+        .byte   <L0CC0_LINE_LOOP ; $C0
+_L0A71_FILL_JMP_TAB_HI
+		.byte   >L0B58_LINE_LOOP ; $0B
+        .byte   >L0B7C_LINE_LOOP ; $0B
+        .byte   >L0BC4_LINE_LOOP ; $0B
+        .byte   >L0BA0_LINE_LOOP ; $0B
+        .byte   >L0BE8_LINE_LOOP ; $0B
+        .byte   >L0C0C_LINE_LOOP ; $0C
+        .byte   >L0C54_LINE_LOOP ; $0C
+        .byte   >L0C30_LINE_LOOP ; $0C
+        .byte   >L0D08_LINE_LOOP ; $0D
+        .byte   >L0D2C_LINE_LOOP ; $0D
+        .byte   >L0D74_LINE_LOOP ; $0D
+        .byte   >L0D50_LINE_LOOP ; $0D
+        .byte   >L0C78_LINE_LOOP ; $0C
+        .byte   >L0C9C_LINE_LOOP ; $0C
+        .byte   >L0CE4_LINE_LOOP ; $0C
+        .byte   >L0CC0_LINE_LOOP ; $0C
+
+_L0A90_JMP_FILL_TAB_LO
+		.byte   <L0E42_DRAW_LOOP ; $42
+        .byte   <L0E66_DRAW_LOOP ; $66
+        .byte   <L0EAE_DRAW_LOOP ; $AE
+        .byte   <L0E8A_DRAW_LOOP ; $8A
+        .byte   <L0ED2_DRAW_LOOP ; $D2
+        .byte   <L0EF6_DRAW_LOOP ; $F6
+        .byte   <L0F3E_DRAW_LOOP ; $3E
+        .byte   <L0F1A_DRAW_LOOP ; $1A
+        .byte   <L0FF2_DRAW_LOOP ; $F2
+        .byte   <L1016_DRAW_LOOP ; $16
+        .byte   <L105E_DRAW_LOOP ; $5E
+        .byte   <L103A_DRAW_LOOP ; $3A
+        .byte   <L0F62_DRAW_LOOP ; $62
+        .byte   <L0F86_DRAW_LOOP ; $86
+        .byte   <L0FCE_DRAW_LOOP ; $CE
+        .byte   <L0FAA_DRAW_LOOP ; $AA
+
+_L0A91_JMP_FILL_TAB_HI
+		.byte   >L0E42_DRAW_LOOP ; $0E
+        .byte   >L0E66_DRAW_LOOP ; $0E
+        .byte   >L0EAE_DRAW_LOOP ; $0E
+        .byte   >L0E8A_DRAW_LOOP ; $0E
+        .byte   >L0ED2_DRAW_LOOP ; $0E
+        .byte   >L0EF6_DRAW_LOOP ; $0E
+        .byte   >L0F3E_DRAW_LOOP ; $0F
+        .byte   >L0F1A_DRAW_LOOP ; $0F
+        .byte   >L0FF2_DRAW_LOOP ; $0F
+        .byte   >L1016_DRAW_LOOP ; $10
+        .byte   >L105E_DRAW_LOOP ; $10
+        .byte   >L103A_DRAW_LOOP ; $10
+        .byte   >L0F62_DRAW_LOOP ; $0F
+        .byte   >L0F86_DRAW_LOOP ; $0F
+        .byte   >L0FCE_DRAW_LOOP ; $0F
+        .byte   >L0FAA_DRAW_LOOP ; $0F
+
+_L0AB0_EXIT	pla                ;4
+			pla                ;4
+			rts                ;6
+
+_L0AB3  lda     L1B67      ;4
+        sec                ;2
+        sbc     L1B63      ;4
+        beq     _L0AB0_EXIT	;2+
+        sta     L00E4      ;3
+        lda     L1B62      ;4
+        sec                ;2
+        sbc     L1B66      ;4
+        bcs     _L0AD8     ;2+
+        lda     L1B66      ;4
+        sec                ;2
+        sbc     L1B62      ;4
+        sta     L00E3      ;3
+        lda     L00E7      ;3
+        ora     #$02       ;2
+        sta     L00E7      ;3
+        bne     _L0AE0     ;3
+
+_L0AD8  sta     L00E3      ;3
+        lda     L00E7      ;3
+        and     #$0D       ;2
+        sta     L00E7      ;3
+_L0AE0  lda     L00E3      ;3
+        sec                ;2
+        sbc     L00E4      ;3
+        bcs     _L0AF5     ;2+
+        lda     L00E7      ;3
+        ora     #$01       ;2
+        sta     L00E7      ;3
+        lda     L00E3      ;3
+        lsr     a          ;2
+        eor     #$FF       ;2
+        sta     L00E9      ;3
+        rts                ;6
+
+_L0AF5  lda     L00E7      ;3
+        and     #$0E       ;2
+        sta     L00E7      ;3
+        lda     L00E4      ;3
+        lsr     a          ;2
+        eor     #$FF       ;2
+        sta     L00E9      ;3
+        rts                ;6
+
+_L0B03  pla                ;4
+        pla                ;4
+        rts                ;6
+
+_L0B06  lda     L1B65      ;4
+        sec                ;2
+        sbc     L1B63      ;4
+        beq     _L0B03     ;2+
+        sta     L00E2      ;3
+        sta     L00D0      ;3
+        lda     L1B62      ;4
+        sec                ;2
+        sbc     L1B64      ;4
+        bcs     _L0B2D     ;2+
+        lda     L1B64      ;4
+        sec                ;2
+        sbc     L1B62      ;4
+        sta     L00E1      ;3
+        lda     L00E7      ;3
+        ora     #$08       ;2
+        sta     L00E7      ;3
+        bne     _L0B35     ;3
+
+_L0B2D  sta     L00E1      ;3
+        lda     L00E7      ;3
+        and     #$07       ;2
+        sta     L00E7      ;3
+_L0B35  lda     L00E1      ;3
+        sec                ;2
+        sbc     L00E2      ;3
+        bcs     _L0B4A     ;2+
+        lda     L00E7      ;3
+        ora     #$04       ;2
+        sta     L00E7      ;3
+        lda     L00E1      ;3
+        lsr     a          ;2
+        eor     #$FF       ;2
+        sta     L00CB      ;3
+        rts                ;6
+
+_L0B4A  lda     L00E7      ;3
+        and     #$0B       ;2
+        sta     L00E7      ;3
+        lda     L00E2      ;3
+        lsr     a          ;2
+        eor     #$FF       ;2
+        sta     L00CB      ;3
+        rts                ;6
+
+L0B58_LINE_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0B5B  dex                ;2
+        inc     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0B5B     ;2+
+        sbc     L00E1      ;3
+        iny                ;2
+        sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0B69  dec     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0B69     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0B58_LINE_LOOP ;2+
+        rts                ;6
+
+L0B7C_LINE_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0B7F  dex                ;2
+        inc     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0B7F     ;2+
+        sbc     L00E1      ;3
+        sta     L00CB      ;3
+        iny                ;2
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0B96     ;2+
+        sbc     L00E4      ;3
+        dec     L00EA      ;5
+_L0B96  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0B7C_LINE_LOOP ;2+
+        rts                ;6
+
+L0BA0_LINE_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0BA3  dex                ;2
+        inc     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0BA3     ;2+
+        sbc     L00E1      ;3
+        sta     L00CB      ;3
+        iny                ;2
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0BBA     ;2+
+        sbc     L00E4      ;3
+        inc     L00EA      ;5
+_L0BBA  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0BA0_LINE_LOOP ;2+
+        rts                ;6
+
+L0BC4_LINE_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0BC7  dex                ;2
+        inc     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0BC7     ;2+
+        sbc     L00E1      ;3
+        sta     L00CB      ;3
+        iny                ;2
+        lda     L00E9      ;3
+_L0BD5  inc     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0BD5     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0BC4_LINE_LOOP ;2+
+        rts                ;6
+
+L0BE8_LINE_LOOP
+        lda     L00CB      ;3
+        iny                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0BF5     ;2+
+        sbc     L00E2      ;3
+        dex                ;2
+        inc     L00EA      ;5
+_L0BF5  sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0BF9  dec     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0BF9     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0BE8_LINE_LOOP ;3+
+        rts                ;6
+
+L0C0C_LINE_LOOP
+        lda     L00CB      ;3
+        iny                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0C19     ;2+
+        sbc     L00E2      ;3
+        dex                ;2
+        inc     L00EA      ;5
+_L0C19  sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0C26     ;2+
+        sbc     L00E4      ;3
+        dec     L00EA      ;5
+_L0C26  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0C0C_LINE_LOOP ;2+
+        rts                ;6
+
+L0C30_LINE_LOOP
+        lda     L00CB      ;3
+        iny                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0C3D     ;2+
+        sbc     L00E2      ;3
+        dex                ;2
+        inc     L00EA      ;5
+_L0C3D  sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0C4A     ;2+
+        sbc     L00E4      ;3
+        inc     L00EA      ;5
+_L0C4A  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0C30_LINE_LOOP ;2+
+        rts                ;6
+
+L0C54_LINE_LOOP
+        lda     L00CB      ;3
+        iny                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0C61     ;2+
+        sbc     L00E2      ;3
+        dex                ;2
+        inc     L00EA      ;5
+_L0C61  sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0C65  inc     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0C65     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0C54_LINE_LOOP ;2+
+        rts                ;6
+
+L0C78_LINE_LOOP
+        lda     L00CB      ;3
+        iny                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0C85     ;2+
+        sbc     L00E2      ;3
+        inx                ;2
+        dec     L00EA      ;5
+_L0C85  sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0C89  dec     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0C89     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0C78_LINE_LOOP ;2+
+        rts                ;6
+
+L0C9C_LINE_LOOP
+        lda     L00CB      ;3
+        iny                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0CA9     ;2+
+        sbc     L00E2      ;3
+        inx                ;2
+        dec     L00EA      ;5
+_L0CA9  sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0CB6     ;2+
+        sbc     L00E4      ;3
+        dec     L00EA      ;5
+_L0CB6  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0C9C_LINE_LOOP ;2+
+        rts                ;6
+
+L0CC0_LINE_LOOP
+        lda     L00CB      ;3
+        iny                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0CCD     ;2+
+        sbc     L00E2      ;3
+        inx                ;2
+        dec     L00EA      ;5
+_L0CCD  sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0CDA     ;2+
+        sbc     L00E4      ;3
+        inc     L00EA      ;5
+_L0CDA  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0CC0_LINE_LOOP ;2+
+        rts                ;6
+
+L0CE4_LINE_LOOP
+        lda     L00CB      ;3
+        iny                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0CF1     ;2+
+        sbc     L00E2      ;3
+        inx                ;2
+        dec     L00EA      ;5
+_L0CF1  sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0CF5  inc     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0CF5     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0CE4_LINE_LOOP ;3+
+        rts                ;6
+
+L0D08_LINE_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0D0B  inx                ;2
+        dec     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0D0B     ;2+
+        sbc     L00E1      ;3
+        iny                ;2
+        sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0D19  dec     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0D19     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0D08_LINE_LOOP ;2+
+        rts                ;6
+
+L0D2C_LINE_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0D2F  inx                ;2
+        dec     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0D2F     ;2+
+        sbc     L00E1      ;3
+        iny                ;2
+        sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0D46     ;2+
+        sbc     L00E4      ;3
+        dec     L00EA      ;5
+_L0D46  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0D2C_LINE_LOOP ;2+
+        rts                ;6
+
+L0D50_LINE_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0D53  inx                ;2
+        dec     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0D53     ;2+
+        sbc     L00E1      ;3
+        iny                ;2
+        sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0D6A     ;2+
+        sbc     L00E4      ;3
+        inc     L00EA      ;5
+_L0D6A  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0D50_LINE_LOOP ;2+
+        rts                ;6
+
+L0D74_LINE_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0D77  inx                ;2
+        dec     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0D77     ;2+
+        sbc     L00E1      ;3
+        iny                ;2
+        sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0D85  inc     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0D85     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0D74_LINE_LOOP ;2+
+        rts                ;6
+
+;*       =       $0D98
+
+L0D98_EXIT
+        pla                ;4
+        pla                ;4
+        rts                ;6
+
+L0D9B   lda     L1B67      ;4
+        sec                ;2
+        sbc     L1B63      ;4
+        beq     L0D98_EXIT ;2+
+        sta     L00E4      ;3
+        lda     L1B62      ;4
+        sec                ;2
+        sbc     L1B66      ;4
+        bcs     _L0DC1     ;2+
+        lda     L1B66      ;4
+        sec                ;2
+        sbc     L1B62      ;4
+        sta     L00E3      ;3
+        lda     L00E7      ;3
+        and     #$0D       ;2
+        sta     L00E7      ;3
+        jmp     _L0DC9     ;3
+
+_L0DC1  sta     L00E3      ;3
+        lda     L00E7      ;3
+        ora     #$02       ;2
+        sta     L00E7      ;3
+_L0DC9  lda     L00E3      ;3
+        sec                ;2
+        sbc     L00E4      ;3
+        bcs     _L0DDE     ;2+
+        lda     L00E7      ;3
+        ora     #$01       ;2
+        sta     L00E7      ;3
+        lda     L00E3      ;3
+        lsr     a          ;2
+        eor     #$FF       ;2
+        sta     L00E9      ;3
+        rts                ;6
+
+_L0DDE  lda     L00E7      ;3
+        and     #$0E       ;2
+        sta     L00E7      ;3
+        lda     L00E4      ;3
+        lsr     a          ;2
+        eor     #$FF       ;2
+        sta     L00E9      ;3
+        rts                ;6
+
+L0DEC   pla                ;4
+        pla                ;4
+        rts                ;6
+
+L0DEF   lda     L1B67      ;4
+        sec                ;2
+        sbc     L1B65      ;4
+        beq     L0DEC      ;2+
+        sta     L00E2      ;3
+        sta     L00D0      ;3
+        lda     L1B64      ;4
+        sec                ;2
+        sbc     L1B66      ;4
+        bcs     _L0E17     ;2+
+        lda     L1B66      ;4
+        sec                ;2
+        sbc     L1B64      ;4
+        sta     L00E1      ;3
+        lda     L00E7      ;3
+        and     #$07       ;2
+        sta     L00E7      ;3
+        jmp     _L0E1F     ;3
+
+_L0E17  sta     L00E1      ;3
+        lda     L00E7      ;3
+        ora     #$08       ;2
+        sta     L00E7      ;3
+_L0E1F  lda     L00E1      ;3
+        sec                ;2
+        sbc     L00E2      ;3
+        bcs     _L0E34     ;2+
+        lda     L00E7      ;3
+        ora     #$04       ;2
+        sta     L00E7      ;3
+        lda     L00E1      ;3
+        lsr     a          ;2
+        eor     #$FF       ;2
+        sta     L00CB      ;3
+        rts                ;6
+
+_L0E34  lda     L00E7      ;3
+        and     #$0B       ;2
+        sta     L00E7      ;3
+        lda     L00E2      ;3
+        lsr     a          ;2
+        eor     #$FF       ;2
+        sta     L00CB      ;3
+        rts                ;6
+
+L0E42_DRAW_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0E45  dex                ;2
+        inc     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0E45     ;2+
+        sbc     L00E1      ;3
+        dey                ;2
+        sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0E53  dec     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0E53     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0E42_DRAW_LOOP ;2+
+        rts                ;6
+
+L0E66_DRAW_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0E69  dex                ;2
+        inc     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0E69     ;2+
+        sbc     L00E1      ;3
+        sta     L00CB      ;3
+        dey                ;2
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0E80     ;2+
+        sbc     L00E4      ;3
+        dec     L00EA      ;5
+_L0E80  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0E66_DRAW_LOOP ;2+
+        rts                ;6
+
+L0E8A_DRAW_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0E8D  dex                ;2
+        inc     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0E8D     ;2+
+        sbc     L00E1      ;3
+        sta     L00CB      ;3
+        dey                ;2
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0EA4     ;2+
+        sbc     L00E4      ;3
+        inc     L00EA      ;5
+_L0EA4  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0E8A_DRAW_LOOP ;2+
+        rts                ;6
+
+L0EAE_DRAW_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0EB1  dex                ;2
+        inc     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0EB1     ;2+
+        sbc     L00E1      ;3
+        sta     L00CB      ;3
+        dey                ;2
+        lda     L00E9      ;3
+_L0EBF  inc     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0EBF     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0EAE_DRAW_LOOP ;2+
+        rts                ;6
+
+L0ED2_DRAW_LOOP
+        lda     L00CB      ;3
+        dey                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0EDF     ;2+
+        sbc     L00E2      ;3
+        dex                ;2
+        inc     L00EA      ;5
+_L0EDF  sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0EE3  dec     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0EE3     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0ED2_DRAW_LOOP ;2+
+        rts                ;6
+
+L0EF6_DRAW_LOOP
+        lda     L00CB      ;3
+        dey                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0F03     ;3+
+        sbc     L00E2      ;3
+        dex                ;2
+        inc     L00EA      ;5
+_L0F03  sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0F10     ;2+
+        sbc     L00E4      ;3
+        dec     L00EA      ;5
+_L0F10  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0EF6_DRAW_LOOP ;3+
+        rts                ;6
+
+L0F1A_DRAW_LOOP
+        lda     L00CB      ;3
+        dey                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0F27     ;2+
+        sbc     L00E2      ;3
+        dex                ;2
+        inc     L00EA      ;5
+_L0F27  sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0F34     ;2+
+        sbc     L00E4      ;3
+        inc     L00EA      ;5
+_L0F34  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0F1A_DRAW_LOOP ;2+
+        rts                ;6
+
+L0F3E_DRAW_LOOP
+        lda     L00CB      ;3
+        dey                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0F4B     ;2+
+        sbc     L00E2      ;3
+        dex                ;2
+        inc     L00EA      ;5
+_L0F4B  sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0F4F  inc     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0F4F     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0F3E_DRAW_LOOP ;2+
+        rts                ;6
+
+L0F62_DRAW_LOOP
+        lda     L00CB      ;3
+        dey                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0F6F     ;2+
+        sbc     L00E2      ;3
+        inx                ;2
+        dec     L00EA      ;5
+_L0F6F  sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0F73  dec     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0F73     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0F62_DRAW_LOOP ;2+
+        rts                ;6
+
+L0F86_DRAW_LOOP
+        lda     L00CB      ;3
+        dey                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0F93     ;2+
+        sbc     L00E2      ;3
+        inx                ;2
+        dec     L00EA      ;5
+_L0F93  sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0FA0     ;2+
+        sbc     L00E4      ;3
+        dec     L00EA      ;5
+_L0FA0  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0F86_DRAW_LOOP ;2+
+        rts                ;6
+
+L0FAA_DRAW_LOOP
+        lda     L00CB      ;3
+        dey                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0FB7     ;2+
+        sbc     L00E2      ;3
+        inx                ;2
+        dec     L00EA      ;5
+_L0FB7  sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L0FC4     ;2+
+        sbc     L00E4      ;3
+        inc     L00EA      ;5
+_L0FC4  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0FAA_DRAW_LOOP ;2+
+        rts                ;6
+
+L0FCE_DRAW_LOOP
+        lda     L00CB      ;3
+        dey                ;2
+        clc                ;2
+        adc     L00E1      ;3
+        bcc     _L0FDB     ;2+
+        sbc     L00E2      ;3
+        inx                ;2
+        dec     L00EA      ;5
+_L0FDB  sta     L00CB      ;3
+        lda     L00E9      ;3
+_L0FDF  inc     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L0FDF     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0FCE_DRAW_LOOP ;2+
+        rts                ;6
+
+L0FF2_DRAW_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L0FF5  inx                ;2
+        dec     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L0FF5     ;2+
+        sbc     L00E1      ;3
+        dey                ;2
+        sta     L00CB      ;3
+        lda     L00E9      ;3
+_L1003  dec     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L1003     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L0FF2_DRAW_LOOP ;3+
+        rts                ;6
+
+L1016_DRAW_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L1019  inx                ;2
+        dec     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L1019     ;2+
+        sbc     L00E1      ;3
+        dey                ;2
+        sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L1030     ;2+
+        sbc     L00E4      ;3
+        dec     L00EA      ;5
+_L1030  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L1016_DRAW_LOOP ;2+
+        rts                ;6
+
+L103A_DRAW_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L103D  inx                ;2
+        dec     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L103D     ;2+
+        sbc     L00E1      ;3
+        dey                ;2
+        sta     L00CB      ;3
+        lda     L00E9      ;3
+        clc                ;2
+        adc     L00E3      ;3
+        bcc     _L1054     ;2+
+        sbc     L00E4      ;3
+        inc     L00EA      ;5
+_L1054  sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L103A_DRAW_LOOP ;2+
+        rts                ;6
+
+L105E_DRAW_LOOP
+        lda     L00CB      ;3
+        clc                ;2
+_L1061  inx                ;2
+        dec     L00EA      ;5
+        adc     L00E2      ;3
+        bcc     _L1061     ;2+
+        sbc     L00E1      ;3
+        dey                ;2
+        sta     L00CB      ;3
+        lda     L00E9      ;3
+_L106F  inc     L00EA      ;5
+        clc                ;2
+        adc     L00E4      ;3
+        bcc     _L106F     ;2+
+        sbc     L00E3      ;3
+        sta     L00E9      ;3
+        jsr     L131F_FILL_LINE_SETUP ;6
+        dec     L00D0      ;5
+        bne     L105E_DRAW_LOOP ;2+
+        rts                ;6
+
+;*       =       $1082
+
+L1082_INT_ROM_SETUP
+        sei                ;2
+        lda     L1B78      ;4
+        lda     L1B79      ;4
+        lda     L1B7A      ;4
+        sta     LFFFE      ;4
+        lda     L1B7B      ;4
+        sta     LFFFF      ;4
+        lda     #$35       ;2
+        sta     $01        ;3
+        lda     #$7F       ;2
+        sta     LDC0D      ;4
+        lda     LDC0D      ;4
+        rts                ;6
+
+        .byte   $40
+
+L10A3_INT
+        sta     L00D2      ;3
+        sty     L00D3      ;3
+        stx     L00D4      ;3
+        ldy     L00D7      ;3
+        lda     (L00D5_VIC_PARAM_ADDR),y  ;5+
+        sta     _L10C7+1   ;4
+        iny                ;2
+        lda     (L00D5_VIC_PARAM_ADDR),y  ;5+
+        sta     _L10C7+2   ;4
+        iny                ;2
+        lda     (L00D5_VIC_PARAM_ADDR),y  ;5+
+        beq     _L10D1     ;2+
+        sta     LD012      ;4
+        iny                ;2
+        iny                ;2
+        sty     L00D7      ;3
+_L10C2  lda     #$81       ;2
+        sta     LD019      ;4
+_L10C7  jsr     L1458      ;6
+        ldx     L00D4      ;3
+        ldy     L00D3      ;3
+        lda     L00D2      ;3
+        rti                ;6
+
+_L10D1  ldy     #$02       ;2
+        sty     L00D7      ;3
+        ldy     #$00       ;2
+        lda     (L00D5_VIC_PARAM_ADDR),y  ;5+
+        sta     LD012      ;4
+        bne     _L10C2     ;2+
+L10DE_VIC_SETUP
+        sei                ;2
+        stx     L00D5_VIC_PARAM_ADDR      ;3
+        sty     L00D6_VIC_PARAM_ADDR_HI      ;3
+        ldy     #$02       ;2
+        sty     L00D7      ;3
+        ldy     #$00       ;2
+        lda     (L00D5_VIC_PARAM_ADDR),y  ;5+
+        sta     LD012      ;4
+        lda     LD011      ;4
+        and     #$7F       ;2
+        sta     LD011      ;4
+        lda     #$81       ;2
+        sta     LD019      ;4
+        sta     LD01A      ;4
+        cli                ;2
+        rts                ;6
+
+L1100_VIC_SETUP
+        lda     LDD02      ;4
+        ora     #$03       ;2
+        sta     LDD02      ;4
+        lda     LDD00      ;4
+        and     #$FC       ;2
+        ora     #$02       ;2
+        sta     LDD00      ;4
+        lda     #$D0       ;2
+        sta     LD018      ;4
+        lda     #$3B       ;2
+        sta     LD011      ;4
+        lda     #$18       ;2
+        sta     LD016      ;4
+        rts                ;6
+
+L1122_CLEAR_SCREEN_BORDERS
+        ldx     #$00       ;2
+		txa                ;2
+L1125_CLEAR_LOOP
+        sta     LD800,x    ;5
+        sta     LD900,x    ;5
+        sta     LDA00,x    ;5
+        sta     LDB00,x    ;5
+        sta     L7400,x    ;5
+        sta     L7500,x    ;5
+        sta     L7600,x    ;5
+        sta     L7700,x    ;5
+        dex                ;2
+        bne     L1125_CLEAR_LOOP ;2+
+        rts                ;6
+
+L1141_MAIN_SETUP_PROC
+        ldx     #$00       ;2
+L1143_LOOP
+        lda     L1B7C      ;4
+        sta     LD881,x    ;5
+        sta     LD8A9,x    ;5
+        sta     LD8D1,x    ;5
+        sta     LD8F9,x    ;5
+        sta     LD921,x    ;5
+        sta     LD949,x    ;5
+        sta     LD971,x    ;5
+        sta     LD999,x    ;5
+        sta     LD9C1,x    ;5
+        sta     LD9E9,x    ;5
+        sta     LDA11,x    ;5
+        lda     L1B7D      ;4
+        asl     a          ;2
+        asl     a          ;2
+        asl     a          ;2
+        asl     a          ;2
+        ora     L1B7E      ;4
+        sta     L7481,x    ;5
+        sta     L74A9,x    ;5
+        sta     L74D1,x    ;5
+        sta     L74F9,x    ;5
+        sta     L7521,x    ;5
+        sta     L7549,x    ;5
+        sta     L7571,x    ;5
+        sta     L7599,x    ;5
+        sta     L75C1,x    ;5
+        sta     L75E9,x    ;5
+        sta     L7611,x    ;5
+        inx                ;2
+        cpx     #$16       ;2
+        bne     L1143_LOOP ;2+
+        lda     #$00       ;2
+        sta     LD020      ;4
+        sta     LD021      ;4
+        rts                ;6
+
+L11A0_MAIN_SETUP_BLD_SCN_TABLES
+        lda     #$00       ;2
+        sta     L00CC_ADDR_LO      ;3
+        lda     #$40       ;2
+        sta     L00CD_ADDR_HI      ;3
+        ldy     #$00       ;2
+        ldx     #$19       ;2
+L11AC_SCREEN_VPOS_LOOP
+        lda     L00CC_ADDR_LO      ;3
+        sta     LB600_SCREEN_VPOS_LO,y ;5
+        lda     L00CD_ADDR_HI      ;3
+        sta     LB700_SCREEN_VPOS_HI,y ;5
+        iny                ;2
+        inc     L00CC_ADDR_LO      ;5
+        lda     L00CC_ADDR_LO      ;3
+        and     #$07       ;2
+        bne     L11AC_SCREEN_VPOS_LOOP ;2+
+        lda     L00CC_ADDR_LO      ;3
+        sec                ;2
+        sbc     #$08       ;2
+        clc                ;2
+        adc     #$40       ;2
+        sta     L00CC_ADDR_LO      ;3
+        bcc     L11CD_CONT ;2+
+        inc     L00CD_ADDR_HI      ;5
+L11CD_CONT
+        inc     L00CD_ADDR_HI      ;5
+        dex                ;2
+        bne     L11AC_SCREEN_VPOS_LOOP ;2+
+        ldy     #$00       ;2
+        lda     #$00       ;2
+L11D6_SCREEN_HPOS_LOOP
+        sta     LB800_SCREEN_HPOS,y ;5
+        sta     LB800_SCREEN_HPOS+1,y ;5
+        sta     LB800_SCREEN_HPOS+2,y ;5
+        sta     LB800_SCREEN_HPOS+3,y ;5
+        sta     LB804,y    ;5
+        sta     LB805,y    ;5
+        sta     LB806,y    ;5
+        sta     LB807,y    ;5
+        clc                ;2
+        adc     #$08       ;2  ADD NEXT COLUMN?
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        bne     L11D6_SCREEN_HPOS_LOOP ;2+
+        ldy     #$00       ;2
+L11FD_FILL_LEFT_PATTERN_LOOP
+        lda     #$C0       ;2
+        sta     LB900_FILL_PATTERN,y ;5
+        sta     LB900_FILL_PATTERN+1,y ;5
+        lda     #$30       ;2
+        sta     LB900_FILL_PATTERN+2,y ;5
+        sta     LB900_FILL_PATTERN+3,y ;5
+        lda     #$0C       ;2
+        sta     LB904,y    ;5
+        sta     LB905,y    ;5
+        lda     #$03       ;2
+        sta     LB906,y    ;5
+        sta     LB907,y    ;5
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        bne     L11FD_FILL_LEFT_PATTERN_LOOP ;3+
+        ldy     #$00       ;2
+L1229_FILL_RIGHT_PATTERN_LOOP
+        lda     #$3F       ;2
+        sta     LBD00_FILL_PATTERN,y ;5
+        sta     LBD00_FILL_PATTERN+1,y ;5
+        lda     #$CF       ;2
+        sta     LBD00_FILL_PATTERN+2,y ;5
+        sta     LBD00_FILL_PATTERN+3,y ;5
+        lda     #$F3       ;2
+        sta     LBD04,y    ;5
+        sta     LBD05,y    ;5
+        lda     #$FC       ;2
+        sta     LBD06,y    ;5
+        sta     LBD07,y    ;5
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        bne     L1229_FILL_RIGHT_PATTERN_LOOP ;2+
+        ldy     #$00       ;2
+L1255_LOOP
+        lda     #$FF       ;2
+        sta     LBB00_FILL_PATTERN,y ;5
+        sta     LBB00_FILL_PATTERN+1,y ;5
+        lda     #$3F       ;2
+        sta     LBB00_FILL_PATTERN+2,y ;5
+        sta     LBB00_FILL_PATTERN+3,y ;5
+        lda     #$0F       ;2
+        sta     LBB04,y    ;5
+        sta     LBB05,y    ;5
+        lda     #$03       ;2
+        sta     LBB06,y    ;5
+        sta     LBB07,y    ;5
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        bne     L1255_LOOP ;2+
+        ldy     #$00       ;2
+L1281_LOOP
+        lda     #$00       ;2
+        sta     LBC00_FILL_PATTERN,y ;5
+        sta     LBC00_FILL_PATTERN+1,y ;5
+        lda     #$C0       ;2
+        sta     LBC00_FILL_PATTERN+2,y ;5
+        sta     LBC00_FILL_PATTERN+3,y ;5
+        lda     #$F0       ;2
+        sta     LBC04,y    ;5
+        sta     LBC05,y    ;5
+        lda     #$FC       ;2
+        sta     LBC06,y    ;5
+        sta     LBC07,y    ;5
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        bne     L1281_LOOP ;2+
+        sty     L00CD_ADDR_HI      ;3
+        sty     L00CC_ADDR_LO      ;3
+L12AF_LOOP
+        lda     L00CD_ADDR_HI      ;3
+        sta     LBE19_FILL_TAB,y ;5
+        lda     L00CC_ADDR_LO      ;3
+        sta     LBE00_FILL_TAB,y ;5
+        clc                ;2
+        adc     #$28       ;2
+        sta     L00CC_ADDR_LO      ;3
+        bcc     L12C2_CONT ;2+
+        inc     L00CD_ADDR_HI      ;5
+
+L12C2_CONT
+        iny                ;2
+        cpy     #$19       ;2
+        bne     L12AF_LOOP ;2+
+        rts                ;6
+
+		lda		#$00
+		ldx		#$00
+;*       =       $12CC
+L12CC_LOOP
+			sta	L4000,x
+			sta L4140,x
+			sta	L4280,x
+			sta L43C0,x
+			sta L4500,x
+			sta L4640,x
+            sta L4780,x
+            sta L48C0,x
+            sta L4A00,x
+            sta L4B40,x
+            sta L4C80,x
+            sta L4DC0,x
+			sta	L4F00,x
+			dex
+			bne	L12CC_LOOP
+            rts
+
+			sta L5040,x
+			sta L5180,x
+			sta L52C0,x
+			sta L5400,x
+			sta L5540,x
+			sta L5680,x
+			sta L57C0,x
+			sta L5900,x
+			sta L5A40,x
+			sta L5B80,x
+			sta L5CC0,x
+			sta L5E00,x
+			dex
+			bne L12CC_LOOP
+			rts
+
+;*       =       $131F
+
+L131F_FILL_LINE_SETUP
+        lda     L00EA      ;3
+        bpl     L133D_FILL_LINE ;2+ IF +VE
+        stx     L00E8      ;3
+        sta     L00EC      ;3
+        lda     #$00       ;2
+        sec                ;2
+        sbc     L00EA      ;3
+        sta     L00EA      ;3  NEGATE EA
+        txa                ;2
+        sec                ;2
+        sbc     L00EA      ;3
+        tax                ;2
+        jsr     L133D_FILL_LINE ;6
+        ldx     L00E8      ;3
+        lda     L00EC      ;3
+        sta     L00EA      ;3
+        rts                ;6
+
+L133D_FILL_LINE ; y=ver?
+        lda     LB700_SCREEN_VPOS_HI,y ;4+
+        ora     l1468_SCREEN_PAGE ;4
+        sta     L00CD_SCN_HI      ;3
+        lda     LB600_SCREEN_VPOS_LO,y ;4+
+        sta     L00CC_SCN_LO      ;3
+        sty     L00D1      ;3
+        ldy     LB800_SCREEN_HPOS,x ;4+
+        txa                ;2
+        and     #$07       ;2
+        eor     #$07       ;2
+        cmp     L00EA      ;3
+        bcs     L13A3      ;2+
+        sta     L00EB      ;3
+        lda     (L00CC_SCN),y  ;5+
+        and     LBC00_FILL_PATTERN,x ;4+
+        sta     L1367_SMC_LEFT_EDGE+1 ;4
+        lda     LBB00_FILL_PATTERN,x ;4+
+        and     L00EE      ;3
+L1367_SMC_LEFT_EDGE
+        ora     #$40       ;2
+        sta     (L00CC_SCN),y  ;6
+        stx     L00C9      ;3
+        lda     L00EA      ;3
+        sec                ;2
+        sbc     L00EB      ;3
+        sta     L00EB      ;3
+        lsr     a          ;2
+        lsr     a          ;2
+        lsr     a          ;2
+        tax                ;2
+        beq     L1386_FILL_END ;2+
+L137A_FILL_LOOP
+        tya                ;2
+        clc                ;2
+        adc     #$08       ;2  NEXT COLUMN
+        tay                ;2
+        lda     L00EE      ;3
+        sta     (L00CC_SCN),y  ;6
+        dex                ;2
+        bne     L137A_FILL_LOOP ;2+
+L1386_FILL_END
+        tya                ;2
+        clc                ;2
+        adc     #$08       ;2
+        tay                ;2
+        ldx     L00EB      ;3
+        lda     (L00CC_SCN),y  ;5+
+        and     LBB00_FILL_PATTERN,x ;4+
+        sta     L139A_SMC_RIGHT_EDGE+1 ;4
+        lda     LBC00_FILL_PATTERN,x ;4+
+        and     L00EE      ;3
+L139A_SMC_RIGHT_EDGE
+        ora     #$04       ;2
+        sta     (L00CC_SCN),y  ;6  UPDATE SCREEN
+        ldx     L00C9      ;3
+        ldy     L00D1      ;3
+        rts                ;6
+
+L13A3   lda     L00EA      ;3
+        beq     _L13C3     ;2+
+        sta     L00C8      ;3
+        stx     L00C9      ;3
+_L13AB  lda     (L00CC_SCN),y  ;5+
+        and     LBD00_FILL_PATTERN,x ;4+
+        sta     _L13B8+1   ;4
+        lda     LB900_FILL_PATTERN,x ;4+
+        and     L00EE      ;3
+_L13B8  ora     #$53       ;2
+        sta     (L00CC_SCN),y  ;6
+        inx                ;2
+        dec     L00C8      ;5
+        bne     _L13AB     ;2+
+        ldx     L00C9      ;3
+_L13C3  ldy     L00D1      ;3
+        rts                ;6
+
+L13C6   ldy     #$02       ;2
+_L13C8  lda     L1B63      ;4
+        cmp     L1B65      ;4
+        bcc     _L13E5     ;2+
+        ldx     L1B65      ;4
+        sta     L1B65      ;4
+        stx     L1B63      ;4
+        lda     L1B62      ;4
+        ldx     L1B64      ;4
+        sta     L1B64      ;4
+        stx     L1B62      ;4
+_L13E5  lda     L1B65      ;4
+        cmp     L1B67      ;4
+        bcc     _L1402     ;3+
+        ldx     L1B67      ;4
+        sta     L1B67      ;4
+        stx     L1B65      ;4
+        lda     L1B64      ;4
+        ldx     L1B66      ;4
+        sta     L1B66      ;4
+        stx     L1B64      ;4
+_L1402  dey                ;2
+        bne     _L13C8     ;3+
+        rts                ;6
+
+*       =       $1406
+L1406
+        .fill   26,$00
+
+L1420_VIC_SETUP_PARAMS
+        .byte   $01
+        .byte   $00
+        .byte   $48
+        .byte   $14
+        .byte   $49
+        .byte   $00
+        .byte   $35
+        .byte   $14
+        .byte   $A2
+        .byte   $00
+        .byte   $42
+        .byte   $14
+        .byte   $AA
+        .byte   $00
+        .byte   $58
+        .byte   $14
+        .byte   $00
+        .byte   $00
+
+L1432_VIC_SETUP_PARAM_LO   .byte   <L1420_VIC_SETUP_PARAMS ; $20
+L1433_VIC_SETUP_PARAM_HI   .byte   >L1420_VIC_SETUP_PARAMS ; $14
+
+        .byte   $00
+
+		lda l1468_SCREEN_PAGE
+		eor #$20
+		lsr a
+		lsr a
+		ora #$D0
+		sta LD018
+		rts
+
+		lda #$D0
+		sta LD018
+		rts
+
+		lda #$D0
+		sta LD018
+		lda #$3B
+		sta LD011
+		lda #$18
+		sta LD016
+		rts
+
+L1458   lda     #$DE       ;2
+        sta     LD018      ;4
+        lda     #$1B       ;2
+        sta     LD011      ;4
+        lda     #$08       ;2
+        sta     LD016      ;4
+        rts                ;6
+
+l1468_SCREEN_PAGE
+        .byte   $20
+
+L1469_CLEAR_SCREEN
+        lda     l1468_SCREEN_PAGE ;4
+        bne     L1497_CLEAR_SCREEN_1 ;2+
+        ldx     #$B0       ;2
+        lda     #$00       ;2
+L1472_CLEAR_SCREEN_LOOP
+        sta     L4407,x    ;5
+        sta     L4547,x    ;5
+        sta     L4687,x    ;5
+        sta     L47C7,x    ;5
+        sta     L4907,x    ;5
+        sta     L4A47,x    ;5
+        sta     L4B87,x    ;5
+        sta     L4CC7,x    ;5
+        sta     L4E07,x    ;5
+        sta     L4F47,x    ;5
+        sta     L5087,x    ;5
+        dex                ;2
+        bne     L1472_CLEAR_SCREEN_LOOP ;2+
+        rts                ;6
+
+L1497_CLEAR_SCREEN_1
+        ldx     #$B0       ;2
+        lda     #$00       ;2
+L149B_CLEAR_SCREEN_LOOP
+        sta     L6407,x    ;5
+        sta     L6547,x    ;5
+        sta     L6687,x    ;5
+        sta     L67C7,x    ;5
+        sta     L6907,x    ;5
+        sta     L6A47,x    ;5
+        sta     L6B87,x    ;5
+        sta     L6CC7,x    ;5
+        sta     L6E07,x    ;5
+        sta     L6F47,x    ;5
+        sta     L7087,x    ;5
+        dex                ;2
+        bne     L149B_CLEAR_SCREEN_LOOP ;2+
+        rts                ;6
+
+L14C0_MAIN_LOOP_PROC
+        lda     #$00       ;2
+        sta     L1950      ;4
+        jsr     L1606_JSR_CALL ;6
+        jsr     L17CE_JSR_CALL ;6
+        rts                ;6
+
+L14CC_JSR_CALL
+        sta     L00D8      ;3
+        sty     L00C9      ;3
+        stx     L00C8      ;3
+        jsr     L1645      ;6
+        lda     L00D8      ;3
+        clc                ;2
+        adc     L1B73      ;4
+        bcc     L14DF_CONT ;2+
+        lda     #$FF       ;2
+L14DF_CONT
+        sta     L00D8      ;3
+        jsr     _L151A     ;6
+        jsr     _L1590     ;6
+        lda     L00C9      ;3
+        clc                ;2
+        adc     L1B72      ;4
+        sta     L00C9      ;3
+        lda     L00C8      ;3
+        clc                ;2
+        adc     L1B71      ;4
+        sta     L00C8      ;3
+        lda     L00C9      ;3
+        cmp     #$C8       ;2
+        bcc     _L14FE     ;2+
+        rts                ;6
+
+_L14FE  lda     L00C8      ;3
+        ldx     L1950      ;4
+        lda     L00C8      ;3
+        sta     L0400,x    ;5
+        lda     L00C9      ;3
+        sta     L0401,x    ;5
+        lda     L00D8      ;3
+        sta     L0402,x    ;5
+        txa                ;2
+        clc                ;2
+        adc     #$03       ;2
+        sta     L1950      ;4
+        rts                ;6
+
+_L151A  lda     L00D8      ;3
+        sta     L00CF      ;3
+        lda     L00C8      ;3
+        cmp     #$23       ;2
+        bcs     _L155A     ;2+
+        lda     #$23       ;2
+        sec                ;2
+        sbc     L00C8      ;3
+        sta     L00CC      ;3
+        lda     #$00       ;2
+        sta     L00CD      ;3
+        sta     L00CA      ;3
+        sta     L00CB      ;3
+        ldy     #$08       ;2
+_L1535  lsr     L00CF      ;5
+        bcc     _L154B     ;2+
+        lda     L00CC      ;3
+        clc                ;2
+        adc     L00CA      ;3
+        sta     L00CA      ;3
+        bcc     _L1544     ;2+
+        inc     L00CB      ;5
+_L1544  lda     L00CD      ;3
+        clc                ;2
+        adc     L00CB      ;3
+        sta     L00CB      ;3
+_L154B  asl     L00CC      ;5
+        rol     L00CD      ;5
+        dey                ;2
+        bne     _L1535     ;2+
+        lda     L00C8      ;3
+        clc                ;2
+        adc     L00CB      ;3
+        sta     L00C8      ;3
+        rts                ;6
+
+_L155A  lda     L00C8      ;3
+        sec                ;2
+        sbc     #$23       ;2
+        sta     L00CC      ;3
+        lda     #$00       ;2
+        sta     L00CD      ;3
+        sta     L00CA      ;3
+        sta     L00CB      ;3
+        ldy     #$08       ;2
+_L156B  lsr     L00CF      ;5
+        bcc     _L1581     ;2+
+        lda     L00CC      ;3
+        clc                ;2
+        adc     L00CA      ;3
+        sta     L00CA      ;3
+        bcc     _L157A     ;2+
+        inc     L00CB      ;5
+_L157A  lda     L00CD      ;3
+        clc                ;2
+        adc     L00CB      ;3
+        sta     L00CB      ;3
+_L1581  asl     L00CC      ;5
+        rol     L00CD      ;5
+        dey                ;2
+        bne     _L156B     ;2+
+        lda     L00C8      ;3
+        sec                ;2
+        sbc     L00CB      ;3
+        sta     L00C8      ;3
+        rts                ;6
+
+_L1590  lda     L00D8      ;3
+        sta     L00CF      ;3
+        lda     L00C9      ;3
+        cmp     #$14       ;2
+        bcs     _L15D0     ;2+
+        lda     #$14       ;2
+        sec                ;2
+        sbc     L00C9      ;3
+        sta     L00CC      ;3
+        lda     #$00       ;2
+        sta     L00CD      ;3
+        sta     L00CA      ;3
+        sta     L00CB      ;3
+        ldy     #$08       ;2
+_L15AB  lsr     L00CF      ;5
+        bcc     _L15C1     ;2+
+        lda     L00CC      ;3
+        clc                ;2
+        adc     L00CA      ;3
+        sta     L00CA      ;3
+        bcc     _L15BA     ;2+
+        inc     L00CB      ;5
+_L15BA  lda     L00CD      ;3
+        clc                ;2
+        adc     L00CB      ;3
+        sta     L00CB      ;3
+_L15C1  asl     L00CC      ;5
+        rol     L00CD      ;5
+        dey                ;2
+        bne     _L15AB     ;2+
+        lda     L00C9      ;3
+        clc                ;2
+        adc     L00CB      ;3
+        sta     L00C9      ;3
+        rts                ;6
+
+_L15D0  lda     L00C9      ;3
+        sec                ;2
+        sbc     #$14       ;2
+        sta     L00CC      ;3
+        lda     #$00       ;2
+        sta     L00CD      ;3
+        sta     L00CA      ;3
+        sta     L00CB      ;3
+        ldy     #$08       ;2
+_L15E1  lsr     L00CF      ;5
+        bcc     _L15F7     ;2+
+        lda     L00CC      ;3
+        clc                ;2
+        adc     L00CA      ;3
+        sta     L00CA      ;3
+        bcc     _L15F0     ;2+
+        inc     L00CB      ;5
+_L15F0  lda     L00CD      ;3
+        clc                ;2
+        adc     L00CB      ;3
+        sta     L00CB      ;3
+_L15F7  asl     L00CC      ;5
+        rol     L00CD      ;5
+        dey                ;2
+        bne     _L15E1     ;2+
+        lda     L00C9      ;3
+        sec                ;2
+        sbc     L00CB      ;3
+        sta     L00C9      ;3
+        rts                ;6
+
+L1606_JSR_CALL
+        lda     L1B72      ;4
+        clc                ;2
+        adc     L1B6C      ;4
+        sta     L1B72      ;4
+        lda     L1B71      ;4
+        clc                ;2
+        adc     L1B6B      ;4
+        sta     L1B71      ;4
+        lda     L1B73      ;4
+        clc                ;2
+        adc     L1B6D_OBJ_3_TAB      ;4
+        sta     L1B73      ;4
+        ldy     #$00       ;2
+L1626_LOOP
+        sty     L1951      ;4
+        lda     LBF01,y    ;4+
+        tax                ;2
+        lda     LBF03,y    ;4+
+        pha                ;3
+        lda     LBF02,y    ;4+
+        tay                ;2
+        pla                ;4
+        jsr     L14CC_JSR_CALL ;6
+        ldy     L1951      ;4
+        iny                ;2
+        iny                ;2
+        iny                ;2
+        cpy     LBF00_OBJ_1_TAB      ;4
+        bne     L1626_LOOP ;2+
+        rts                ;6
+
+L1645   lda     L00C8      ;3
+        sta     L00DB      ;3
+        lda     L00C9      ;3
+        sta     L00DC      ;3
+        lda     #$32       ;2
+        sta     L194D      ;4
+        lda     #$32       ;2
+        sta     L194E      ;4
+        lda     L1B6E      ;4
+        jsr     _L16A6     ;6
+        lda     L00DD      ;3
+        sta     L00C8      ;3
+        lda     L00DE      ;3
+        sta     L00C9      ;3
+        lda     L00C8      ;3
+        sta     L00DB      ;3
+        lda     L00D8      ;3
+        sta     L00DC      ;3
+        lda     #$32       ;2
+        sta     L194D      ;4
+        lda     #$32       ;2
+        sta     L194E      ;4
+        lda     L1B6F      ;4
+        jsr     _L16A6     ;6
+        lda     L00DD      ;3
+        sta     L00C8      ;3
+        lda     L00DE      ;3
+        sta     L00D8      ;3
+        lda     L00D8      ;3
+        sta     L00DB      ;3
+        lda     L00C9      ;3
+        sta     L00DC      ;3
+        lda     #$32       ;2
+        sta     L194D      ;4
+        lda     #$32       ;2
+        sta     L194E      ;4
+        lda     L1B70      ;4
+        jsr     _L16A6     ;6
+        lda     L00DD      ;3
+        sta     L00D8      ;3
+        lda     L00DE      ;3
+        sta     L00C9      ;3
+        rts                ;6
+
+_L16A6  sta     L00D1      ;3
+        lda     #$00       ;2
+        sta     L17C0_VARIABLE_HI ;4
+        sta     L17BF_VARIABLE_LO ;4
+        lda     L00DB      ;3
+        sec                ;2
+        sbc     L194D      ;4
+        bmi     _L16BA     ;2+
+        bcs     _L16D4     ;2+
+_L16BA  ldx     #$01       ;2
+        stx     L17C0_VARIABLE_HI ;4
+        eor     #$FF       ;2
+        pha                ;3
+        lda     #$9F       ;2
+        sec                ;2
+        sbc     L00D1      ;3
+        clc                ;2
+        adc     #$50       ;2
+        cmp     #$A0       ;2
+        bcc     _L16D1     ;2+
+        sec                ;2
+        sbc     #$9F       ;2
+_L16D1  sta     L00D1      ;3
+        pla                ;4
+_L16D4  sta     L00DB      ;3
+        lda     L00DC      ;3
+        sec                ;2
+        sbc     L194E      ;4
+        bmi     _L16E0     ;2+
+        bcs     _L16FA     ;2+
+_L16E0  ldx     #$01       ;2
+        stx     L17BF_VARIABLE_LO ;4
+        eor     #$FF       ;2
+        pha                ;3
+        lda     #$9F       ;2
+        sec                ;2
+        sbc     L00D1      ;3
+        clc                ;2
+        adc     #$50       ;2
+        cmp     #$A0       ;2
+        bcc     _L16F7     ;2+
+        sec                ;2
+        sbc     #$9F       ;2
+_L16F7  sta     L00D1      ;3
+        pla                ;4
+_L16FA  sta     L00DC      ;3
+        ldy     L00D1      ;3
+        lda     L2800,y    ;4+
+        sta     L00CE      ;3
+        lda     L2900,y    ;4+
+        sta     L00CF      ;3
+        lda     #$00       ;2
+        sta     _L175F+1   ;4
+        sta     _L176A+1   ;4
+        sta     _L177B+1   ;4
+        sta     _L1786+1   ;4
+        cpy     #$28       ;2
+        bmi     _L1726     ;2+
+        cpy     #$78       ;2
+        bpl     _L1726     ;2+
+        lda     #$FF       ;2
+        sta     _L175F+1   ;4
+        sta     _L1786+1   ;4
+_L1726  cpy     #$50       ;2
+        bmi     _L1732     ;2+
+        lda     #$FF       ;2
+        sta     _L176A+1   ;4
+        sta     _L177B+1   ;4
+_L1732  lda     L00DB      ;3
+        bpl     _L1746     ;2+
+        lda     _L176A+1   ;4
+        eor     #$FF       ;2
+        sta     _L176A+1   ;4
+        lda     _L1786+1   ;4
+        eor     #$FF       ;2
+        sta     _L1786+1   ;4
+_L1746  lda     #$00       ;2
+        sta     _L1770+1   ;4
+        lda     L00DB      ;3
+        sta     L00DF      ;3
+        lda     #$00       ;2
+        sta     _L178C+1   ;4
+        lda     L00DC      ;3
+        sta     L00E0      ;3
+        lda     L00CF      ;3
+        ldy     L00E0      ;3
+        jsr     L17C1_JSR_CALL ;6
+_L175F  eor     #$00       ;2
+        sta     L00D0      ;3
+        lda     L00CE      ;3
+        ldy     L00DF      ;3
+        jsr     L17C1_JSR_CALL ;6
+_L176A  eor     #$FF       ;2
+        sec                ;2
+        sbc     L00D0      ;3
+        clc                ;2
+_L1770  adc     #$00       ;2
+        sta     L00DD      ;3
+        lda     L00CE      ;3
+        ldy     L00E0      ;3
+        jsr     L17C1_JSR_CALL ;6
+_L177B  eor     #$FF       ;2
+        sta     L00D0      ;3
+        lda     L00CF      ;3
+        ldy     L00DF      ;3
+        jsr     L17C1_JSR_CALL ;6
+_L1786  eor     #$00       ;2
+        clc                ;2
+        adc     L00D0      ;3
+        clc                ;2
+_L178C  adc     #$00       ;2
+        sta     L00DE      ;3
+        lda     L00DD      ;3
+        ldx     L17C0_VARIABLE_HI ;4
+        beq     _L1799     ;2+
+        eor     #$FF       ;2
+_L1799  clc                ;2
+        adc     L194D      ;4
+        sta     L00DD      ;3
+        lda     L00DE      ;3
+        ldx     L17BF_VARIABLE_LO ;4
+        beq     _L17A8     ;2+
+        eor     #$FF       ;2
+_L17A8  clc                ;2
+        adc     L194E      ;4
+        sta     L00DE      ;3
+        lda     L00DD      ;3
+        bpl     _L17B6     ;2+
+        lda     #$00       ;2
+        sta     L00DD      ;3
+_L17B6  lda     L00DE      ;3
+        bpl     _L17BE     ;2+
+        lda     #$00       ;2
+        sta     L00DE      ;3
+_L17BE  rts                ;6
+
+L17BF_VARIABLE_LO
+        .byte   $01
+L17C0_VARIABLE_HI
+        .byte   $01
+
+L17C1_JSR_CALL
+        tax                ;2
+        lda     L2A00,y    ;4+
+        clc                ;2
+        adc     L2A00,x    ;4+
+        tay                ;2
+        lda     L2B00,y    ;4+
+        rts                ;6
+
+L17CE_JSR_CALL
+        ldx     #$00       ;2
+L17D0_LOOP
+        lda     L1B6E,x    ;4+
+        clc                ;2
+        adc     L1B68,x    ;4+
+        cmp     #$A0       ;2
+        bcc     L17E8_CONT ;2+
+        cmp     #$C8       ;2
+        bpl     L17E5_CONT ;2+
+        sec                ;2
+        sbc     #$A0       ;2
+        jmp     L17E8_CONT ;3
+
+L17E5_CONT
+        clc                ;2
+        adc     #$A0       ;2
+L17E8_CONT
+        sta     L1B6E,x    ;5
+        inx                ;2
+        cpx     #$03       ;2
+        bne     L17D0_LOOP ;2+
+        rts                ;6
+
+L17F1_SETUP_NEXT_SHIP
+        jsr     L1469_CLEAR_SCREEN ;6
+;        jsr     L1122_CLEAR_SCREEN_BORDERS ;6
+        lda     l1468_SCREEN_PAGE ;4
+        eor     #$20       ;2
+        sta     l1468_SCREEN_PAGE ;4
+        jsr     L1469_CLEAR_SCREEN ;6
+        lda     L1B7F_SHIP_COUNTER      ; get current ship to draw
+        asl     a          ; *2
+        asl     a          ; *4
+        sta     L00D0      ; store at temp?
+        asl     a          ; *8
+        adc     L00D0      ; *12
+        tax                ; ship position index?
+        lda     L1A09_SHIP_DATA_1_LO,x    ; 
+        sta     L00CC_ADDR_LO      ;3
+        lda     L1A0A_SHIP_DATA_1_HI,x    ;4+
+        sta     L00CD_ADDR_HI      ;3
+        ldy     #$00       ;2
+L1819_LOOP
+        lda     (L00CC_ADDR),y  ;5+
+        sta     LBF00_OBJ_1_TAB,y    ;5
+        iny                ;2
+        cpy     #$80       ;2
+        bne     L1819_LOOP ;2+
+        lda     L1A0B_SHIP_DATA_2_LO,x    ;4+
+        sta     L00CC_ADDR_LO      ;3
+        lda     L1A0C_SHIP_DATA_2_HI,x    ;4+
+        sta     L00CD_ADDR_HI      ;3
+        ldy     #$00       ;2
+        sty     L00F3_OBJECT_TIMER_HI      ;3
+L1831_LOOP
+        lda     (L00CC_ADDR),y  ;5+
+        sta     LBF80_OBJ_2_TAB,y    ;5
+        iny                ;2
+        cpy     #$80       ;2
+        bne     L1831_LOOP ;2+
+        lda     L1A0D_SHIP_DATA_3_LO,x    ;4+
+        sta     L00F0      ;3
+        lda     L1A0E_SHIP_DATA_3_HI,x    ;4+
+        sta     L00F1      ;3
+        ldy     #$01       ;2
+        sty     L00F2_OBJECT_TIMER_LO      ;3
+L1849_LOOP
+        lda     (L00F0),y  ;5+
+        sta     L1B6D_OBJ_3_TAB,y    ;5
+        iny                ;2
+        cpy     #$08       ;2
+        bne     L1849_LOOP ;2+
+        lda     L1A11_SHIP_DATA_5,x    ;4+
+        sta     L1B7C      ;4
+        lda     L1A12_SHIP_DATA_6,x    ;4+
+        sta     L1B7D      ;4
+        lda     L1A13_SHIP_DATA_7_LO,x    ;4+
+        sta     L1B7E      ;4
+        ldy     L1A10_SHIP_DATA_7_HI,x    ;4+
+        lda     L1A0F_SHIP_DATA_6,x    ;4+
+        tax                ;2
+        jsr     L18BD_JSR_CALL ;6
+        jsr     L1141_MAIN_SETUP_PROC ;6
+        jsr     L1885_MAIN_LOOP_OBJECT_TIMER_PROC ;6
+        inc     L1B7F_SHIP_COUNTER	; next ship to draw
+        lda     L1B7F_SHIP_COUNTER 	; get ship to draw
+        cmp     #$07       			; is the ship counter pass the last ship?
+        bmi     L1884_CONT 			; no
+        lda     #$01       			; yes so reset ship back to 1
+        sta     L1B7F_SHIP_COUNTER 	; restore ship counter
+L1884_CONT
+        rts                			; exit
+
+		nop
+		nop
+		nop
+
+		nop
+L1885_MAIN_LOOP_OBJECT_TIMER_PROC
+        dec     L00F2_OBJECT_TIMER_LO      ;5
+        bne     L1884_CONT				; exit
+
+        lda     L00F3_OBJECT_TIMER_HI      ;3
+        clc                ;2
+        adc     #$07       ;2
+        tay                ;2
+        lda     (L00F0),y  ;5+
+        beq     L1884_CONT ; L1889_EXIT ;2+
+        sty     L00F3_OBJECT_TIMER_HI      ;3
+        sta     L00F2_OBJECT_TIMER_LO      ;3
+        iny                ;2
+        lda     (L00F0),y  ;5+
+        sta     L1B68      ;4
+        iny                ;2
+        lda     (L00F0),y  ;5+
+        sta     L1B69      ;4
+        iny                ;2
+        lda     (L00F0),y  ;5+
+        sta     L1B6A      ;4
+        iny                ;2
+        lda     (L00F0),y  ;5+
+        sta     L1B6B      ;4
+        iny                ;2
+        lda     (L00F0),y  ;5+
+        sta     L1B6C      ;4
+        iny                ;2
+        lda     (L00F0),y  ;5+
+        sta     L1B6D_OBJ_3_TAB      ;4
+        rts                ;6
+
+L18BD_JSR_CALL ; get lines?
+        stx     L00CC_ADDR_LO      ;3
+        sty     L00CD_ADDR_HI      ;3
+        ldy     #$00       ;2
+L18C3_LOOP
+        lda     (L00CC_ADDR),y  ;5+
+        cmp     #$2A       ;2
+        bne     L18CA_CONT ;2+
+        rts                ;6
+
+L18CA_CONT
+        sta     L00D0      ;3
+        iny                ;2
+        lda     (L00CC_ADDR),y  ;5+
+        tax                ;2
+        lda     LBE19_FILL_TAB,x ;4+
+        ora     #$74       ;2
+        sta     L00CB      ;3
+        lda     LBE19_FILL_TAB,x ;4+
+        ora     #$D8       ;2
+        sta     L00CF      ;3
+        lda     LBE00_FILL_TAB,x ;4+
+        clc                ;2
+        adc     L00D0      ;3
+        bcc     L18EA_CONT ;2+
+        inc     L00CB      ;5
+        inc     L00CF      ;5
+L18EA_CONT
+        sta     L00CA      ;3
+        sta     L00CE      ;3
+        iny                ;2
+        lda     (L00CC_ADDR),y  ;5+
+        sta     L00C8      ;3
+        ldx     #$00       ;2
+L18F5_LOOP
+        iny                ;2
+        lda     (L00CC_ADDR),y  ; read text?
+        cmp     #$2A       ;2
+        bne     L1900_CONT ;3+
+        iny                ;2
+        jmp     L18C3_LOOP ;3
+
+L1900_CONT
+        and     #$3F       ;2
+        sta     (L00CA,x)  ;6
+        lda     L00C8      ;3
+        sta     (L00CE,x)  ;6
+        inc     L00CA      ;5
+        bne     L190E_CONT ;2+
+        inc     L00CB      ;5
+L190E_CONT
+        inc     L00CE      ;5
+        bne     L1914_CONT ;2+
+        inc     L00CF      ;5
+L1914_CONT
+        jmp     L18F5_LOOP ;3
+
+L1917_COPY
+        ldx     #$00       ;2
+L1919_COPY_LOOP
+        lda     L2000,x    ;4+
+        sta     L7800,x    ;5
+        lda     L2100,x    ;4+
+        sta     L7900,x    ;5
+        lda     L2200,x    ;4+
+        sta     L7A00,x    ;5
+        lda     L2300,x    ;4+
+        sta     L7B00,x    ;5
+        lda     L2400,x    ;4+
+        sta     L7C00,x    ;5
+        lda     L2500,x    ;4+
+        sta     L7D00,x    ;5
+        lda     L2600,x    ;4+
+        sta     L7E00,x    ;5
+        lda     L2700,x    ;4+
+        sta     L7F00,x    ;5
+        dex                ;2
+        bne     L1919_COPY_LOOP ;2+
+        rts                ;6
+
+L194D   .byte   $32
+L194E   .byte   $32
+        .byte   $00
+L1950   .byte   $12
+L1951   .byte   $0F
+
+
+L1952_OBJ_7_DATA_1
+L1952_OBJ_1_DATA_1
+		.byte   $12
+        .byte   $32
+        .byte   $14
+        .text   "22p2"
+        .byte   $00
+        .byte   $32
+        .byte   $1E
+        .byte   $00
+        .byte   $32
+        .byte   $46
+        .byte   $64
+        .byte   $32
+        .byte   $1E
+        .byte   $64
+        .byte   $32
+        .byte   $46
+
+L1965_OBJ_1_DATA_2
+L1965_OBJ_7_DATA_2 ; inducer data
+		.byte   $04
+        .byte   $00
+        .byte   $04
+        .byte   $05
+        .byte   $03
+        .byte   $00
+        .byte   $02
+        .byte   $03
+        .byte   $01
+        .byte   $01
+        .byte   $04
+        .byte   $05
+        .byte   $01
+        .byte   $01
+        .byte   $02
+        .byte   $03
+        .byte   $03
+		
+L1976_OBJ_2_DATA_1
+		.byte   $0F
+        .byte   $32
+        .byte   $00
+        .text   "2",$0A,"z2zz22z22"
+        .byte   $64
+        .byte   $1E
+
+L1986_OBJ_2_DATA_2
+        .byte   $02
+        .byte   $00
+        .byte   $01
+        .byte   $02
+        .byte   $01
+        .byte   $00
+        .byte   $03
+        .byte   $04
+        .byte   $02
+
+L198F_OBJ_3_DATA_1
+        .byte   $12
+        .byte   $32
+        .byte   $00
+        .byte   $32
+        .byte   $14
+        .text   "z2(z22za<z2pz2"
+
+L19A2_OBJ_3_DATA_2		
+        .byte   $04
+        .byte   $00
+        .byte   $01
+        .byte   $02
+        .byte   $01
+        .byte   $00
+        .byte   $04
+        .byte   $05
+        .byte   $01
+        .byte   $00
+        .byte   $02
+        .byte   $03
+        .byte   $02
+        .byte   $00
+        .byte   $04
+        .byte   $03
+        .byte   $02
+
+L19B3_OBJ_4_DATA_1
+		.byte   $0F
+        .byte   $32
+        .byte   $64
+        .byte   $14
+        .byte   $14
+        .text   $1E,"2p",$1E,"22"
+        .byte   $64
+        .byte   $50
+        .byte   $32
+        .byte   $00
+        .byte   $32
+		
+L19C3_OBJ_4_DATA_2
+        .byte   $03
+        .byte   $00
+        .byte   $01
+        .byte   $02
+        .byte   $01
+        .byte   $03
+        .byte   $01
+        .byte   $02
+        .byte   $02
+        .byte   $01
+        .byte   $02
+        .byte   $04
+        .byte   $03
+
+L19D0_OBJ_5_DATA_1
+		.byte   $15
+        .byte   $32
+        .byte   $00
+        .byte   $32
+        .byte   $14
+        .byte   $64
+        .byte   $32
+        .byte   $50
+        .byte   $64
+        .byte   $32
+        .byte   $14
+        .byte   $64
+        .byte   $1E
+        .byte   $50
+        .byte   $64
+        .byte   $1E
+        .byte   $14
+        .byte   $64
+        .byte   $46
+        .byte   $50
+        .byte   $64
+        .byte   $46
+
+L19E6_OBJ_5_DATA_2
+        .byte   $03
+        .byte   $00
+        .byte   $01
+        .byte   $02
+        .byte   $01
+        .byte   $00
+        .byte   $03
+        .byte   $04
+        .byte   $02
+        .byte   $00
+        .byte   $05
+        .byte   $06
+        .byte   $03
+		
+L19F3_OBJ_6_DATA_1
+        .byte   $0C
+        .byte   $32
+        .byte   $00
+        .byte   $32
+        .byte   $00
+		.byte   $64
+        .byte   $32
+        .byte   $64
+        .byte   $64
+        .text   "22p",$1E
+
+L1A00_OBJ_6_DATA_2
+        .byte   $02
+        .byte   $00
+        .byte   $01
+        .byte   $03
+        .byte   $01
+        .byte   $00
+        .byte   $03
+        .byte   $02
+        .byte   $03
+
+L1A09_SHIP_DATA_1_LO   .byte   <L1952_OBJ_1_DATA_1 ; $52	; ship #1 block of 12 bytes of pointer data
+L1A0A_SHIP_DATA_1_HI   .byte   >L1952_OBJ_1_DATA_1 ; $19	; L1952_OBJ_1_DATA_1 y
+L1A0B_SHIP_DATA_2_LO   .byte   <L1965_OBJ_1_DATA_2 ; $65
+L1A0C_SHIP_DATA_2_HI   .byte   >L1965_OBJ_1_DATA_2 ; $19	; L1965_OBJ_1_DATA_2 y
+L1A0D_SHIP_DATA_3_LO   .byte   <L1A5D_OBJ_1_DATA_3 ; $5D
+L1A0E_SHIP_DATA_3_HI   .byte   >L1A5D_OBJ_1_DATA_3 ; $1A	; L1A5D_OBJ_1_DATA_3 y
+L1A0F_SHIP_DATA_6	   .byte   $80
+L1A10_SHIP_DATA_7_HI   .byte   >L1B03_OBJ_1_DATA_7	; $1B	; L1B03_OBJ_1_DATA_7 y
+L1A11_SHIP_DATA_5	   .byte   $06
+L1A12_SHIP_DATA_6	   .byte   $0E
+L1A13_SHIP_DATA_7_LO   .byte   <L1B03_OBJ_1_DATA_7	; $03
+        .byte   $00					
+		
+        .byte   <L1976_OBJ_2_DATA_1 ; $76					; ship #2 block of 12 bytes of pointer data
+        .byte   >L1976_OBJ_2_DATA_1 ; $19					; L1976_OBJ_2_DATA_1 y
+        .byte   <L1986_OBJ_2_DATA_2 ; $86
+        .byte   >L1986_OBJ_2_DATA_2 ; $19					; L1986_OBJ_2_DATA_2 y
+        .byte   <L1A81_OBJ_2_DATA_3 ; $81
+        .byte   >L1A81_OBJ_2_DATA_3 ; $1A					; L1A81_OBJ_2_DATA_3 y
+        .byte   $4E
+        .byte   >L1C0A_OBJ_2_DATA_7	; $1C					; L1C0A_OBJ_2_DATA_7
+        .byte   $02
+        .byte   $02
+        .byte   <L1C0A_OBJ_2_DATA_7	; $0A
+
+        .byte   $00
+
+        .byte   <L198F_OBJ_3_DATA_1 ; $8F					; ship #3 block of 12 bytes of pointer data
+        .byte   >L198F_OBJ_3_DATA_1 ; $19					; L198F_OBJ_3_DATA_1
+        .byte   <L19A2_OBJ_3_DATA_2 ; $A2
+        .byte   >L19A2_OBJ_3_DATA_2 ; $19					; L19A2_OBJ_3_DATA_2
+        .byte   <L1ABA_OBJ_3_DATA_3 ; $BA
+        .byte   >L1ABA_OBJ_3_DATA_3 ; $1A					; L1ABA_OBJ_3_DATA_3
+        .byte   $EC
+        .byte   >L1C0E_OBJ_3_DATA_7	; $1C					; L1C0E_OBJ_3_DATA_7
+        .byte   $02
+        .byte   $06
+        .byte   <L1C0E_OBJ_3_DATA_7	; $0E
+
+        .byte   $00
+
+        .byte   <L19B3_OBJ_4_DATA_1 ; $B3					; ship #4 block of 12 bytes of pointer data
+        .byte   >L19B3_OBJ_4_DATA_1 ; $19					; L19B3_OBJ_4_DATA_1
+        .byte   <L19C3_OBJ_4_DATA_2 ; $C3
+        .byte   >L19C3_OBJ_4_DATA_2 ; $19					; L19C3_OBJ_4_DATA_2
+        .byte   <L1A5D_OBJ_4_DATA_3 ; $5D
+        .byte   >L1A5D_OBJ_4_DATA_3 ; $1A					; L1A5D_OBJ_4_DATA_3
+        .byte   $6E
+        .byte   >L1D06_OBJ_4_DATA_7	; $1D					; L1D06_OBJ_4_DATA_7
+        .byte   $07
+        .byte   $05
+        .byte   <L1D06_OBJ_4_DATA_7 ; $06
+
+        .byte   $00
+
+        .byte   <L19D0_OBJ_5_DATA_1 ; $D0					; ship #5 block of 12 bytes of pointer data
+        .byte   >L19D0_OBJ_5_DATA_1 ; $19					; L19D0_OBJ_5_DATA_1
+        .byte   <L19E6_OBJ_5_DATA_2 ; $E6
+        .byte   >L19E6_OBJ_5_DATA_2 ; $19					; L19E6_OBJ_5_DATA_2
+        .byte   <L1A5D_OBJ_5_DATA_3 ; $5D
+        .byte   >L1A5D_OBJ_5_DATA_3 ; $1A					; L1A5D_OBJ_5_DATA_3
+        .byte   $04
+        .byte   >L1E0F_OBJ_5_DATA_7	; $1E					; L1E0F_OBJ_5_DATA_7
+        .byte   $0B
+        .byte   $0C
+        .byte   <L1E0F_OBJ_5_DATA_7	; $0F
+
+        .byte   $00
+		
+        .byte   <L19F3_OBJ_6_DATA_1 ; $F3					; ship #6 block of 12 bytes of pointer data
+        .byte   >L19F3_OBJ_6_DATA_1 ; $19					; L19F3_OBJ_6_DATA_1
+        .byte   <L1A00_OBJ_6_DATA_2 ; $00
+        .byte   >L1A00_OBJ_6_DATA_2 ; $1A					; L1A00_OBJ_6_DATA_2
+        .byte   <L1B16_OBJ_6_DATA_3 ; $16
+        .byte   >L1B16_OBJ_6_DATA_3 ; $1B					; L1B16_OBJ_6_DATA_3
+        .byte   $5D
+        .byte   >L1E03_OBJ_6_DATA_7	; $1E					; L1E03_OBJ_6_DATA_7
+        .byte   $05
+        .byte   $0B
+        .byte   <L1E03_OBJ_6_DATA_7 ; $03
+
+        .byte   $00
+
+        .byte   <L1952_OBJ_7_DATA_1 ; $52					; copy of ship #1 ?
+        .byte   >L1952_OBJ_7_DATA_1 ; $19
+        .byte   <L1965_OBJ_7_DATA_2	; $65					; 
+        .byte   >L1965_OBJ_7_DATA_2	; $19					; L1965_OBJ_7_DATA_2
+        .byte   <L1B2C_OBJ_7_DATA_3 ; $2C					; 
+        .byte   >L1B2C_OBJ_7_DATA_3 ; $1B					; L1B2C_OBJ_7_DATA_3
+        .byte   $A3					; 
+        .byte   >L1E03_OBJ_7_DATA_7	; $1E					; L1E03_OBJ_7_DATA_7
+        .byte   $06					; 
+        .byte   $0E					; 
+        .byte   <L1E03_OBJ_7_DATA_7	; $03
+
+        .byte   $00
+
+L1A5D_OBJ_1_DATA_3		
+L1A5D_OBJ_4_DATA_3		
+L1A5D_OBJ_5_DATA_3		
+        .byte   $00
+        .byte   $78
+        .byte   $78
+        .byte   $78
+        .byte   $14
+        .byte   $00
+        .byte   $FF
+        .byte   $32
+        .byte   $01
+        .byte   $04
+        .byte   $02
+        .byte   $01
+        .byte   $01
+        .byte   $FC
+        .byte   $28
+        .byte   $04
+        .byte   $02
+        .byte   $01
+        .byte   $01
+        .byte   $FF
+        .byte   $03
+        .byte   $14
+        .byte   $01
+        .byte   $02
+        .byte   $04
+        .byte   $00
+        .byte   $01
+        .byte   $F8
+        .byte   $0A
+        .byte   $01
+        .byte   $04
+        .byte   $02
+        .fill   4,$00
+
+L1A81_OBJ_2_DATA_3
+		.byte   $00
+        .byte   $78
+        .byte   $78
+        .byte   $00
+        .byte   $6E
+        .byte   $00
+        .byte   $FF
+        .byte   $3C
+        .byte   $00
+        .byte   $04
+        .byte   $00
+        .byte   $00
+        .byte   $01
+        .byte   $FC
+        .byte   $1E
+        .byte   $00
+        .byte   $04
+        .byte   $FE
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $37
+        .byte   $00
+        .byte   $04
+        .byte   $FE
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $32
+        .byte   $00
+        .byte   $04
+        .byte   $00
+        .byte   $01
+        .byte   $00
+        .byte   $04
+        .byte   $01
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $9B
+        .byte   $00
+        .byte   $00
+        .byte   $32
+        .byte   $01
+        .byte   $00
+        .byte   $00
+        .byte   $01
+        .byte   $00
+        .byte   $FC
+        .byte   $0A
+        .byte   $01
+        .byte   $04
+        .byte   $02
+        .fill   4,$00
+
+L1ABA_OBJ_3_DATA_3
+		.byte 	$00
+		.byte	$00
+        .byte   $78
+        .byte   $4B
+        .byte   $82
+        .byte   $1E
+        .byte   $00
+        .byte   $14
+        .byte   $00
+        .byte   $00
+        .byte   $FF
+        .byte   $02
+        .byte   $00
+        .byte   $00
+        .byte   $14
+        .byte   $00
+        .byte   $00
+        .byte   $01
+        .byte   $FE
+        .byte   $00
+        .byte   $00
+        .byte   $14
+        .byte   $00
+        .byte   $00
+        .byte   $FF
+        .byte   $02
+        .byte   $00
+        .byte   $00
+        .byte   $14
+        .byte   $00
+        .byte   $00
+        .byte   $01
+        .byte   $FE
+        .byte   $00
+        .byte   $00
+        .byte   $14
+        .byte   $00
+        .byte   $00
+        .byte   $FF
+        .byte   $02
+        .byte   $00
+        .byte   $00
+        .byte   $2D
+        .byte   $00
+        .byte   $00
+        .byte   $01
+        .byte   $FC
+        .byte   $00
+        .byte   $00
+        .byte   $01
+        .byte   $50
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $FA
+        .byte   $14
+        .byte   $39
+        .byte   $00
+        .byte   $00
+        .byte   $02
+        .byte   $04
+        .byte   $00
+        .byte   $03
+        .byte   $01
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $24
+        .byte   $00
+        .byte   $00
+        .byte   $50
+        .byte   $00
+        .byte   $00
+		
+L1B03_OBJ_1_DATA_7
+        .byte   $02
+        .byte   $02
+        .byte   $00
+        .byte   $FE
+        .byte   $14
+        .byte   $00
+        .byte   $00
+        .byte   $02
+        .byte   $FE
+        .byte   $00
+        .byte   $00
+        .byte   $0A
+        .byte   $01
+        .byte   $04
+        .byte   $02
+        .fill   4,$00
+
+L1B16_OBJ_6_DATA_3
+		.byte	$00
+        .byte   $78
+        .byte   $78
+        .byte   $78
+        .byte   $6E
+        .byte   $14
+        .byte   $FF
+        .byte   $3C
+        .byte   $01
+        .byte   $04
+        .byte   $02
+        .byte   $00
+        .byte   $00
+        .byte   $FC
+        .byte   $0A
+        .byte   $01
+        .byte   $04
+        .byte   $02
+        .fill   4,$00
+L1B2C_OBJ_7_DATA_3
+		.byte	$00
+        .byte   $78
+        .byte   $78
+        .byte   $78
+        .byte   $6E
+        .byte   $14
+        .byte   $FF
+        .byte   $3C
+        .byte   $00
+        .byte   $04
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $FC
+        .byte   $0A
+        .byte   $00
+        .byte   $04
+        .fill   5,$00
+L1B42   .byte   $46
+L1B43   .byte   $45
+        .byte   $20
+        .byte   $1F
+        .fill   12,$00
+L1B52   .byte   $02
+L1B53   .byte   $00
+        .byte   $03
+        .byte   $01
+        .fill   12,$00
+L1B62   .byte   $9C
+L1B63   .byte   $2B
+L1B64   .byte   $84
+L1B65   .byte   $44
+L1B66   .byte   $A4
+L1B67   .byte   $46
+L1B68   .byte   $00
+L1B69   .byte   $04
+L1B6A   .byte   $00
+L1B6B   .byte   $00
+L1B6C   .byte   $00
+L1B6D_OBJ_3_TAB  .byte   $00
+L1B6E   .byte   $78
+L1B6F   .byte   $00
+L1B70   .byte   $78
+L1B71   .byte   $6E
+L1B72   .byte   $14
+L1B73   .byte   $13
+L1B74   .byte   $3C
+        .byte   $55
+        .byte   $AA
+        .byte   $FF
+L1B78   .byte   $A2
+L1B79   .byte   $10
+L1B7A   .byte   <L10A3_INT ; $A3 L10A3_INT
+L1B7B   .byte   >L10A3_INT ; $10 L10A3_INT
+L1B7C   .byte   $06
+L1B7D   .byte   $0E
+L1B7E   .byte   $03
+L1B7F_SHIP_COUNTER   .byte   $01	; ship counter
+        .byte   $04
+        .byte   $10
+        .text   $0D,"welcome to the demo with no name*"
+        .byte   $01
+        .text   $12,$05,"this is to be the next game from sensi*"
+        .byte   $08
+        .byte   $13
+        .text   $05,"soft to thrill and amaze.*"
+        .byte   $02
+        .byte   $15
+        .text   $05,"it will consist of filled 3d"
+
+L1C0A_OBJ_2_DATA_7
+		.text	",lot"
+
+L1C0E_OBJ_3_DATA_7	
+		.text	"s of*",$07
+        .byte   $16
+        .text   $05,"blasting,and fun,fun,fun!!!*"
+        .byte   $08
+        .byte   $18
+        .byte   $06
+        .text   "press space to see more**",$0D
+        .byte   $10
+        .byte   $03
+        .text   "ship overview*"
+        .byte   $04
+        .byte   $12
+        .byte   $0E
+        .text   "class z fighter ship - the dart*"
+        .byte   $09
+        .byte   $14
+        .byte   $06
+        .text   "it darts to the left,*"
+        .byte   $09
+        .byte   $15
+        .byte   $06
+        .text   "it darts to the right,*"
+        .byte   $0C
+        .byte   $16
+        .byte   $06
+        .text   "unless it dies,*",$05
+        .byte   $17
+        .byte   $06
+        .text   "it'll get you between the eyes.**",$0D
+        .byte   $10
+        .text   $07,"ship overview*"
+        .byte   $08
+        .text   $12,$0D,"unclas"
+L1D06_OBJ_4_DATA_7
+		.text	"sed - paper plane*"
+        .byte   $01
+        .byte   $14
+        .text   $05,"these ships do nothing, are manned by*"
+        .byte   $00
+        .byte   $15
+        .text   $05,"no-one,and always just miss black holes.**",$0D
+        .byte   $10
+        .text   $0A,"ship overview*"
+        .byte   $09
+        .byte   $12
+        .byte   $02
+        .text   "class a - jopship one*",$05
+        .byte   $14
+        .byte   $04
+        .text   "sometimes called 'flopship one'.*"
+        .byte   $04
+        .byte   $16
+        .byte   $04
+        .text   "this little baby has no chance of*"
+        .byte   $06
+        .byte   $17
+        .byte   $04
+        .text   "appearing in any game i write.*"
+L1E03_OBJ_6_DATA_7
+L1E03_OBJ_7_DATA_7
+		.text	"*",$0D
+        .byte   $10
+        .text   $07,"ship ove"
+L1E0F_OBJ_5_DATA_7
+		.text 	"rview*"
+        .byte   $0B
+        .byte   $12
+        .byte   $08
+        .text   "class x - heatsink*"
+        .byte   $04
+        .byte   $15
+        .byte   $09
+        .text   "has the ability to sink heat or*"
+        .byte   $0F
+        .byte   $16
+        .byte   $09
+        .text   "something.**",$0D
+        .byte   $10
+        .text   $07,"ship overview*"
+        .byte   $09
+        .byte   $12
+        .byte   $08
+        .text   "class xr3i - supaship*"
+        .byte   $08
+        .byte   $15
+        .byte   $09
+        .text   "'a ship to be seen in.'**",$0D
+        .byte   $10
+        .text   $0D,"ship overview*",$0A,$12,$07,"class 285 - innducer*"
+        .byte   $08
+        .byte   $14
+        .text   $05,"indestructalble and fast.*"
+        .byte   $03
+        .byte   $15
+        .text   $05,"has no ability to fire,but instead*"
+        .byte   $01
+        .byte   $16
+        .text   $05,"surrounds its victims and squashes 'em**s and squashes 'em"
+        .text   "**"
+        .fill   178,$FF
+
+*       =       $2000
+L2000   .byte   $3C
+        .byte   $66
+        .byte   $6E
+        .byte   $6E
+        .byte   $60
+        .byte   $62
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $66
+        .byte   $7E
+        .byte   $66
+        .byte   $66
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $7C
+        .byte   $66
+        .byte   $7C
+        .byte   $66
+        .byte   $7C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $66
+        .byte   $60
+        .byte   $66
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $7C
+        .byte   $66
+        .byte   $66
+        .byte   $66
+        .byte   $7C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $7E
+        .byte   $60
+        .byte   $78
+        .byte   $60
+        .byte   $7E
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $7E
+        .byte   $60
+        .byte   $78
+        .byte   $60
+        .byte   $60
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $60
+        .byte   $6E
+        .byte   $66
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $66
+        .byte   $66
+        .byte   $7E
+        .byte   $66
+        .byte   $66
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $1E
+        .byte   $0C
+        .byte   $0C
+        .byte   $4C
+        .byte   $38
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $66
+        .byte   $6C
+        .byte   $78
+        .byte   $6C
+        .byte   $66
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $60
+        .byte   $60
+        .byte   $60
+        .byte   $60
+        .byte   $7E
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $66
+        .byte   $7E
+        .byte   $7E
+        .byte   $66
+        .byte   $66
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $66
+        .byte   $76
+        .byte   $7E
+        .byte   $6E
+        .byte   $66
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $66
+        .byte   $66
+        .byte   $66
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $7C
+        .byte   $66
+        .byte   $7C
+        .byte   $60
+        .byte   $60
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $66
+        .byte   $66
+        .byte   $6C
+        .byte   $36
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $7C
+        .byte   $66
+        .byte   $7C
+        .byte   $6C
+        .byte   $66
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $62
+        .byte   $3C
+        .byte   $46
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $7E
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $66
+        .byte   $66
+        .byte   $66
+        .byte   $66
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $66
+        .byte   $66
+        .byte   $66
+        .byte   $3C
+        .byte   $18
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $66
+        .byte   $66
+        .byte   $7E
+        .byte   $7E
+        .byte   $66
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $66
+        .byte   $3C
+        .byte   $18
+        .byte   $3C
+        .byte   $66
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $66
+        .byte   $66
+        .byte   $3C
+        .byte   $18
+        .byte   $18
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $7E
+        .byte   $0C
+        .byte   $18
+        .byte   $30
+        .byte   $7E
+        .byte   $00
+        .byte   $00
+        .text   "<00000<"
+        .byte   $00
+        .byte   $0C
+        .byte   $12
+        .byte   $30
+        .byte   $7C
+        .byte   $30
+        .byte   $62
+        .byte   $FC
+        .byte   $00
+        .byte   $3C
+        .fill   5,$0C
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $18
+        .byte   $3C
+        .byte   $7E
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $00
+        .byte   $10
+        .byte   $30
+        .byte   $7F
+        .byte   $7F
+        .byte   $30
+        .byte   $10
+        .byte   $00
+L2100   .fill   9,$00
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $00
+        .byte   $18
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $6C
+        .byte   $24
+        .fill   5,$00
+        .byte   $66
+        .byte   $66
+        .byte   $FF
+        .byte   $66
+        .byte   $FF
+        .byte   $66
+        .byte   $66
+        .byte   $00
+        .byte   $18
+        .byte   $3E
+        .byte   $60
+        .byte   $3C
+        .byte   $06
+        .byte   $7C
+        .byte   $18
+        .byte   $00
+        .byte   $00
+        .byte   $66
+        .byte   $0C
+        .byte   $18
+        .byte   $30
+        .byte   $66
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $66
+        .byte   $3C
+        .byte   $38
+        .byte   $67
+        .byte   $66
+        .byte   $3F
+        .byte   $00
+        .byte   $00
+        .byte   $18
+        .byte   $08
+        .fill   6,$00
+        .byte   $18
+        .byte   $30
+        .byte   $30
+        .byte   $30
+        .byte   $18
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $18
+        .byte   $0C
+        .byte   $0C
+        .byte   $0C
+        .byte   $18
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $66
+        .byte   $3C
+        .byte   $FF
+        .byte   $3C
+        .byte   $66
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $18
+        .byte   $3C
+        .byte   $18
+        .fill   8,$00
+        .byte   $18
+        .byte   $08
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .fill   9,$00
+        .byte   $18
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $06
+        .byte   $0C
+        .byte   $18
+        .byte   $30
+        .byte   $60
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $66
+        .byte   $66
+        .byte   $66
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $18
+        .byte   $38
+        .byte   $18
+        .byte   $18
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $6E
+        .byte   $0C
+        .byte   $38
+        .byte   $7E
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $66
+        .byte   $0C
+        .byte   $66
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $0C
+        .byte   $1C
+        .byte   $2C
+        .byte   $7E
+        .byte   $0C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $7E
+        .byte   $60
+        .byte   $7C
+        .byte   $06
+        .byte   $7C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $60
+        .byte   $7C
+        .byte   $66
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $7E
+        .byte   $0C
+        .byte   $0C
+        .byte   $18
+        .byte   $18
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $66
+        .byte   $3C
+        .byte   $66
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $66
+        .byte   $3E
+        .byte   $06
+        .byte   $3C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $18
+        .byte   $00
+        .byte   $18
+        .fill   5,$00
+        .byte   $18
+        .byte   $00
+        .byte   $18
+        .byte   $08
+        .byte   $00
+        .byte   $00
+        .byte   $0E
+        .byte   $18
+        .byte   $30
+        .byte   $60
+        .byte   $30
+        .byte   $18
+        .byte   $0E
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $7E
+        .byte   $00
+        .byte   $7E
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $70
+        .byte   $18
+        .byte   $0C
+        .byte   $06
+        .byte   $0C
+        .byte   $18
+        .byte   $70
+        .byte   $00
+        .byte   $00
+        .byte   $3C
+        .byte   $66
+        .byte   $0C
+        .byte   $18
+        .byte   $00
+        .byte   $18
+        .byte   $00
+L2200   .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $FF
+        .byte   $FF
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $08
+        .byte   $1C
+        .byte   $3E
+        .byte   $7F
+        .byte   $7F
+        .byte   $1C
+        .byte   $3E
+        .byte   $00
+        .fill   8,$18
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $FF
+        .byte   $FF
+        .fill   5,$00
+        .byte   $FF
+        .byte   $FF
+        .fill   5,$00
+        .byte   $FF
+        .byte   $FF
+        .fill   9,$00
+        .byte   $FF
+        .byte   $FF
+        .byte   $00
+        .byte   $00
+        .text   "00000000"
+        .fill   8,$0C
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $E0
+        .byte   $F0
+        .byte   $38
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $1C
+        .byte   $0F
+        .byte   $07
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $18
+        .byte   $18
+        .byte   $38
+        .byte   $F0
+        .byte   $E0
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .fill   6,$C0
+        .byte   $FF
+        .byte   $FF
+        .byte   $C0
+        .byte   $E0
+        .byte   $70
+        .byte   $38
+        .byte   $1C
+        .byte   $0E
+        .byte   $07
+        .byte   $03
+        .byte   $03
+        .byte   $07
+        .byte   $0E
+        .byte   $1C
+        .byte   $38
+        .byte   $70
+        .byte   $E0
+        .byte   $C0
+        .byte   $FF
+        .byte   $FF
+        .fill   6,$C0
+        .byte   $FF
+        .byte   $FF
+        .fill   6,$03
+        .byte   $00
+        .byte   $3C
+        .byte   $7E
+        .byte   $7E
+        .byte   $7E
+        .byte   $7E
+        .byte   $3C
+        .fill   6,$00
+        .byte   $FF
+        .byte   $FF
+        .byte   $00
+        .byte   $36
+        .byte   $7F
+        .byte   $7F
+        .byte   $7F
+        .byte   $3E
+        .byte   $1C
+        .byte   $08
+        .byte   $00
+        .fill   8,$60
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $07
+        .byte   $0F
+        .byte   $1C
+        .byte   $18
+        .byte   $18
+        .byte   $C3
+        .byte   $E7
+        .byte   $7E
+        .byte   $3C
+        .byte   $3C
+        .byte   $7E
+        .byte   $E7
+        .byte   $C3
+        .byte   $00
+        .byte   $3C
+        .byte   $7E
+        .byte   $66
+        .byte   $66
+        .byte   $7E
+        .byte   $3C
+        .byte   $00
+        .byte   $18
+        .byte   $18
+        .byte   $66
+        .byte   $66
+        .byte   $18
+        .byte   $18
+        .byte   $3C
+        .byte   $00
+        .fill   8,$06
+        .byte   $08
+        .byte   $1C
+        .byte   $3E
+        .byte   $7F
+        .byte   $3E
+        .byte   $1C
+        .byte   $08
+        .byte   $00
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $FF
+        .byte   $FF
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $C0
+        .byte   $C0
+        .byte   $30
+        .byte   $30
+        .byte   $C0
+        .byte   $C0
+        .byte   $30
+        .byte   $30
+        .fill   8,$18
+        .byte   $00
+        .byte   $00
+        .byte   $03
+        .byte   $3E
+        .byte   $76
+        .byte   $36
+        .byte   $36
+        .byte   $00
+        .byte   $FF
+        .byte   $7F
+        .byte   $3F
+        .byte   $1F
+        .byte   $0F
+        .byte   $07
+        .byte   $03
+        .byte   $01
+L2300   .fill   8,$00
+        .fill   8,$F0
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .fill   5,$FF
+        .fill   14,$00
+        .byte   $FF
+        .fill   8,$C0
+        .text   "LL33LL33"
+        .fill   8,$03
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .text   "LL33"
+        .byte   $FF
+        .byte   $FE
+        .byte   $FC
+        .byte   $F8
+        .byte   $F0
+        .byte   $E0
+        .byte   $C0
+        .byte   $80
+        .fill   8,$03
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $1F
+        .byte   $1F
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $1F
+        .byte   $1F
+        .fill   6,$00
+        .byte   $F8
+        .byte   $F8
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .fill   6,$00
+        .byte   $FF
+        .byte   $FF
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $1F
+        .byte   $1F
+        .fill   6,$18
+        .byte   $FF
+        .byte   $FF
+        .fill   6,$00
+        .byte   $FF
+        .byte   $FF
+        .fill   6,$18
+        .byte   $F8
+        .byte   $F8
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .fill   8,$C0
+        .fill   8,$E0
+        .text   $07,$07,$07,$07,$07,$07,$07,$07
+        .byte   $FF
+        .byte   $FF
+        .fill   6,$00
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .fill   10,$00
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .fill   6,$03
+        .byte   $FF
+        .byte   $FF
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $F0
+        .byte   $F0
+        .byte   $F0
+        .byte   $F0
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $18
+        .byte   $18
+        .byte   $18
+        .byte   $F8
+        .byte   $F8
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $F0
+        .byte   $F0
+        .byte   $F0
+        .byte   $F0
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .byte   $F0
+        .byte   $F0
+        .byte   $F0
+        .byte   $F0
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+L2400   .byte   $C3
+        .byte   $99
+        .byte   $91
+        .byte   $91
+        .byte   $9F
+        .byte   $99
+        .byte   $C3
+        .byte   $FF
+        .byte   $E7
+        .text   "C",$99,$81,$99,$99,$99
+        .byte   $FF
+        .byte   $83
+        .byte   $99
+        .byte   $99
+        .byte   $83
+        .byte   $99
+        .byte   $99
+        .byte   $83
+        .byte   $FF
+        .text   "C",$99,$9F,$9F,$9F,$99,"C"
+        .byte   $FF
+        .byte   $87
+        .text   $93,$99,$99,$99,$93
+        .byte   $87
+        .byte   $FF
+        .byte   $81
+        .byte   $9F
+        .byte   $9F
+        .byte   $87
+        .byte   $9F
+        .byte   $9F
+        .byte   $81
+        .byte   $FF
+        .byte   $81
+        .byte   $9F
+        .byte   $9F
+        .byte   $87
+        .byte   $9F
+        .byte   $9F
+        .byte   $9F
+        .byte   $FF
+        .byte   $C3
+        .byte   $99
+        .byte   $9F
+        .byte   $91
+        .byte   $99
+        .byte   $99
+        .byte   $C3
+        .byte   $FF
+        .text   $99,$99,$99,$81,$99,$99,$99
+        .byte   $FF
+        .byte   $C3
+        .fill   5,$E7
+        .byte   $C3
+        .byte   $FF
+        .byte   $E1
+        .byte   $F3
+        .byte   $F3
+        .byte   $F3
+        .byte   $F3
+        .byte   $93
+        .byte   $C7
+        .byte   $FF
+        .byte   $99
+        .byte   $93
+        .byte   $87
+        .byte   $8F
+        .byte   $87
+        .byte   $93
+        .byte   $99
+        .byte   $FF
+        .text   $9F,$9F,$9F,$9F,$9F,$9F,$81
+        .byte   $FF
+        .byte   $9C
+        .byte   $88
+        .byte   $80
+        .byte   $94
+        .byte   $9C
+        .byte   $9C
+        .byte   $9C
+        .byte   $FF
+        .byte   $99
+        .byte   $89
+        .byte   $81
+        .byte   $81
+        .byte   $91
+        .byte   $99
+        .byte   $99
+        .byte   $FF
+        .text   "C",$99,$99,$99,$99,$99,"C"
+        .byte   $FF
+        .byte   $83
+        .byte   $99
+        .byte   $99
+        .byte   $83
+        .byte   $9F
+        .byte   $9F
+        .byte   $9F
+        .byte   $FF
+        .text   "C",$99,$99,$99,$99,"C"
+        .byte   $F1
+        .byte   $FF
+        .byte   $83
+        .byte   $99
+        .byte   $99
+        .byte   $83
+        .byte   $87
+        .byte   $93
+        .byte   $99
+        .byte   $FF
+        .text   "C",$99,$9F,"C"
+        .byte   $F9
+        .byte   $99
+        .byte   $C3
+        .byte   $FF
+        .byte   $81
+        .fill   6,$E7
+        .byte   $FF
+        .text   $99,$99,$99,$99,$99,$99,"C"
+        .byte   $FF
+        .text   $99,$99,$99,$99,$99,"C"
+        .byte   $E7
+        .byte   $FF
+        .byte   $9C
+        .byte   $9C
+        .byte   $9C
+        .byte   $94
+        .byte   $80
+        .byte   $88
+        .byte   $9C
+        .byte   $FF
+        .byte   $99
+        .byte   $99
+        .byte   $C3
+        .byte   $E7
+        .byte   $C3
+        .byte   $99
+        .byte   $99
+        .byte   $FF
+        .text   $99,$99,$99,"C"
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $FF
+        .byte   $81
+        .byte   $F9
+        .byte   $F3
+        .byte   $E7
+        .byte   $CF
+        .byte   $9F
+        .byte   $81
+        .byte   $FF
+        .text   "COOOOOC"
+        .byte   $FF
+        .byte   $F3
+        .byte   $ED
+        .byte   $CF
+        .byte   $83
+        .byte   $CF
+        .byte   $9D
+        .byte   $03
+        .byte   $FF
+        .byte   $C3
+        .fill   5,$F3
+        .byte   $C3
+        .byte   $FF
+        .byte   $FF
+        .byte   $E7
+        .byte   $C3
+        .byte   $81
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $FF
+        .byte   $EF
+        .byte   $CF
+        .byte   $80
+        .byte   $80
+        .byte   $CF
+        .byte   $EF
+        .byte   $FF
+L2500   .fill   8,$FF
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $FF
+        .byte   $FF
+        .byte   $E7
+        .byte   $FF
+        .byte   $99
+        .byte   $99
+        .byte   $99
+        .fill   5,$FF
+        .byte   $99
+        .byte   $99
+        .byte   $00
+        .byte   $99
+        .byte   $00
+        .byte   $99
+        .byte   $99
+        .byte   $FF
+        .byte   $E7
+        .byte   $C1
+        .byte   $9F
+        .byte   $C3
+        .byte   $F9
+        .byte   $83
+        .byte   $E7
+        .byte   $FF
+        .byte   $9D
+        .byte   $99
+        .byte   $F3
+        .byte   $E7
+        .byte   $CF
+        .byte   $99
+        .byte   $B9
+        .byte   $FF
+        .text   "C",$99,"CG",$98,$99
+        .byte   $C0
+        .byte   $FF
+        .byte   $F9
+        .byte   $F3
+        .byte   $E7
+        .fill   5,$FF
+        .byte   $F3
+        .byte   $E7
+        .byte   $CF
+        .byte   $CF
+        .byte   $CF
+        .byte   $E7
+        .byte   $F3
+        .byte   $FF
+        .byte   $CF
+        .byte   $E7
+        .byte   $F3
+        .byte   $F3
+        .byte   $F3
+        .byte   $E7
+        .byte   $CF
+        .byte   $FF
+        .byte   $FF
+        .byte   $99
+        .byte   $C3
+        .byte   $00
+        .byte   $C3
+        .byte   $99
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $E7
+        .byte   $E7
+        .byte   $81
+        .byte   $E7
+        .byte   $E7
+        .fill   7,$FF
+        .byte   $E7
+        .byte   $E7
+        .byte   $CF
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $81
+        .fill   9,$FF
+        .byte   $E7
+        .byte   $E7
+        .byte   $FF
+        .byte   $FF
+        .byte   $FC
+        .byte   $F9
+        .byte   $F3
+        .byte   $E7
+        .byte   $CF
+        .byte   $9F
+        .byte   $FF
+        .byte   $C3
+        .byte   $99
+        .byte   $91
+        .byte   $89
+        .byte   $99
+        .byte   $99
+        .byte   $C3
+        .byte   $FF
+        .byte   $E7
+        .byte   $E7
+        .byte   $C7
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $81
+        .byte   $FF
+        .byte   $C3
+        .byte   $99
+        .byte   $F9
+        .byte   $F3
+        .byte   $CF
+        .byte   $9F
+        .byte   $81
+        .byte   $FF
+        .byte   $C3
+        .byte   $99
+        .byte   $F9
+        .byte   $E3
+        .byte   $F9
+        .byte   $99
+        .byte   $C3
+        .byte   $FF
+        .byte   $F9
+        .byte   $F1
+        .byte   $E1
+        .byte   $99
+        .byte   $80
+        .byte   $F9
+        .byte   $F9
+        .byte   $FF
+        .byte   $81
+        .byte   $9F
+        .byte   $83
+        .byte   $F9
+        .byte   $F9
+        .byte   $99
+        .byte   $C3
+        .byte   $FF
+        .byte   $C3
+        .byte   $99
+        .byte   $9F
+        .byte   $83
+        .byte   $99
+        .byte   $99
+        .byte   $C3
+        .byte   $FF
+        .byte   $81
+        .byte   $99
+        .byte   $F3
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $FF
+        .text   "C",$99,$99,"C",$99,$99,"C"
+        .byte   $FF
+        .text   "C",$99,$99,"A"
+        .byte   $F9
+        .byte   $99
+        .byte   $C3
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $E7
+        .byte   $FF
+        .byte   $FF
+        .byte   $E7
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $E7
+        .byte   $FF
+        .byte   $FF
+        .byte   $E7
+        .byte   $E7
+        .byte   $CF
+        .byte   $F1
+        .byte   $E7
+        .byte   $CF
+        .byte   $9F
+        .byte   $CF
+        .byte   $E7
+        .byte   $F1
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $81
+        .byte   $FF
+        .byte   $81
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $8F
+        .byte   $E7
+        .byte   $F3
+        .byte   $F9
+        .byte   $F3
+        .byte   $E7
+        .byte   $8F
+        .byte   $FF
+        .byte   $C3
+        .byte   $99
+        .byte   $F9
+        .byte   $F3
+        .byte   $E7
+        .byte   $FF
+        .byte   $E7
+        .byte   $FF
+L2600   .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $00
+        .byte   $00
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $F7
+        .byte   $E3
+        .byte   $C1
+        .byte   $80
+        .byte   $80
+        .byte   $E3
+        .byte   $C1
+        .byte   $FF
+        .fill   8,$E7
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $00
+        .byte   $00
+        .fill   5,$FF
+        .byte   $00
+        .byte   $00
+        .fill   5,$FF
+        .byte   $00
+        .byte   $00
+        .fill   9,$FF
+        .byte   $00
+        .byte   $00
+        .byte   $FF
+        .byte   $FF
+        .text   "OOOOOOOO"
+        .fill   8,$F3
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $1F
+        .byte   $0F
+        .byte   $C7
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $E3
+        .byte   $F0
+        .byte   $F8
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $E7
+        .byte   $E7
+        .byte   $C7
+        .byte   $0F
+        .byte   $1F
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .text   "??????"
+        .byte   $00
+        .byte   $00
+        .byte   $3F
+        .byte   $1F
+        .byte   $8F
+        .byte   $C7
+        .byte   $E3
+        .byte   $F1
+        .byte   $F8
+        .byte   $FC
+        .byte   $FC
+        .byte   $F8
+        .byte   $F1
+        .byte   $E3
+        .byte   $C7
+        .byte   $8F
+        .byte   $1F
+        .byte   $3F
+        .byte   $00
+        .byte   $00
+        .text   "??????"
+        .byte   $00
+        .byte   $00
+        .fill   6,$FC
+        .byte   $FF
+        .text   "C",$81,$81,$81,$81,"C"
+        .fill   6,$FF
+        .byte   $00
+        .byte   $00
+        .byte   $FF
+        .byte   $C9
+        .byte   $80
+        .byte   $80
+        .byte   $80
+        .byte   $C1
+        .byte   $E3
+        .byte   $F7
+        .byte   $FF
+        .text   $9F,$9F,$9F,$9F,$9F,$9F,$9F,$9F
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $F8
+        .byte   $F0
+        .byte   $E3
+        .byte   $E7
+        .byte   $E7
+        .byte   $3C
+        .byte   $18
+        .text   $81,"CC",$81
+        .byte   $18
+        .byte   $3C
+        .byte   $FF
+        .text   "C",$81,$99,$99,$81,"C"
+        .byte   $FF
+        .byte   $E7
+        .byte   $E7
+        .byte   $99
+        .byte   $99
+        .byte   $E7
+        .byte   $E7
+        .byte   $C3
+        .byte   $FF
+        .fill   8,$F9
+        .byte   $F7
+        .byte   $E3
+        .byte   $C1
+        .byte   $80
+        .byte   $C1
+        .byte   $E3
+        .byte   $F7
+        .byte   $FF
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $00
+        .byte   $00
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .text   "??OO??OO"
+        .fill   8,$E7
+        .byte   $FF
+        .byte   $FF
+        .byte   $FC
+        .byte   $C1
+        .byte   $89
+        .byte   $C9
+        .byte   $C9
+        .byte   $FF
+        .byte   $00
+        .byte   $80
+        .byte   $C0
+        .byte   $E0
+        .byte   $F0
+        .byte   $F8
+        .byte   $FC
+        .byte   $FE
+L2700   .fill   8,$FF
+        .fill   8,$0F
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .fill   5,$00
+        .fill   14,$FF
+        .byte   $00
+        .text   "????????33LL33LL"
+        .fill   8,$FC
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .text   "33LL"
+        .byte   $00
+        .byte   $01
+        .byte   $03
+        .byte   $07
+        .byte   $0F
+        .byte   $1F
+        .byte   $3F
+        .byte   $7F
+        .fill   8,$FC
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $E0
+        .byte   $E0
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $F0
+        .byte   $F0
+        .byte   $F0
+        .byte   $F0
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $E0
+        .byte   $E0
+        .fill   6,$FF
+        .byte   $07
+        .byte   $07
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .fill   6,$FF
+        .byte   $00
+        .byte   $00
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $E0
+        .byte   $E0
+        .fill   6,$E7
+        .byte   $00
+        .byte   $00
+        .fill   6,$FF
+        .byte   $00
+        .byte   $00
+        .fill   6,$E7
+        .byte   $07
+        .byte   $07
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .text   "????????",$1F,$1F,$1F,$1F,$1F,$1F,$1F,$1F
+        .fill   8,$F8
+        .byte   $00
+        .byte   $00
+        .fill   6,$FF
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .fill   10,$FF
+        .byte   $00
+        .byte   $00
+        .byte   $00
+        .fill   6,$FC
+        .byte   $00
+        .byte   $00
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+        .byte   $F0
+        .byte   $F0
+        .byte   $F0
+        .byte   $F0
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $E7
+        .byte   $E7
+        .byte   $E7
+        .byte   $07
+        .byte   $07
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $FF
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+        .byte   $0F
+        .byte   $F0
+        .byte   $F0
+        .byte   $F0
+        .byte   $FF
+L2800   .byte   $00
+        .byte   $0A
+        .byte   $14
+        .byte   $1D
+        .text   "'1;enx"
+        .byte   $61
+        .byte   $6A
+        .byte   $73
+        .byte   $7C
+        .byte   $85
+        .byte   $8D
+        .byte   $95
+        .byte   $9D
+        .byte   $A5
+        .byte   $AD
+        .byte   $B4
+        .byte   $BB
+        .text   "AHNTY"
+        .byte   $DE
+        .byte   $E3
+        .byte   $E7
+        .byte   $EB
+        .byte   $EF
+        .byte   $F2
+        .byte   $F5
+        .byte   $F7
+        .byte   $FA
+        .byte   $FB
+        .byte   $FD
+        .fill   5,$FE
+        .byte   $FD
+        .byte   $FB
+        .byte   $FA
+        .byte   $F7
+        .byte   $F5
+        .byte   $F2
+        .byte   $EF
+        .byte   $EB
+        .byte   $E7
+        .byte   $E3
+        .byte   $DE
+        .text   "YTNHA"
+        .byte   $BB
+        .byte   $B4
+        .byte   $AD
+        .byte   $A5
+        .byte   $9D
+        .byte   $95
+        .byte   $8D
+        .byte   $85
+        .byte   $7C
+        .byte   $73
+        .byte   $6A
+        .byte   $61
+        .text   "xne;1'"
+        .byte   $1D
+        .byte   $14
+        .byte   $0A
+        .byte   $00
+        .byte   $0B
+        .byte   $15
+        .text   $1E,"(2<foy"
+        .byte   $62
+        .byte   $6B
+        .byte   $74
+        .byte   $7D
+        .byte   $86
+        .byte   $8E
+        .byte   $96
+        .byte   $9E
+        .byte   $A6
+        .byte   $AE
+        .byte   $B5
+        .byte   $BC
+        .text   "BIOUZ"
+        .byte   $DF
+        .byte   $E4
+        .byte   $E8
+        .byte   $EC
+        .byte   $F0
+        .byte   $F3
+        .byte   $F6
+        .byte   $F8
+        .byte   $FB
+        .byte   $FC
+        .byte   $FE
+        .fill   5,$FF
+        .byte   $FE
+        .byte   $FC
+        .byte   $FB
+        .byte   $F8
+        .byte   $F6
+        .byte   $F3
+        .byte   $F0
+        .byte   $EC
+        .byte   $E8
+        .byte   $E4
+        .byte   $DF
+        .text   "ZUOIB"
+        .byte   $BC
+        .byte   $B5
+        .byte   $AE
+        .byte   $A6
+        .byte   $9E
+        .byte   $96
+        .byte   $8E
+        .byte   $86
+        .byte   $7D
+        .byte   $74
+        .byte   $6B
+        .byte   $62
+        .text   "yof<2(",$1E
+        .byte   $15
+        .byte   $0B
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FB
+L2900   .byte   $FE
+        .byte   $FE
+        .byte   $FE
+        .byte   $FD
+        .byte   $FB
+        .byte   $FA
+        .byte   $F7
+        .byte   $F5
+        .byte   $F2
+        .byte   $EF
+        .byte   $EB
+        .byte   $E7
+        .byte   $E3
+        .byte   $DE
+        .text   "YTNHA"
+        .byte   $BB
+        .byte   $B4
+        .byte   $AD
+        .byte   $A5
+        .byte   $9D
+        .byte   $95
+        .byte   $8D
+        .byte   $85
+        .byte   $7C
+        .byte   $73
+        .byte   $6A
+        .byte   $61
+        .text   "xne;1'"
+        .byte   $1D
+        .byte   $14
+        .byte   $0A
+        .byte   $00
+        .byte   $0B
+        .byte   $15
+        .text   $1E,"(2<foy"
+        .byte   $62
+        .byte   $6B
+        .byte   $74
+        .byte   $7D
+        .byte   $86
+        .byte   $8E
+        .byte   $96
+        .byte   $9E
+        .byte   $A6
+        .byte   $AE
+        .byte   $B5
+        .byte   $BC
+        .text   "BIOUZ"
+        .byte   $DF
+        .byte   $E4
+        .byte   $E8
+        .byte   $EC
+        .byte   $F0
+        .byte   $F3
+        .byte   $F6
+        .byte   $F8
+        .byte   $FB
+        .byte   $FC
+        .byte   $FE
+        .fill   5,$FF
+        .byte   $FE
+        .byte   $FC
+        .byte   $FB
+        .byte   $F8
+        .byte   $F6
+        .byte   $F3
+        .byte   $F0
+        .byte   $EC
+        .byte   $E8
+        .byte   $E4
+        .byte   $DF
+        .text   "ZUOIB"
+        .byte   $BC
+        .byte   $B5
+        .byte   $AE
+        .byte   $A6
+        .byte   $9E
+        .byte   $96
+        .byte   $8E
+        .byte   $86
+        .byte   $7D
+        .byte   $74
+        .byte   $6B
+        .byte   $62
+        .text   "yof<2(",$1E
+        .byte   $15
+        .byte   $0B
+        .byte   $00
+        .byte   $0A
+        .byte   $14
+        .byte   $1D
+        .text   "'1;enx"
+        .byte   $61
+        .byte   $6A
+        .byte   $73
+        .byte   $7C
+        .byte   $85
+        .byte   $8D
+        .byte   $95
+        .byte   $9D
+        .byte   $A5
+        .byte   $AD
+        .byte   $B4
+        .byte   $BB
+        .text   "AHNTY"
+        .byte   $DE
+        .byte   $E3
+        .byte   $E7
+        .byte   $EB
+        .byte   $EF
+        .byte   $F2
+        .byte   $F5
+        .byte   $F7
+        .byte   $FA
+        .byte   $FB
+        .byte   $FD
+        .byte   $FE
+        .byte   $FE
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+L2A00   .byte   $00
+        .byte   $00
+        .byte   $0D
+        .byte   $15
+        .byte   $1B
+        .text   " #&)+./1346789:;<=>?@aabcddeefgghhiijjkkllmmmnnooopppqqqrrrsss"
+        .text   "ttttuuuvvvvwwwwxxxxyyyyyzzzz[[[[["
+        .fill   5,$5C
+        .text   "]]]]]"
+        .fill   6,$5E
+        .fill   6,$5F
+        .fill   6,$60
+        .fill   7,$61
+        .fill   7,$62
+        .fill   7,$63
+        .fill   8,$64
+        .fill   8,$65
+        .fill   8,$66
+        .fill   9,$67
+        .fill   9,$68
+        .fill   10,$69
+        .fill   10,$6A
+        .fill   11,$6B
+        .fill   11,$6C
+        .fill   12,$6D
+        .fill   11,$6E
+L2B00   .fill   111,$00
+        .fill   14,$01
+        .fill   8,$02
+        .fill   6,$03
+        .fill   5,$04
+        .byte   $05
+        .byte   $05
+        .byte   $05
+        .byte   $06
+        .byte   $06
+        .byte   $06
+        .byte   $07
+        .byte   $07
+        .byte   $07
+        .byte   $08
+        .byte   $08
+        .byte   $09
+        .byte   $09
+        .byte   $0A
+        .byte   $0A
+        .byte   $0B
+        .byte   $0B
+        .byte   $0C
+        .byte   $0C
+        .byte   $0D
+        .byte   $0E
+        .byte   $0E
+        .byte   $0F
+        .byte   $10
+        .byte   $11
+        .byte   $12
+        .byte   $13
+        .byte   $14
+        .byte   $15
+        .byte   $16
+        .byte   $17
+        .byte   $18
+        .byte   $19
+        .byte   $1B
+        .text   $1C,$1E,$1F,"!",$22,"$&(*,/1469<?cfjmqvz"
+        .byte   $5F
+        .byte   $63
+        .byte   $69
+        .byte   $6E
+        .byte   $74
+        .byte   $7A
+        .byte   $80
+        .byte   $86
+        .byte   $8D
+        .byte   $95
+        .byte   $9C
+        .byte   $A4
+        .byte   $AD
+        .byte   $B6
+        .byte   $BF
+        .byte   $C9
+        .byte   $D3
+        .byte   $DE
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+        .byte   $00
+        .byte   $FF
+
+L4000 = $4000
+L4140 = $4140
+L4280 = $4280
+L43C0 = $43C0
+L4500 = $4500
+L4640 = $4640
+L4780 = $4780
+L48C0 = $48C0
+L4A00 = $4A00
+L4B40 = $4B40
+L4C80 = $4C80
+L4DC0 = $4DC0
+L4F00 = $4F00
+
+L4407 = $4407
+L4547 = $4547
+L4687 = $4687
+L47C7 = $47C7
+L4907 = $4907
+L4A47 = $4A47
+L4B87 = $4B87
+L4CC7 = $4CC7
+L4E07 = $4E07
+L4F47 = $4F47
+
+L5087 = $5087
+
+L5040 = $5040
+L5180 = $5180
+L52C0 = $52C0
+L5400 = $5400
+L5540 = $5540
+L5680 = $5680
+L57C0 = $57C0
+L5900 = $5900
+L5A40 = $5A40
+L5B80 = $5B80
+L5CC0 = $5CC0
+L5E00 = $5E00
+
+L6407 = $6407
+L6547 = $6547
+L6687 = $6687
+L67C7 = $67C7
+L6907 = $6907
+L6A47 = $6A47
+L6B87 = $6B87
+L6CC7 = $6CC7
+L6E07 = $6E07
+L6F47 = $6F47
+L7087 = $7087
+L7400 = $7400
+L7481 = $7481
+L74A9 = $74A9
+L74D1 = $74D1
+L74F9 = $74F9
+L7500 = $7500
+L7521 = $7521
+L7549 = $7549
+L7571 = $7571
+L7599 = $7599
+L75C1 = $75C1
+L75E9 = $75E9
+L7600 = $7600
+L7611 = $7611
+
+L7700 = $7700
+L7800 = $7800
+L7900 = $7900
+L7A00 = $7A00
+L7B00 = $7B00
+L7C00 = $7C00
+L7D00 = $7D00
+L7E00 = $7E00
+L7F00 = $7F00
+
+LB600_SCREEN_VPOS_LO = $B600
+LB700_SCREEN_VPOS_HI = $B700
+
+LB800_SCREEN_HPOS = $B800
+LB804 = LB800_SCREEN_HPOS +4
+LB805 = LB804 +1
+LB806 = LB805 +1
+LB807 = LB806 +1
+
+LB900_FILL_PATTERN = $B900
+LB904 = LB900_FILL_PATTERN +4
+LB905 = LB904 +1
+LB906 = LB905 +1
+LB907 = LB906 +1
+
+LBB00_FILL_PATTERN = $BB00
+LBB04 = LBB00_FILL_PATTERN +4
+LBB05 = LBB04 +1
+LBB06 = LBB05 +1
+LBB07 = LBB06 +1
+
+LBC00_FILL_PATTERN = $BC00
+LBC04 = LBC00_FILL_PATTERN +4
+LBC05 = LBC04 +1
+LBC06 = LBC05 +1
+LBC07 = LBC06 +1
+
+LBD00_FILL_PATTERN = $BD00
+LBD04 = LBD00_FILL_PATTERN +4
+LBD05 = LBD04 +1
+LBD06 = LBD05 +1
+LBD07 = LBD06 +1
+
+LBE00_FILL_TAB = $BE00
+LBE19_FILL_TAB = $BE19
+LBF00_OBJ_1_TAB = $BF00
+LBF01 = LBF00_OBJ_1_TAB +1
+LBF02 = LBF01 +1
+LBF03 = LBF02 +1
+
+LBF80_OBJ_2_TAB = $BF80
+LBF81 = LBF80_OBJ_2_TAB +1
+
+LC000 = $C000
+LC001 = $C001
+
+LD011 = $D011
+LD012 = $D012
+LD016 = $D016
+LD018 = $D018
+LD019 = $D019
+LD01A = $D01A
+LD020 = $D020
+LD021 = $D021
+LD800 = $D800
+LD881 = $D881
+LD8A9 = $D8A9
+LD8D1 = $D8D1
+LD8F9 = $D8F9
+LD900 = $D900
+LD921 = $D921
+LD949 = $D949
+LD971 = $D971
+LD999 = $D999
+LD9C1 = $D9C1
+LD9E9 = $D9E9
+LDA00 = $DA00
+LDA11 = $DA11
+LDB00 = $DB00
+LDC00 = $DC00
+LDC02 = $DC02
+LDC03 = $DC03
+
+LDC0D = $DC0D
+
+LDD00 = $DD00
+LDD02 = $DD02
+
+LFFFE = $FFFE
+LFFFF = $FFFF
+
+        .here
