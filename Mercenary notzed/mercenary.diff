@@ -1,0 +1,3067 @@
+--- save/mercenary.tas	2026-03-27 08:52:40.208252794 +1030
++++ mercenary.tas	2026-03-28 00:46:26.194228253 +1030
+@@ -22,8 +22,50 @@
+ ;t=$16
+ ;d=$22
+ 
+-;;; vic-ii registers
+-COLOUR_RAM = $D800
++	.if 1
++;;; zero page, new definitions (work in progress)
++	.virtual	$00
++MOS6510_DIR	.byte	?
++MOS6510_DAT	.byte	?
++SCREEN_POINTER	.word	?
++	* = $08
++TMP_08		.byte	?	; scratch, various things, TBD
++TMP_09		.byte	?
++	* = $1b
++STRUCT_PTR	.word	?
++OBJECT_PTR	.word	?
++BENSON_PTR	.word	?
++	* = $80
++JOY_DIRECTION	.byte	?	; 0000RLDU right, left, down, up
++JOY_FIRE	.byte	?	; 0000000F fire button
++	* = $c2
++COLOUR_RM_LINE	.byte	?
++COLOUR_RM_SKY	.byte	?	; never used?
++COLOUR_RM_BG	.byte	?
++COLOUR_RM_FG	.byte	?
++COLOUR_RM_SAVE	.byte	?	; C6 - ??
++	* = $a3
++COLOUR_LINE	.byte	?	; white
++COLOUR_SKY	.byte	?	; blue, never seems to be read?
++COLOUR_BG	.byte	?	;
++COLOUR_FG	.byte	?
++	* = $e9
++INPUT_KEY	.byte	?	; key changed, or FF
++INPUT_KEY_STATE	.byte	?	; last key state
++	* = $ec
++THRUST0	.byte	?
++THRUST	.byte	?		; abs magnitude, not direction?
++	.endv
++	.endif
++
++JOY_UP		= $01
++JOY_DOWN	= $02
++JOY_LEFT	= $04
++JOY_RIGHT	= $08
++
++;;; i/o
++COLOUR_RAM	= $D800
++SID_BASE	= $D400
+ 
+ SCREEN_POINTER_LO = $02
+ SCREEN_POINTER_HI = $03
+@@ -177,57 +219,65 @@
+ 
+ SCN_EDGE_140C = $140c
+ 
+-X_ROT_TAB_LO =  $0100
+-CINT    =       $FF81      ;init editor & video chip
+-IOINIT  =       $FF84      ;init I/O devices, ports, and timers
+-SETLFS  =       $FFBA	 ;set logical file parameters
+-SETNAM  =       $FFBD	 ;set filename
+-LOAD    =       $FFD5      ;load from device
+-SAVE    =       $FFD8      ;save to device
+-
+-*       =       $800
+-X_ROT_TAB_HI = $140
+-Y_ROT_TAB_LO = $180
+-L1C0 = $1C0
+-L0200 = $200
+-L0240 = $240
+-L0280 = $280
+-Y_ROT_TAB_HI = $2C0
+-Z_ROT_TAB_LO = $340
+-Z_ROT_TAB_HI = $380
+-H_PERS_FP_HI = $3C0
+-GROUND_STRUCTURE_X_LSB_L0400 = $400
+-GROUND_STRUCTURE_X_MSB_L0440 = $440
+-L0441   = $441
+-L0444   = $444
+-L0445   = $445
+-GROUND_STRUCTURE_Y_LSB_L0480 = $480
+-GROUND_STRUCTURE_Y_MSB_L04C0 = $4C0
+-L04C1	= $4C1
+-L04C2   = $4C2
+-L04C3   = $4C3
+-GROUND_STRUCTURE_Z_LSB_L0500 = $500
+-GROUND_STRUCTURE_Z_MSB_L0540 = $540
+-L0543   = $543
+-L0544   = $544
+-L0547   = $547
+-L057F   = $57F
+-L0580   = $580	; todo - object structure start point
+-L05BF   = $5BF
+-L05C0   = $5C0	; todo - object structure end point
+-H_PERS_FP_LO = $600
+-V_PERS_FP_HI = $640
+-HOR_SCREEN_POS = $680
+-VER_SCREEN_POS = $6C0
+-POINT_CLASSIFICATION = $700
+-GROUND_STRUCTURE_X_HSB_L0740 = $740
+-GROUND_STRUCTURE_Y_HSB_L0780 = $780
+-GROUND_STRUCTURE_Z_HSB_L07C0 = $7C0
++CINT	= $FF81	;init editor & video chip
++IOINIT	= $FF84	;init I/O devices, ports, and timers
++SETLFS	= $FFBA	;set logical file parameters
++SETNAM	= $FFBD	;set filename
++LOAD	= $FFD5	;load from device
++SAVE	= $FFD8	;save to device
++
++	;; use the assembler to calculate the addresses
++	.virtual $100
++X_ROT_TAB_LO	.fill	$40
++X_ROT_TAB_HI	.fill	$40
++Y_ROT_TAB_LO	.fill	$40
++		.fill	$40
++		.fill	$40
++		.fill	$40
++		.fill	$40
++Y_ROT_TAB_HI	.fill	$40
++		.fill	$40
++Z_ROT_TAB_LO	.fill	$40
++Z_ROT_TAB_HI	.fill	$40
++H_PERS_FP_HI	.fill	$40
++GROUND_STRUCTURE_X_LSB_L0400	;TBD
++STRUCT_X_LSB	.fill	$40	; ground/room vertices
++GROUND_STRUCTURE_X_MSB_L0440
++STRUCT_X_MSB	.fill	$40
++GROUND_STRUCTURE_Y_LSB_L0480
++STRUCT_Y_LSB	.fill	$40
++GROUND_STRUCTURE_Y_MSB_L04C0
++STRUCT_Y_MSB	.fill	$40
++GROUND_STRUCTURE_Z_LSB_L0500
++STRUCT_Z_LSB	.fill	$40
++GROUND_STRUCTURE_Z_MSB_L0540
++STRUCT_Z_MSB	.fill	$40
++L0580
++STRUCT_EDGE0	.fill	$40	; edge endpoints
++L05C0
++STRUCT_EDGE1	.fill	$40
++H_PERS_FP_LO	.fill	$40
++V_PERS_FP_HI	.fill	$40
++HOR_SCREEN_POS	.fill	$40
++VER_SCREEN_POS	.fill	$40
++POINT_CLASSIFICATION	.fill	$40
++GROUND_STRUCTURE_X_HSB_L0740	;TBD
++STRUCT_X_HSB	.fill	$40
++GROUND_STRUCTURE_Y_HSB_L0780
++STRUCT_Y_HSB	.fill	$40
++GROUND_STRUCTURE_Z_HSB_L07C0
++STRUCT_Z_HSB	.fill	$40
++
++L057F	= STRUCT_EDGE0 - 1	;TBD
++L05BF	= STRUCT_EDGE1 - 1
++	.endvirtual
+ 
+ MAP_MIN_LINES_TO_DRAW = $02 ; todo - might be min number of points?
+ MAP_MAX_POINTS_TO_DRAW = $3C
+ STRUCTURE_INDOOR_COLOUR_CHANGE_POINT = $FF
+ 
++	* = $800
++
+ 	;; benson stuff, text and ?
+ 	;; ($1f) is set from this
+ L0800	.BYTE	<L086C, >L086C
+@@ -481,90 +531,250 @@
+ 	.byte	$49,$54,$45,$D3,$00,$10,$02,$05
+ L11F8	.byte	$04,$9D,$0A,$12,$02,$08,$12,$14
+ 	;; 1200
+-	;; the rest also seems to be benson text but unclear where it's referenced
++	;; ??
+ 	.byte	$04,$04,$CE,$11,$14,$07,$14,$32,$11,$40,$05
+ L120B	.byte	$04,$9D,$0A,$12,$02
+ 	.byte	$46,$12,$14,$03,$04,$CE,$11,$0D,$F9,$00,$00,$50,$00,$0F,$FE,$2E
+ 	.byte	$0F,$FF,$50,$9D,$3B,$10,$01,$DC,$E5,$3D,$08,$12,$00,$01,$EF,$FF
+ 	.byte	$49,$4E,$53,$49,$44,$45,$20,$54,$48,$45,$20,$52,$45,$C4,$0E,$00
+-	.byte	$19,$6E,$29,$01,$14,$07,$11,$40,$05,$00,$4D,$45,$4E,$D4,$D3,$49
+-	.byte	$4E,$C7,$45,$C4,$C4,$EE,$ED,$C1,$41,$CD,$0D,$20,$0D,$20,$8D,$4F
+-	.byte	$55,$D2,$4A,$55,$53,$D4,$41,$47,$41,$49,$CE,$48,$41,$4E,$47,$45
+-	.byte	$D2,$41,$49,$52,$50,$4F,$52,$D4,$41,$4C,$CC,$41,$49,$52,$43,$52
+-	.byte	$41,$46,$D4,$52,$45,$57,$41,$52,$C4,$41,$4E,$C4,$41,$52,$C5,$41
+-	.byte	$4E,$54,$49,$47,$52,$41,$D6,$41,$55,$54,$48,$4F,$D2,$41,$D4,$41
+-	.byte	$4E,$54,$45,$4E,$4E,$C1,$49,$54,$D3,$47,$4F,$4C,$C4,$42,$41,$43
+-	.byte	$CB,$42,$55,$D9,$42,$C5,$42,$52,$49,$45,$C6,$42,$52,$4F,$54,$48
+-	.byte	$45,$52,$0D,$49,$4E,$0D,$4C,$41,$D7,$43,$41,$4C,$CC,$43,$41,$54
+-	.byte	$45,$52,$49,$4E,$C7,$43,$52,$41,$46,$D4,$43,$52,$41,$53,$C8,$43
+-	.byte	$D2,$43,$52,$45,$44,$49,$54,$D3,$43,$4F,$4D,$4D,$55,$4E,$49,$43
+-	.byte	$41,$54,$49,$4F,$CE,$43,$4F,$4D,$50,$4C,$45,$D8,$43,$4F,$4E,$54
+-	;; 1300
+-	.byte	$52,$4F,$CC,$43,$4F,$4D,$50,$4C,$45,$54,$C5,$43,$52,$59,$53,$54
+-	.byte	$41,$CC,$49,$D3,$44,$41,$52,$CB,$48,$45,$52,$C5,$47,$CF,$44,$45
+-	.byte	$4C,$49,$56,$45,$D2,$44,$45,$53,$54,$52,$4F,$D9,$8D,$41,$54,$54
+-	.byte	$41,$43,$CB,$44,$CF,$44,$4F,$4E,$C5,$45,$53,$53,$45,$4E,$54,$49
+-	.byte	$41,$CC,$45,$4E,$47,$49,$4E,$C5,$45,$4E,$45,$52,$47,$D9,$45,$4E
+-	.byte	$C4,$46,$45,$C5,$48,$41,$56,$C5,$46,$55,$45,$CC,$46,$4F,$D2,$46
+-	.byte	$49,$4E,$C4,$46,$52,$4F,$CD,$46,$55,$4E,$C4,$4E,$4F,$0E,$20,$4F
+-	.byte	$0D,$09,$20,$ED,$59,$4F,$55,$D2,$4C,$41,$4E,$C4,$4C,$4F,$4E,$C7
+-	.byte	$4C,$4F,$43,$41,$54,$49,$4F,$CE,$4C,$4F,$C3,$4D,$45,$44,$49,$43
+-	.byte	$41,$CC,$4C,$4F,$43,$4B,$45,$C4,$4D,$4F,$52,$C5,$4D,$45,$43,$48
+-	.byte	$41,$4E,$4F,$49,$C4,$4D,$45,$53,$53,$41,$47,$C5,$4D,$49,$CE,$4D
+-	.byte	$41,$D9,$4D,$55,$53,$D4,$48,$4F,$55,$53,$C5,$4E,$45,$45,$C4,$4E
+-	.byte	$45,$55,$54,$52,$4F,$CE,$4E,$4F,$56,$41,$44,$52,$49,$56,$C5,$4E
+-	.byte	$4F,$D4,$4E,$4F,$D7,$4F,$C6,$4F,$CB,$4F,$46,$46,$45,$D2,$4F,$CE
+-	.byte	$4F,$4E,$4C,$D9,$50,$4F,$57,$45,$D2,$41,$52,$4D,$4F,$55,$52,$D9
+-	.byte	$4C,$41,$42,$4F,$52,$41,$54,$4F,$52,$D9,$49,$4E,$54,$45,$52,$56
+-	;; 1400
+-	.byte	$49,$45,$D7,$50,$41,$D9,$50,$41,$4C,$59,$41,$D2,$50,$41,$49,$C4
+-	.byte	$50,$4C,$41,$CE,$50,$4C,$45,$41,$53,$C5,$45,$58,$43,$48,$45,$51
+-	.byte	$55,$45,$D2,$50,$52,$4F,$56,$49,$53,$49,$4F,$4E,$D3,$43,$4F,$4E
+-	.byte	$46,$45,$52,$45,$4E,$43,$C5,$50,$41,$C4,$54,$48,$45,$20,$50,$41
+-	.byte	$4C,$59,$41,$52,$20,$43,$4F,$4D,$4D,$41,$4E,$44,$45,$52,$6F,$D3
+-	.byte	$4D,$4F,$53,$D4,$49,$4E,$53,$54,$41,$4C,$4C,$41,$54,$49,$4F,$CE
+-	.byte	$52,$45,$51,$55,$49,$52,$45,$4D,$45,$4E,$D4,$52,$45,$50,$4F,$52
+-	.byte	$D4,$52,$4F,$4F,$CD,$53,$45,$4E,$C4,$C9,$53,$41,$4C,$C5,$53,$48
+-	.byte	$49,$D0,$53,$48,$4F,$55,$4C,$C4,$53,$54,$41,$54,$55,$D3,$53,$54
+-	.byte	$4F,$52,$45,$D3,$53,$54,$41,$52,$D4,$53,$55,$50,$50,$4C,$49,$45
+-	.byte	$D3,$49,$4E,$46,$49,$52,$4D,$41,$52,$D9,$49,$CE,$49,$D4,$54,$48
+-	.byte	$45,$CD,$54,$48,$C5,$49,$4E,$46,$4F,$52,$4D,$41,$54,$49,$4F,$CE
+-	.byte	$54,$48,$45,$52,$C5,$54,$48,$49,$D3,$4B,$49,$54,$43,$48,$45,$CE
+-	.byte	$54,$CF,$54,$4F,$CF,$54,$41,$52,$C7,$54,$52,$41,$4E,$53,$41,$43
+-	.byte	$54,$49,$4F,$CE,$57,$41,$4E,$D4,$47,$4F,$4F,$C4,$57,$4F,$52,$CB
+-	.byte	$59,$4F,$D5,$4A,$4F,$C2,$55,$D3,$56,$45,$52,$D9,$57,$48,$45,$CE
+-	;; 1500
+-	.byte	$57,$41,$4C,$CB,$57,$C5,$57,$45,$4C,$CC,$57,$48,$45,$52,$C5,$57
+-	.byte	$49,$4C,$CC,$20,$20,$20,$20,$20,$20,$20,$20,$A0,$A0,$4C,$00,$00
+-	.byte	$E8,$9D,$E6,$00,$EF,$19,$DF,$2C,$CD,$2D,$E6,$00,$E9,$D6,$FF,$48
+-	.byte	$45,$41,$56,$D9,$E6,$00,$EF,$A0,$3E,$B4,$02,$00,$A0,$3E,$9F,$02
+-	.byte	$00,$EF,$0A,$DD,$AC,$0A,$00,$E8,$FF,$43,$48,$45,$45,$53,$C5,$E7
+-	.byte	$00,$EB,$A0,$38,$02,$00,$EE,$26,$C1,$00,$E8,$0E,$E6,$00,$E8,$D4
+-	.byte	$00,$EA,$36,$C1,$00,$E9,$9F,$E9,$00,$EF,$B4,$1E,$03,$C1,$00,$EC
+-	.byte	$BA,$C1,$00,$BC,$EC,$1F,$02,$C1,$E6,$00,$EC,$FF,$50,$48,$4F,$54
+-	.byte	$4F,$4E,$20,$45,$4D,$49,$54,$54,$45,$D2,$E6,$00,$DC,$3A,$F8,$25
+-	.byte	$00,$E9,$FF,$45,$58,$43,$48,$45,$51,$55,$45,$D2,$00,$DC,$3A,$0C
+-	.byte	$30,$04,$00,$EC,$FF,$41,$4E,$54,$49,$20,$54,$49,$4D,$45,$20,$42
+-	.byte	$4F,$4D,$C2,$EB,$00,$E9,$A7,$E9,$00,$EC,$FF,$4D,$45,$54,$41,$4C
+-	.byte	$20,$44,$45,$54,$45,$43,$54,$4F,$D2,$EB,$00,$E9,$15,$E8,$00,$E9
+-	.byte	$FF,$50,$4F,$57,$45,$52,$41,$4D,$D0,$E8,$00,$EB,$A6,$3B,$EA,$00
+-	.byte	$E8,$18,$E8,$00,$EC,$37,$2A,$EB,$00,$E8,$FF,$43,$4F,$46,$46,$49
+-	.byte	$CE,$E7,$00,$E9,$FF,$4C,$41,$52,$47,$45,$20,$42,$4F,$D8,$E9,$00
++	.byte	$19,$6E,$29,$01,$14,$07,$11,$40,$05,$00
++
++	;; Words table.
++	;; indexed by WD_PTR
++	;; PETSCII, the last character has msb set.
++WD00	.byte	$4D,$45,$4E,$D4
++WD01	.byte	$D3
++WD02	.byte	$49,$4E,$C7
++WD03	.byte	$45,$C4
++WD04	.byte	$C4
++WD05	.byte	$EE
++WD06	.byte	$ED
++WD07	.byte	$C1
++WD08	.byte	$41,$CD
++WD09	.byte	$0D,$20,$0D,$20,$8D
++WD0A	.byte	$4F,$55,$D2
++WD0B	.byte	$4A,$55,$53,$D4
++WD0C	.byte	$41,$47,$41,$49,$CE
++WD0D	.byte	$48,$41,$4E,$47,$45,$D2
++WD0E	.byte	$41,$49,$52,$50,$4F,$52,$D4
++WD0F	.byte	$41,$4C,$CC
++WD10	.byte	$41,$49,$52,$43,$52,$41,$46,$D4
++WD11	.byte	$52,$45,$57,$41,$52,$C4
++WD12	.byte	$41,$4E,$C4
++WD13	.byte	$41,$52,$C5
++WD14	.byte	$41,$4E,$54,$49,$47,$52,$41,$D6
++WD15	.byte	$41,$55,$54,$48,$4F,$D2
++WD16	.byte	$41,$D4
++WD17	.byte	$41,$4E,$54,$45,$4E,$4E,$C1
++WD18	.byte	$49,$54,$D3
++WD19	.byte	$47,$4F,$4C,$C4
++WD1A	.byte	$42,$41,$43,$CB
++WD1B	.byte	$42,$55,$D9
++WD1C	.byte	$42,$C5
++WD1D	.byte	$42,$52,$49,$45,$C6
++WD1E	.byte	$42,$52,$4F,$54,$48,$45,$52,$0D,$49,$4E,$0D,$4C,$41,$D7
++WD1F	.byte	$43,$41,$4C,$CC
++WD20	.byte	$43,$41,$54,$45,$52,$49,$4E,$C7
++WD21	.byte	$43,$52,$41,$46,$D4
++WD22	.byte	$43,$52,$41,$53,$C8
++WD23	.byte	$43,$D2
++WD24	.byte	$43,$52,$45,$44,$49,$54,$D3
++WD25	.byte	$43,$4F,$4D,$4D,$55,$4E,$49,$43,$41,$54,$49,$4F,$CE
++WD26	.byte	$43,$4F,$4D,$50,$4C,$45,$D8
++WD27	.byte	$43,$4F,$4E,$54,$52
++WD45	.byte	$4F,$CC
++WD28	.byte	$43,$4F,$4D,$50,$4C,$45,$54,$C5
++WD29	.byte	$43,$52,$59,$53,$54,$41,$CC
++WD2A	.byte	$49,$D3
++WD2B	.byte	$44,$41,$52,$CB
++WD2C	.byte	$48,$45,$52,$C5
++WD2D	.byte	$47,$CF
++WD2E	.byte	$44,$45,$4C,$49
++WD47	.byte	$56,$45,$D2
++WD2F	.byte	$44,$45,$53,$54,$52,$4F,$D9
++WD30	.byte	$8D
++WD31	.byte	$41,$54,$54,$41,$43,$CB
++WD32	.byte	$44,$CF
++WD33	.byte	$44,$4F,$4E,$C5
++WD34	.byte	$45,$53,$53,$45,$4E,$54,$49,$41,$CC
++WD35	.byte	$45,$4E,$47,$49,$4E,$C5
++WD36	.byte	$45,$4E,$45,$52,$47
++WD40	.byte	$D9
++WD37	.byte	$45,$4E,$C4
++WD38	.byte	$46,$45,$C5
++WD39	.byte	$48,$41,$56,$C5
++WD3A	.byte	$46,$55,$45,$CC
++WD3B	.byte	$46,$4F,$D2
++WD3C	.byte	$46,$49,$4E,$C4
++WD3D	.byte	$46,$52,$4F,$CD
++WD3E	.byte	$46,$55,$4E,$C4
++WD43	.byte	$4E,$4F,$0E,$20,$4F,$0D
++WD4D	.byte	$09,$20,$ED
++WD4E	.byte	$59,$4F
++WD4C	.byte	$55,$D2
++WD4F	.byte	$4C
++WD3F	.byte	$41,$4E,$C4
++WD50	.byte	$4C,$4F,$4E,$C7
++WD51	.byte	$4C
++WD42	.byte	$4F,$43,$41,$54,$49,$4F,$CE
++WD52	.byte	$4C,$4F,$C3
++WD53	.byte	$4D,$45,$44,$49,$43,$41,$CC
++WD54	.byte	$4C,$4F,$43,$4B,$45,$C4
++WD55	.byte	$4D,$4F,$52,$C5
++WD56	.byte	$4D,$45
++WD46	.byte	$43,$48,$41,$4E,$4F
++WD44	.byte	$49,$C4
++WD57	.byte	$4D,$45,$53,$53,$41,$47,$C5
++WD58	.byte	$4D,$49,$CE
++WD59	.byte	$4D,$41,$D9
++WD5A	.byte	$4D,$55,$53,$D4
++WD5B	.byte	$48,$4F,$55,$53,$C5
++WD41	.byte	$4E,$45,$45,$C4
++WD5C	.byte	$4E,$45,$55,$54,$52,$4F,$CE
++WD5D	.byte	$4E,$4F,$56,$41,$44
++WD48	.byte	$52,$49,$56,$C5
++WD5E	.byte	$4E,$4F
++WD49	.byte	$D4
++WD5F	.byte	$4E,$4F,$D7
++WD60	.byte	$4F,$C6
++WD61	.byte	$4F,$CB
++WD62	.byte	$4F,$46,$46,$45,$D2
++WD63	.byte	$4F,$CE
++WD64	.byte	$4F,$4E,$4C,$D9
++WD65	.byte	$50,$4F,$57,$45,$D2
++WD66	.byte	$41,$52,$4D,$4F,$55,$52
++WD4B	.byte	$D9
++WD67	.byte	$4C,$41,$42,$4F,$52,$41,$54,$4F,$52,$D9
++WD4A	.byte	$49,$4E,$54,$45,$52,$56,$49,$45,$D7
++WD68	.byte	$50,$41,$D9
++WD69	.byte	$50,$41,$4C,$59,$41,$D2
++WD6A	.byte	$50,$41,$49,$C4
++WD6B	.byte	$50,$4C,$41,$CE
++WD6C	.byte	$50,$4C,$45,$41,$53,$C5
++WD6D	.byte	$45,$58,$43,$48,$45,$51,$55,$45,$D2
++WD6E	.byte	$50,$52,$4F,$56,$49,$53,$49,$4F,$4E,$D3
++WD6F	.byte	$43,$4F,$4E,$46,$45,$52,$45,$4E,$43,$C5
++WD70	.byte	$50,$41,$C4
++WD71	.byte	$54,$48,$45,$20,$50,$41,$4C,$59,$41,$52,$20,$43,$4F,$4D,$4D,$41,$4E,$44,$45,$52,$6F,$D3
++WD72	.byte	$4D,$4F,$53,$D4
++WD73	.byte	$49,$4E,$53,$54,$41,$4C,$4C,$41,$54,$49,$4F,$CE
++WD74	.byte	$52,$45,$51,$55,$49,$52,$45,$4D,$45,$4E,$D4
++WD75	.byte	$52,$45,$50,$4F,$52,$D4
++WD76	.byte	$52,$4F,$4F,$CD
++WD77	.byte	$53,$45,$4E,$C4
++WD78	.byte	$C9
++WD79	.byte	$53,$41,$4C,$C5
++WD7A	.byte	$53,$48,$49,$D0
++WD7B	.byte	$53,$48,$4F,$55,$4C,$C4
++WD7C	.byte	$53,$54,$41,$54,$55,$D3
++WD7D	.byte	$53,$54,$4F,$52,$45,$D3
++WD7E	.byte	$53,$54,$41,$52,$D4
++WD7F	.byte	$53,$55,$50,$50,$4C,$49,$45,$D3
++WD80	.byte	$49,$4E,$46,$49,$52,$4D,$41,$52,$D9
++WD81	.byte	$49,$CE
++WD82	.byte	$49,$D4
++WD83	.byte	$54,$48,$45,$CD
++WD84	.byte	$54,$48,$C5
++WD85	.byte	$49,$4E,$46,$4F,$52,$4D,$41,$54,$49,$4F,$CE
++WD86	.byte	$54,$48,$45,$52,$C5
++WD87	.byte	$54,$48,$49,$D3
++WD88	.byte	$4B,$49,$54,$43,$48,$45,$CE
++WD89	.byte	$54,$CF
++WD8A	.byte	$54,$4F,$CF
++WD8B	.byte	$54,$41,$52,$C7
++WD8C	.byte	$54,$52,$41,$4E,$53,$41,$43,$54,$49,$4F,$CE
++WD8D	.byte	$57,$41,$4E,$D4
++WD8E	.byte	$47,$4F,$4F,$C4
++WD8F	.byte	$57,$4F,$52,$CB
++WD90	.byte	$59,$4F,$D5
++WD91	.byte	$4A,$4F,$C2
++WD92	.byte	$55,$D3
++WD93	.byte	$56,$45,$52,$D9
++WD94	.byte	$57,$48,$45,$CE
++WD95	.byte	$57,$41,$4C,$CB
++WD96	.byte	$57,$C5
++WD97	.byte	$57,$45,$4C,$CC
++WD98	.byte	$57,$48,$45,$52,$C5
++WD99	.byte	$57,$49,$4C,$CC
++WD9A	.byte	$20
++WD9B	.byte	$20
++WD9C	.byte	$20
++WD9D	.byte	$20
++WD9E	.byte	$20
++WD9F	.byte	$20
++WDA0	.byte	$20
++WDA1	.byte	$20
++WDA2	.byte	$A0
++WDA3	.byte	$A0,$4C
++	.byte	$00,$00
++
++	;; indexed by MSG_PTR_xx
++	;;
++	;; 00    - end of message
++	;; 01-ee - insert word from word table
++	;;    ef - i'm not sure
++	;; f0-f7 - special lookup (dynamic strings?  e.g. bank balance)
++	;;    FF - insert following as string until high bit set (cleared and inlcuded)
++
++	;; encoding is based on font and isn't ASCII nor PETSCII although overlaps
++MSG00	.byte	$E8,$9D,$E6,$00
++MSG01	.byte	$EF,$19,$DF,$2C,$CD,$2D,$E6,$00
++MSG02	.byte	$E9,$D6,$FF,$48,$45,$41,$56,$D9,$E6,$00
++MSG03	.byte	$EF,$A0,$3E,$B4,$02,$00
++MSG04	.byte	$A0,$3E,$9F,$02,$00
++MSG05	.byte	$EF,$0A,$DD,$AC,$0A,$00
++MSG06	.byte	$E8,$FF,$43,$48,$45,$45,$53,$C5,$E7,$00
++MSG07	.byte	$EB,$A0,$38,$02,$00
++MSG08	.byte	$EE,$26,$C1,$00
++MSG09	.byte	$E8,$0E,$E6,$00
++MSG0A	.byte	$E8,$D4,$00
++MSG0B	.byte	$EA,$36,$C1,$00
++MSG0C	.byte	$E9,$9F,$E9,$00
++MSG0D	.byte	$EF,$B4,$1E,$03,$C1,$00
++MSG0E	.byte	$EC,$BA,$C1,$00
++MSG0F	.byte	$BC,$EC,$1F,$02,$C1,$E6,$00
++MSG10	.byte	$EC,$FF,$50,$48,$4F,$54,$4F,$4E,$20,$45,$4D,$49,$54,$54,$45,$D2,$E6,$00
++MSG15	.byte	$DC,$3A,$F8,$25,$00
++MSG16	.byte	$E9,$FF,$45,$58,$43,$48,$45,$51,$55,$45,$D2,$00
++MSG17	.byte	$DC,$3A,$0C,$30,$04,$00
++MSG18	.byte	$EC,$FF,$41,$4E,$54,$49,$20,$54,$49,$4D,$45,$20,$42,$4F,$4D,$C2,$EB,$00
++MSG19	.byte	$E9,$A7,$E9,$00
++MSG1A	.byte	$EC,$FF,$4D,$45,$54,$41,$4C,$20,$44,$45,$54,$45,$43,$54,$4F,$D2,$EB,$00
++MSG1B	.byte	$E9,$15,$E8,$00
++MSG1C	.byte	$E9,$FF,$50,$4F,$57,$45,$52,$41,$4D,$D0,$E8,$00
++MSG1D	.byte	$EB,$A6,$3B,$EA,$00
++MSG1E	.byte	$E8,$18,$E8,$00
++MSG1F	.byte	$EC,$37,$2A,$EB,$00
++MSG20	.byte	$E8,$FF,$43,$4F,$46,$46,$49,$CE,$E7,$00
++MSG22	.byte	$E9,$FF,$4C,$41,$52,$47,$45,$20,$42,$4F,$D8,$E9,$00
++MSG23	.byte	$EC,$FF,$55,$53,$45,$46,$55,$4C,$20,$41,$52,$4D,$41,$4D,$45,$4E
++	.byte	$D4,$EC,$00
++MSG24	.byte	$E9,$CC,$00
++MSG26	.byte	$E7,$1A,$E6,$00
++MSG28	.byte	$E8,$FF,$53,$49,$47,$48,$54,$D3,$E7,$00
++MSG29	.byte	$ED,$9C,$CA,$EC,$00
++MSG2A	.byte	$35,$FF,$01,$02,$09,$03,$09,$20,$53,$55,$50,$50,$4C,$D9,$EF,$00
++MSG2B	.byte	$EA,$FF,$57,$49,$4E,$43,$48,$45,$53,$54,$45,$D2,$E9,$00
++MSG2C	.byte	$EE,$21,$B9,$EE,$00
++MSG2D	.byte	$E9,$FF,$44,$41,$54,$41,$42,$41,$4E,$CB,$E8,$00
++MSG2E	.byte	$E7,$FF,$50,$41,$53,$D3,$E6,$00
++MSG2F	.byte	$EB,$D4,$FF,$53,$49,$4E,$CB,$EA,$00
++MSG30	.byte	$EC,$C5,$30,$04,$E7,$00
++MSG31	.byte	$EF,$FF,$45,$4E,$45,$4D,$D9,$C5,$30,$04,$E7,$00
++MSG32	.byte	$E6,$00
++MSG38	.byte	$FF,$50,$52,$45,$53,$53,$20,$52,$45,$54,$55,$52,$4E,$20,$57,$48,$45,$4E,$20
++	.byte	$52,$45,$41,$44,$D9,$00
++MSG39	.byte	$ED,$FF,$50,$41,$53,$53,$20,$48,$4F,$4C,$44,$45,$52,$53,$20,$4F,$4E,$4C,$D9,$E6,$00
++MSG3A	.byte	$EC,$FF,$4C,$4F,$41,$C4,$96,$00
++MSG3B	.byte	$EC,$FF,$53,$41,$56,$C5,$96,$00
++MSG3C	.byte	$EA,$E4,$09,$C3,$00
+ 	;; 1600
+-	.byte	$EC,$FF,$55,$53,$45,$46,$55,$4C,$20,$41,$52,$4D,$41,$4D,$45,$4E
+-	.byte	$D4,$EC,$00,$E9,$CC,$00,$E7,$1A,$E6,$00,$E8,$FF,$53,$49,$47,$48
+-	.byte	$54,$D3,$E7,$00,$ED,$9C,$CA,$EC,$00,$35,$FF,$01,$02,$09,$03,$09
+-	.byte	$20,$53,$55,$50,$50,$4C,$D9,$EF,$00,$EA,$FF,$57,$49,$4E,$43,$48
+-	.byte	$45,$53,$54,$45,$D2,$E9,$00,$EE,$21,$B9,$EE,$00,$E9,$FF,$44,$41
+-	.byte	$54,$41,$42,$41,$4E,$CB,$E8,$00,$E7,$FF,$50,$41,$53,$D3,$E6,$00
+-	.byte	$EB,$D4,$FF,$53,$49,$4E,$CB,$EA,$00,$EC,$C5,$30,$04,$E7,$00,$EF
+-	.byte	$FF,$45,$4E,$45,$4D,$D9,$C5,$30,$04,$E7,$00,$E6,$00,$FF,$50,$52
+-	.byte	$45,$53,$53,$20,$52,$45,$54,$55,$52,$4E,$20,$57,$48,$45,$4E,$20
+-	.byte	$52,$45,$41,$44,$D9,$00,$ED,$FF,$50,$41,$53,$53,$20,$48,$4F,$4C
+-	.byte	$44,$45,$52,$53,$20,$4F,$4E,$4C,$D9,$E6,$00,$EC,$FF,$4C,$4F,$41
+-	.byte	$C4,$96,$00,$EC,$FF,$53,$41,$56,$C5,$96,$00,$EA,$E4,$09,$C3,$00
+-	.byte	$EA,$DC,$23,$04,$00,$EB,$DA,$98,$03,$06,$00,$E7,$FF,$4F,$55,$43
+-	.byte	$48,$EE,$00,$4C,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
++MSG3D	.byte	$EA,$DC,$23,$04,$00
++MSG3E	.byte	$EB,$DA,$98,$03,$06,$00
++MSG3F	.byte	$E7,$FF,$4F,$55,$43,$48,$EE,$00
++
++	;; ??
++	.byte	$4C,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+ 	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+ 	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+ 	;; 1700
+@@ -709,27 +919,90 @@
+ 	.byte	$0C,$E6,$9A,$00,$01,$01,$02,$02,$00,$03,$04,$04,$05,$05,$03,$00,$03,$01,$04,$02,$05,$06,$07,$07,$08,$08,$06,$09,$06,$09,$0B,$06
+ 	.byte	$0B,$0A,$07,$0A,$0C,$07,$0C,$0B,$0E,$0C,$0F,$08,$0D,$0D,$0E,$0E,$0F,$0F,$0D,$10,$11,$11,$12,$12,$10,$4C,$00,$00,$4B,$50,$35,$20
+ 
+-L20A0	.byte	$1F,$23,$2B,$35,$3B,$40,$46,$50,$55,$59,$5D,$60,$64,$68,$6E,$72,$79,$8B,$8B,$8B,$8B,$8B,$90,$9C,$A2,$B4,$B8,$CA,$CE,$DA,$DF,$E3
+-	.byte	$E8,$F2,$F2,$FF,$12,$15,$15,$19,$19,$23,$28,$38,$46,$4B,$57,$5F,$68,$6E,$7A,$7C,$7C,$7C,$7C,$7C,$7C,$95,$AA,$B2,$BA,$BF,$C4,$CA
+-
+-L20E0   .byte	$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15
+-	.byte	$15,$15,$15,$15,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16,$16
+-L2120	.byte	$49,$49,$4D,$4E,$51,$53,$54,$55,$56,$57,$59,$5E,$61,$65,$6A,$70,$77,$7A,$82,$88,$8B,$8E,$96,$9C,$9E,$A5,$A8,$AC,$B0,$B3,$B5,$BA
+-	.byte	$C8,$CC,$D4,$D9,$DE,$E0,$E7,$F4,$FB,$02,$0A,$11,$13,$17,$1B,$1D,$24,$2B,$2C,$32,$34,$38,$41,$47,$4D,$50,$53,$57,$5B,$5E,$62,$66
+-	.byte	$78,$4C,$BA,$80,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$78,$A2,$00,$9D,$80,$21,$CA,$D0,$F9,$EE,$75,$21,$4C,$70,$21,$6A
+-	.byte	$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A
+-	.byte	$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$6A,$73,$77,$7B,$7F,$87,$8A,$91,$97,$9B
+-	.byte	$A4,$AB,$AE,$B1,$B5,$BA,$BE,$C5,$CE,$D1,$D4,$D6,$D8,$DD,$DF,$E3,$E8,$EF,$F9,$02,$05,$0B,$0F,$13,$19,$22,$2C,$36,$39,$4F,$53,$5F
+-	.byte	$6A,$70,$74,$78,$79,$7D,$81,$87,$8D,$93,$98,$F8,$A0,$A9,$AB,$AD,$B1,$B4,$BF,$C4,$C8,$CF,$D1,$D4,$D8,$E3,$E7,$EB,$EF,$F2,$F5,$F7
+-	.byte	$FB,$FF,$03,$05,$09,$0E,$12,$13,$14,$15,$16,$17,$18,$19,$1A,$1B
+-L2210	.byte	$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12
+-	.byte	$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$12,$13,$13,$13,$13,$13,$13,$13
+-	.byte	$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13
+-	.byte	$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13
+-	.byte	$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13
+-	.byte	$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13,$13
+-	.byte	$13,$13,$13,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$BE,$14,$14,$14,$14
+-	.byte	$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$14,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15,$15
++MSG_PTR_LO
++	.byte	<MSG00-1,<MSG01-1,<MSG02-1,<MSG03-1,<MSG04-1,<MSG05-1,<MSG06-1,<MSG07-1
++	.byte	<MSG08-1,<MSG09-1,<MSG0A-1,<MSG0B-1,<MSG0C-1,<MSG0D-1,<MSG0E-1,<MSG0F-1
++	.byte	<MSG10-1,<MSG15-1,<MSG15-1,<MSG15-1,<MSG15-1,<MSG15-1,<MSG16-1,<MSG17-1
++	.byte	<MSG18-1,<MSG19-1,<MSG1A-1,<MSG1B-1,<MSG1C-1,<MSG1D-1,<MSG1E-1,<MSG1F-1
++	.byte	<MSG20-1,<MSG22-1,<MSG22-1,<MSG23-1,<MSG24-1,<MSG26-1,<MSG26-1,<MSG28-1
++	.byte	<MSG28-1,<MSG29-1,<MSG2A-1,<MSG2B-1,<MSG2C-1,<MSG2D-1,<MSG2E-1,<MSG2F-1
++	.byte	<MSG30-1,<MSG31-1,<MSG32-1,<MSG38-1,<MSG38-1,<MSG38-1,<MSG38-1,<MSG38-1
++	.byte	<MSG38-1,<MSG39-1,<MSG3A-1,<MSG3B-1,<MSG3C-1,<MSG3D-1,<MSG3E-1,<MSG3F-1
++MSG_PTR_HI
++	.byte	>MSG00-1,>MSG01-1,>MSG02-1,>MSG03-1,>MSG04-1,>MSG05-1,>MSG06-1,>MSG07-1
++	.byte	>MSG08-1,>MSG09-1,>MSG0A-1,>MSG0B-1,>MSG0C-1,>MSG0D-1,>MSG0E-1,>MSG0F-1
++	.byte	>MSG10-1,>MSG15-1,>MSG15-1,>MSG15-1,>MSG15-1,>MSG15-1,>MSG16-1,>MSG17-1
++	.byte	>MSG18-1,>MSG19-1,>MSG1A-1,>MSG1B-1,>MSG1C-1,>MSG1D-1,>MSG1E-1,>MSG1F-1
++	.byte	>MSG20-1,>MSG22-1,>MSG22-1,>MSG23-1,>MSG24-1,>MSG26-1,>MSG26-1,>MSG28-1
++	.byte	>MSG28-1,>MSG29-1,>MSG2A-1,>MSG2B-1,>MSG2C-1,>MSG2D-1,>MSG2E-1,>MSG2F-1
++	.byte	>MSG30-1,>MSG31-1,>MSG32-1,>MSG38-1,>MSG38-1,>MSG38-1,>MSG38-1,>MSG38-1
++	.byte	>MSG38-1,>MSG39-1,>MSG3A-1,>MSG3B-1,>MSG3C-1,>MSG3D-1,>MSG3E-1,>MSG3F-1
++
++	;; Words Index
++	;; $bef8 has to be a bug!  it points into the code
++WD_PTR_LO
++	.byte	<WD00-1,<WD00-1,<WD01-1,<WD02-1,<WD03-1,<WD04-1,<WD05-1,<WD06-1
++	.byte	<WD07-1,<WD08-1,<WD09-1,<WD0A-1,<WD0B-1,<WD0C-1,<WD0D-1,<WD0E-1
++	.byte	<WD0F-1,<WD10-1,<WD11-1,<WD12-1,<WD13-1,<WD14-1,<WD15-1,<WD16-1
++	.byte	<WD17-1,<WD18-1,<WD19-1,<WD1A-1,<WD1B-1,<WD1C-1,<WD1D-1,<WD1E-1
++	.byte	<WD1F-1,<WD20-1,<WD21-1,<WD22-1,<WD23-1,<WD24-1,<WD25-1,<WD26-1
++	.byte	<WD27-1,<WD28-1,<WD29-1,<WD2A-1,<WD2B-1,<WD2C-1,<WD2D-1,<WD2E-1
++	.byte	<WD2F-1,<WD30-1,<WD31-1,<WD32-1,<WD33-1,<WD34-1,<WD35-1,<WD36-1
++	.byte	<WD37-1,<WD38-1,<WD39-1,<WD3A-1,<WD3B-1,<WD3C-1,<WD3D-1,<WD3E-1
++	.byte	<WD3F-1,<WD40-1,<WD41-1,<WD42-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1
++	.byte	<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1
++	.byte	<WD3F-1,<WD44-1,<WD45-1,<WD46-1,<WD42-1,<WD47-1,<WD48-1,<WD49-1
++	.byte	<WD4A-1,<WD4B-1,<WD4C-1,<WD47-1,<WD40-1,<WD4D-1,<WD47-1,<WD43-1
++	.byte	<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1
++	.byte	<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1
++	.byte	<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1
++	.byte	<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1
++	.byte	<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1
++	.byte	<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1
++	.byte	<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD43-1,<WD4E-1
++	.byte	<WD4F-1,<WD50-1,<WD51-1,<WD52-1,<WD53-1,<WD54-1,<WD55-1,<WD56-1
++	.byte	<WD57-1,<WD58-1,<WD59-1,<WD5A-1,<WD5B-1,<WD41-1,<WD5C-1,<WD5D-1
++	.byte	<WD5E-1,<WD5F-1,<WD60-1,<WD61-1,<WD62-1,<WD63-1,<WD64-1,<WD65-1
++	.byte	<WD66-1,<WD67-1,<WD4A-1,<WD68-1,<WD69-1,<WD6A-1,<WD6B-1,<WD6C-1
++	.byte	<WD6D-1,<WD6E-1,<WD6F-1,<WD70-1,<WD71-1,<WD72-1,<WD73-1,<WD74-1
++	.byte	<WD75-1,<WD76-1,<WD77-1,<WD78-1,<WD79-1,<WD7A-1,<WD7B-1,<WD7C-1
++	.byte	<WD7D-1,<WD7E-1,<WD7F-1,    $f8,<WD80-1,<WD81-1,<WD82-1,<WD83-1
++	.byte	<WD84-1,<WD85-1,<WD86-1,<WD87-1,<WD88-1,<WD89-1,<WD8A-1,<WD8B-1
++	.byte	<WD8C-1,<WD8D-1,<WD8E-1,<WD8F-1,<WD90-1,<WD91-1,<WD92-1,<WD93-1
++	.byte	<WD94-1,<WD95-1,<WD96-1,<WD97-1,<WD98-1,<WD99-1,<WD9A-1,<WD9B-1
++	.byte	<WD9C-1,<WD9D-1,<WD9E-1,<WD9F-1,<WDA0-1,<WDA1-1,<WDA2-1,<WDA3-1
++
++WD_PTR_HI
++	.byte	>WD00-1,>WD00-1,>WD01-1,>WD02-1,>WD03-1,>WD04-1,>WD05-1,>WD06-1
++	.byte	>WD07-1,>WD08-1,>WD09-1,>WD0A-1,>WD0B-1,>WD0C-1,>WD0D-1,>WD0E-1
++	.byte	>WD0F-1,>WD10-1,>WD11-1,>WD12-1,>WD13-1,>WD14-1,>WD15-1,>WD16-1
++	.byte	>WD17-1,>WD18-1,>WD19-1,>WD1A-1,>WD1B-1,>WD1C-1,>WD1D-1,>WD1E-1
++	.byte	>WD1F-1,>WD20-1,>WD21-1,>WD22-1,>WD23-1,>WD24-1,>WD25-1,>WD26-1
++	.byte	>WD27-1,>WD28-1,>WD29-1,>WD2A-1,>WD2B-1,>WD2C-1,>WD2D-1,>WD2E-1
++	.byte	>WD2F-1,>WD30-1,>WD31-1,>WD32-1,>WD33-1,>WD34-1,>WD35-1,>WD36-1
++	.byte	>WD37-1,>WD38-1,>WD39-1,>WD3A-1,>WD3B-1,>WD3C-1,>WD3D-1,>WD3E-1
++	.byte	>WD3F-1,>WD40-1,>WD41-1,>WD42-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1
++	.byte	>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1
++	.byte	>WD3F-1,>WD44-1,>WD45-1,>WD46-1,>WD42-1,>WD47-1,>WD48-1,>WD49-1
++	.byte	>WD4A-1,>WD4B-1,>WD4C-1,>WD47-1,>WD40-1,>WD4D-1,>WD47-1,>WD43-1
++	.byte	>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1
++	.byte	>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1
++	.byte	>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1
++	.byte	>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1
++	.byte	>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1
++	.byte	>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1
++	.byte	>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD43-1,>WD4E-1
++	.byte	>WD4F-1,>WD50-1,>WD51-1,>WD52-1,>WD53-1,>WD54-1,>WD55-1,>WD56-1
++	.byte	>WD57-1,>WD58-1,>WD59-1,>WD5A-1,>WD5B-1,>WD41-1,>WD5C-1,>WD5D-1
++	.byte	>WD5E-1,>WD5F-1,>WD60-1,>WD61-1,>WD62-1,>WD63-1,>WD64-1,>WD65-1
++	.byte	>WD66-1,>WD67-1,>WD4A-1,>WD68-1,>WD69-1,>WD6A-1,>WD6B-1,>WD6C-1
++	.byte	>WD6D-1,>WD6E-1,>WD6F-1,>WD70-1,>WD71-1,>WD72-1,>WD73-1,>WD74-1
++	.byte	>WD75-1,>WD76-1,>WD77-1,>WD78-1,>WD79-1,>WD7A-1,>WD7B-1,>WD7C-1
++	.byte	>WD7D-1,>WD7E-1,>WD7F-1,    $be,>WD80-1,>WD81-1,>WD82-1,>WD83-1
++	.byte	>WD84-1,>WD85-1,>WD86-1,>WD87-1,>WD88-1,>WD89-1,>WD8A-1,>WD8B-1
++	.byte	>WD8C-1,>WD8D-1,>WD8E-1,>WD8F-1,>WD90-1,>WD91-1,>WD92-1,>WD93-1
++	.byte	>WD94-1,>WD95-1,>WD96-1,>WD97-1,>WD98-1,>WD99-1,>WD9A-1,>WD9B-1
++	.byte	>WD9C-1,>WD9D-1,>WD9E-1,>WD9F-1,>WDA0-1,>WDA1-1,>WDA2-1,>WDA3-1
+ 
+ ROOM_STRUCT_PTR_LO_L2300
+ 	.byte	<RM00,<RM01,<RM02,<RM03,<RM04,<RM05,<RM06,<RM07,<RM08,<RM09,<RM0A,<RM0B,<RM0C,<RM0D,<RM0E,<RM0F
+@@ -1309,6 +1582,8 @@
+ 	;; HORIZON_COLUMNS_HI is within 136 rows of the screen so
+ 	;; i'm not sure how this works.  Nothing seems to write to it.
+ 
++	* = $4000
++
+ SCREEN0	.fill	$1440,0		; this doesn't map to an even number of lines
+ 	.fill	136,$AA		; the next two fills do, 136
+ HORIZON_COLUMNS_HI		; this gets overwritten by CLEAR_SCREEN?
+@@ -1405,7 +1680,9 @@
+ L57A0   .byte	$00,$00,$00,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+ L57B0   .byte	$29,$B8,$28,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+ L57C0   .byte	$80,$80,$80,$13,$13,$14,$14,$15,$15,$16,$16,$17,$17,$0C,$00,$0C
+-L57D0   .byte	$25,$28,$25,$0E,$03,$0F,$04,$10,$05,$11,$06,$12,$07,$13,$08,$14
++L57D0   .byte	$25,$28,$25,$0E,$03,$0F,$04,$10
++	;; text indices?
++l57d8	.byte	$05,$11,$06,$12,$07,$13,$08,$14
+ 	;;  benson working state?
+ l57e0	.byte	$09,$15,$0A,$16,$0B,$17,$18,$19,$19,$1A,$1B,$1C,$1C
+ l57ed	.byte	$1D
+@@ -1492,6 +1769,9 @@
+ BENSON_DISPLAY_START = SCREEN_COLOUR + 40 * 22 + 8	; benson display start $5F78
+ BENSON_DISPLAY_END = SCREEN_COLOUR + 40 * 22 + 30	; benson display end   $5F8E
+ 
++	;; screen matrix
++	* = $5C00
++
+ ;;; 40x25 screen, 1000 bytes, plus 24 bytes (padding?)
+ ;;; first 17 rows are colour for multicolour mode
+ ;;; then 8 for benson
+@@ -1526,6 +1806,7 @@
+ 
+ 	;; video screen 1, 160 x 136
+ 	;; see comments on screen 0
++	* = $6000
+ SCREEN1	.fill $1440,0
+ 	.fill $100,$AA	; 256 bytes after screen, but also part of screen
+ 
+@@ -1552,6 +1833,8 @@
+ 	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+ 	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+ 
++	;; not sure how big this structure is
++	;; bitmap data for compass(s)
+ l7680	.byte	$FC,$FC,$3C,$FC,$FC,$E0,$E4,$24,$E4,$E0,$FC,$FC,$3C,$FC,$FC,$E0
+ 	.byte	$FC,$20,$E7,$E0,$E0,$FC,$20,$FC,$E0,$E4,$E4,$20,$FC,$FC,$E0,$E7
+ 	.byte	$20,$FC,$E0,$E0,$E7,$20,$E4,$E0,$E0,$FC,$3C,$FC,$FC,$E0,$E4,$20
+@@ -1559,11 +1842,13 @@
+ 	.byte	$FC,$E0,$E7,$20,$E4,$E0,$E0,$E7,$20,$FC,$E0,$E4,$E4,$20,$FC,$FC
+ 	.byte	$E0,$FC,$20,$FC,$E0,$E0,$FC,$20,$E7,$E0,$FC,$FC,$3C,$FC,$FC,$E0
+ 	.byte	$E4,$24,$E4
+-l76e3	.byte	$E0,$FC,$FC,$3C,$FC,$FC,$C1,$C9,$C9,$C9,$C1,$00,$00
++l76e3	.byte	$E0,$FC,$FC,$3C,$FC,$FC
++CHARV0	.byte	$C1,$C9,$C9,$C9,$C1 ; a tiny '0'
++	.byte	$00,$00
+ 	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+-	.byte	$00,$00,$90,$00,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+-	.byte	$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
++l7700	.byte	$00,$00,$90,$00,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+ 	.byte	$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
++l7720	.byte	$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+ 	.byte	$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+ 	.byte	$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+ 	.byte	$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA,$AA
+@@ -1580,139 +1865,298 @@
+ 	.byte	$3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+ 	.byte	$3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC,$3F,$CF,$F3,$FC
+ 
+-	.byte	$FF,$81,$99,$99,$99,$99,$81,$FF,$FF,$E7,$E7,$E7,$E7,$E7,$E7,$FF
+-	.byte	$FF,$81,$F9,$81,$9F,$99,$81,$FF,$FF,$C1,$F9,$C1,$F9,$F9,$C1,$FF
+-	.byte	$FF,$99,$99,$81,$81,$F9,$F9,$FF,$FF,$81,$9F,$81,$F9,$99,$81,$FF
+-	.byte	$FF,$81,$9F,$81,$99,$99,$81,$FF,$FF,$81,$F9,$F9,$F9,$F9,$F9,$FF
+-	.byte	$FF,$81,$99,$81,$99,$99,$81,$FF,$FF,$81,$99,$81,$F9,$F9,$F9,$FF
+-	.byte	$00,$66,$3C,$FF,$3C,$66,$00,$00,$00,$18,$18,$7E,$18,$18,$00,$00
+-	.byte	$00,$00,$00,$00,$00,$18,$18,$30,$00,$00,$00,$7E,$00,$00,$00,$00
+-	.byte	$00,$00,$00,$00,$00,$18,$18,$00,$00,$06,$0C,$18,$30,$60,$40,$00
+-	.byte	$00,$3C,$66,$6E,$76,$66,$3C,$00,$00,$18,$38,$18,$18,$18,$7E,$00
+-	.byte	$00,$3C,$66,$0C,$18,$30,$7E,$00,$00,$7E,$0C,$18,$0C,$66,$3C,$00
+-	.byte	$00,$0C,$1C,$3C,$6C,$7E,$0C,$00,$00,$7E,$60,$7C,$06,$66,$3C,$00
+-	.byte	$00,$3C,$60,$7C,$66,$66,$3C,$00,$00,$7E,$06,$0C,$18,$30,$30,$00
+-	.byte	$00,$3C,$66,$3C,$66,$66,$3C,$00,$00,$3C,$66,$3E,$06,$0C,$38,$00
+-	.byte	$00,$00,$18,$18,$00,$18,$18,$00,$00,$00,$18,$18,$00,$18,$18,$30
+-	.byte	$06,$0C,$18,$30,$18,$0C,$06,$00,$00,$00,$7E,$00,$00,$7E,$00,$00
+-	.byte	$60,$30,$18,$0C,$18,$30,$60,$00,$00,$3C,$66,$0C,$18,$00,$18,$55
+-	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$33,$FF,$00,$18,$3C,$66,$7E,$66
+-	.byte	$33,$FF,$00,$7C,$66,$7C,$66,$7C,$33,$FF,$00,$3C,$66,$60,$66,$3C
+-	.byte	$33,$FF,$00,$78,$6C,$6C,$6C,$78,$33,$FF,$00,$7E,$60,$7C,$60,$7E
+-	.byte	$33,$FF,$00,$7E,$60,$7C,$60,$60,$33,$FF,$00,$3E,$60,$6E,$66,$3E
+-	.byte	$33,$FF,$00,$66,$66,$7E,$66,$66,$33,$FF,$00,$7E,$18,$18,$18,$7E
+-	.byte	$33,$FF,$00,$06,$06,$06,$66,$3C,$33,$FF,$00,$66,$6C,$78,$6C,$66
+-	.byte	$33,$FF,$00,$60,$60,$60,$60,$7E,$33,$FF,$00,$63,$77,$7F,$6B,$63
+-	.byte	$33,$FF,$00,$66,$76,$7E,$6E,$66,$33,$FF,$00,$3C,$66,$66,$66,$3C
+-	.byte	$33,$FF,$00,$7C,$66,$7C,$60,$60,$33,$FF,$00,$3C,$66,$66,$6C,$36
+-	.byte	$33,$FF,$00,$7C,$66,$7C,$6C,$66,$33,$FF,$00,$3C,$60,$3C,$06,$3C
+-	.byte	$33,$FF,$00,$7E,$18,$18,$18,$18,$33,$FF,$00,$66,$66,$66,$66,$7E
+-	.byte	$33,$FF,$00,$66,$66,$66,$3C,$18,$33,$FF,$00,$63,$6B,$7F,$77,$63
+-	.byte	$33,$FF,$00,$66,$3C,$18,$3C,$66,$33,$FF,$00,$66,$66,$3C,$18,$18
+-	.byte	$33,$FF,$00,$7E,$0C,$18,$30,$7E,$FF,$E1,$B1,$99,$8D,$87,$83,$FF
+-	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF,$FF,$E1,$B1,$99,$8D,$87,$83,$FF
+-	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF,$FF,$E1,$B1,$99,$8D,$87,$83,$FF
+-	.byte	$33,$CC,$33,$CC,$33,$CC,$33,$CC,$00,$7E,$66,$66,$7E,$66,$66,$00
+-	.byte	$00,$7C,$66,$7C,$66,$66,$7C,$00,$00,$7E,$66,$60,$60,$66,$7E,$00
+-	.byte	$00,$7C,$66,$66,$66,$66,$7C,$00,$00,$7E,$60,$7C,$60,$60,$7E,$00
+-	.byte	$00,$7E,$60,$7C,$60,$60,$60,$00,$00,$7E,$60,$60,$6E,$66,$7E,$00
+-	.byte	$00,$66,$66,$7E,$66,$66,$66,$00,$00,$7E,$18,$18,$18,$18,$7E,$00
+-	.byte	$00,$06,$06,$06,$06,$66,$7E,$00,$00,$66,$6C,$78,$78,$6C,$66,$00
+-	.byte	$00,$60,$60,$60,$60,$60,$7E,$00,$00,$63,$77,$7F,$6B,$63,$63,$00
+-	.byte	$00,$66,$76,$7E,$7E,$6E,$66,$00,$00,$7E,$66,$66,$66,$66,$7E,$00
+-	.byte	$00,$7E,$66,$66,$7E,$60,$60,$00,$00,$7E,$66,$66,$66,$6E,$7E,$03
+-	.byte	$00,$7E,$66,$66,$7C,$6C,$66,$00,$00,$7E,$60,$7E,$06,$06,$7E,$00
+-	.byte	$00,$7E,$18,$18,$18,$18,$18,$00,$00,$66,$66,$66,$66,$66,$7E,$00
+-	.byte	$00,$66,$66,$66,$66,$3C,$18,$00,$00,$63,$63,$6B,$7F,$77,$63,$00
+-	.byte	$00,$66,$66,$3C,$3C,$66,$66,$00,$00,$66,$66,$7E,$18,$18,$18,$00
+-	.byte	$00,$7E,$0C,$18,$30,$60,$7E,$00,$00,$0C,$4C,$0C,$CC,$CC,$00,$00
+-	.byte	$FF,$1E,$9E,$9E,$9E,$1E,$FF,$FF,$FF,$0C,$4C,$0C,$4C,$0C,$FF,$FF
+-	.byte	$FF,$1E,$9F,$9F,$9F,$1F,$FF,$FF,$FF,$0C,$CC,$CC,$CC,$CC,$FF,$FF
+-	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+-	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+-	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+-	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+-	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+-	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+-	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+-	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+-	.byte	$18,$18,$18,$18,$18,$18,$18,$18,$30,$30,$30,$30,$30,$30,$30,$30
+-	.byte	$60,$60,$60,$60,$60,$60,$60,$60,$C0,$C0,$C0,$C0,$C0,$C0,$C0,$C0
+-	.byte	$81,$81,$81,$81,$81,$81,$81,$81,$03,$03,$03,$03,$03,$03,$03,$03
+-	.byte	$06,$06,$06,$06,$06,$06,$06,$06,$0C,$0C,$0C,$0C,$0C,$0C,$0C,$0C
+-	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF,$FF,$81,$81,$81,$81,$81,$81,$FF
+-	.byte	$C9,$C1,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$C1,$C9,$C9
+-	.byte	$FC,$FC,$FF,$FF,$FF,$FF,$FF,$00,$FF,$FF,$FF,$FF,$FF,$E0,$E4,$24
+-	.byte	$E4,$E0,$FF,$FF,$FF,$FF,$FF,$00,$FF,$FF,$FF,$FF,$FF,$FC,$FC,$3C
+-	.byte	$00,$7E,$66,$66,$66,$66,$7E,$00,$00,$18,$18,$18,$18,$18,$18,$00
+-	.byte	$00,$7E,$06,$7E,$60,$66,$7E,$00,$00,$3E,$06,$3E,$06,$06,$3E,$00
+-	.byte	$00,$66,$66,$7E,$7E,$06,$06,$00,$00,$7E,$60,$7E,$06,$66,$7E,$00
+-	.byte	$00,$7E,$60,$7E,$66,$66,$7E,$00,$00,$7E,$06,$06,$06,$06,$06,$00
+-	.byte	$00,$7E,$66,$7E,$66,$66,$7E,$00,$00,$7E,$66,$7E,$06,$06,$06,$00
+-	.byte	$FF,$99,$C3,$00,$C3,$99,$FF,$FF,$FF,$E7,$E7,$81,$E7,$E7,$FF,$FF
+-	.byte	$FF,$FF,$FF,$FF,$FF,$E7,$E7,$CF,$FF,$FF,$FF,$81,$FF,$FF,$FF,$FF
+-	.byte	$FF,$FF,$FF,$FF,$FF,$E7,$E7,$FF,$FF,$F9,$F3,$E7,$CF,$9F,$BF,$FF
+-	.byte	$FF,$C3,$99,$91,$89,$99,$C3,$FF,$FF,$E7,$C7,$E7,$E7,$E7,$81,$FF
+-	.byte	$FF,$C3,$99,$F3,$E7,$CF,$81,$FF,$FF,$81,$F3,$E7,$F3,$99,$C3,$FF
+-	.byte	$FF,$F3,$E3,$C3,$93,$81,$F3,$FF,$FF,$81,$9F,$83,$F9,$99,$C3,$FF
+-	.byte	$FF,$C3,$9F,$83,$99,$99,$C3,$FF,$FF,$81,$F9,$F3,$E7,$CF,$CF,$FF
+-	.byte	$FF,$C3,$99,$C3,$99,$99,$C3,$FF,$FF,$C3,$99,$C1,$F9,$F3,$C7,$FF
+-	.byte	$FF,$FF,$E7,$E7,$FF,$E7,$E7,$FF,$FF,$FF,$E7,$E7,$FF,$E7,$E7,$CF
+-	.byte	$F9,$F3,$E7,$CF,$E7,$F3,$F9,$FF,$FF,$FF,$81,$FF,$FF,$81,$FF,$FF
+-	.byte	$9F,$CF,$E7,$F3,$E7,$CF,$9F,$FF,$FF,$C3,$99,$F3,$E7,$FF,$E7,$AA
+-	.byte	$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$CC,$00,$FF,$E7,$C3,$99,$81,$99
+-	.byte	$CC,$00,$FF,$83,$99,$83,$99,$83,$CC,$00,$FF,$C3,$99,$9F,$99,$C3
+-	.byte	$CC,$00,$FF,$87,$93,$93,$93,$87,$CC,$00,$FF,$81,$9F,$83,$9F,$81
+-	.byte	$CC,$00,$FF,$81,$9F,$83,$9F,$9F,$CC,$00,$FF,$C1,$9F,$91,$99,$C1
+-	.byte	$CC,$00,$FF,$99,$99,$81,$99,$99,$CC,$00,$FF,$81,$E7,$E7,$E7,$81
+-	.byte	$CC,$00,$FF,$F9,$F9,$F9,$99,$C3,$CC,$00,$FF,$99,$93,$87,$93,$99
+-	.byte	$CC,$00,$FF,$9F,$9F,$9F,$9F,$81,$CC,$00,$FF,$9C,$88,$80,$94,$9C
+-	.byte	$CC,$00,$FF,$99,$89,$81,$91,$99,$CC,$00,$FF,$C3,$99,$99,$99,$C3
+-	.byte	$CC,$00,$FF,$83,$99,$83,$9F,$9F,$CC,$00,$FF,$C3,$99,$99,$93,$C9
+-	.byte	$CC,$00,$FF,$83,$99,$83,$93,$99,$CC,$00,$FF,$C3,$9F,$C3,$F9,$C3
+-	.byte	$CC,$00,$FF,$81,$E7,$E7,$E7,$E7,$CC,$00,$FF,$99,$99,$99,$99,$81
+-	.byte	$CC,$00,$FF,$99,$99,$99,$C3,$E7,$CC,$00,$FF,$9C,$94,$80,$88,$9C
+-	.byte	$CC,$00,$FF,$99,$C3,$E7,$C3,$99,$CC,$00,$FF,$99,$99,$C3,$E7,$E7
+-	.byte	$CC,$00,$FF,$81,$F3,$E7,$CF,$81,$00,$1E,$4E,$66,$72,$78,$7C,$00
+-	.byte	$00,$1E,$4E,$66,$72,$78,$7C,$00,$00,$1E,$4E,$66,$72,$78,$7C,$00
+-	.byte	$00,$1E,$4E,$66,$72,$78,$7C,$00,$00,$1E,$4E,$66,$72,$78,$7C,$00
+-	.byte	$CC,$33,$CC,$33,$CC,$33,$CC,$33,$FF,$81,$99,$99,$81,$99,$99,$FF
+-	.byte	$FF,$83,$99,$83,$99,$99,$83,$FF,$FF,$81,$99,$9F,$9F,$99,$81,$FF
+-	.byte	$FF,$83,$99,$99,$99,$99,$83,$FF,$FF,$81,$9F,$83,$9F,$9F,$81,$FF
+-	.byte	$FF,$81,$9F,$83,$9F,$9F,$9F,$FF,$FF,$81,$9F,$9F,$91,$99,$81,$FF
+-	.byte	$FF,$99,$99,$81,$99,$99,$99,$FF,$FF,$81,$E7,$E7,$E7,$E7,$81,$FF
+-	.byte	$FF,$F9,$F9,$F9,$F9,$99,$81,$FF,$FF,$99,$93,$87,$87,$93,$99,$FF
+-	.byte	$FF,$9F,$9F,$9F,$9F,$9F,$81,$FF,$FF,$9C,$88,$80,$94,$9C,$9C,$FF
+-	.byte	$FF,$99,$89,$81,$81,$91,$99,$FF,$FF,$81,$99,$99,$99,$99,$81,$FF
+-	.byte	$FF,$81,$99,$99,$81,$9F,$9F,$FF,$FF,$81,$99,$99,$99,$91,$81,$FC
+-	.byte	$FF,$81,$99,$99,$83,$93,$99,$FF,$FF,$81,$9F,$81,$F9,$F9,$81,$FF
+-	.byte	$FF,$81,$E7,$E7,$E7,$E7,$E7,$FF,$FF,$99,$99,$99,$99,$99,$81,$FF
+-	.byte	$FF,$99,$99,$99,$99,$C3,$E7,$FF,$FF,$9C,$9C,$94,$80,$88,$9C,$FF
+-	.byte	$FF,$99,$99,$C3,$C3,$99,$99,$FF,$FF,$99,$99,$81,$E7,$E7,$E7,$FF
+-	.byte	$FF,$81,$F3,$E7,$CF,$9F,$81,$FF
+-
+-L7ED8	.byte	$FF,$0C,$0C,$0C,$0C,$0C,$FF,$FF
++	;; bitmap for custom font
++	;;
++	;;  2 typefaces inverted/non-inverted
++	;;
++	;; encoding:
++	;;     0 1 2 3 4 5 6 7 8 9 a b c d e f
++	;;
++	;; 0   0 1 2 3 4 5 6 7 8 9 * + , - . /   compass digits inverse
++	;; 1   0 1 2 3 4 5 6 7 8 9 : ; < = > ?   text digits
++	;; 2     a b c d e f g h i j k l m n o   small-caps with over-line
++	;; 3   p q r s t u v w x y z
++	;; 4   # A B C D E F G H I J K L M N O
++	;; 5   P Q R S T U V W X Y Z
++	;; 6        various graphics
++	;; 7        various graphics
++	;; 8   0 1 2 3 4 5 6 7 8 9 * + , - . /   compass digits/inverted punct
++	;; 9   0 1 2 3 4 5 6 7 8 9 : ; < = > ?   inverted text digits & punct
++	;; a     a b c d e f g h i j l k m n o   inverted small caps
++	;; b   p q r s t u v w x y z \ \ \ \ \   inverted
++	;; c   # A B C D E F G H I J K L M N O   inverted
++	;; d   P Q R S T U V W X Y Z  [H H H H]  H horizontal compass numerals
++	;; e   various graphics inverse
++	;; f  [| | | | | | |]     [_ _ V V V V]  | horizontal graduations
++	;;					 _ vertical graduations
++	;;                                       V vertical compass numerals
++	* = $7800
++CHARACTER_MAP
++	.byte	$FF,$81,$99,$99,$99,$99,$81,$FF ; 00 - 0
++	.byte	$FF,$E7,$E7,$E7,$E7,$E7,$E7,$FF
++	.byte	$FF,$81,$F9,$81,$9F,$99,$81,$FF
++	.byte	$FF,$C1,$F9,$C1,$F9,$F9,$C1,$FF
++	.byte	$FF,$99,$99,$81,$81,$F9,$F9,$FF
++	.byte	$FF,$81,$9F,$81,$F9,$99,$81,$FF
++	.byte	$FF,$81,$9F,$81,$99,$99,$81,$FF
++	.byte	$FF,$81,$F9,$F9,$F9,$F9,$F9,$FF
++	.byte	$FF,$81,$99,$81,$99,$99,$81,$FF
++	.byte	$FF,$81,$99,$81,$F9,$F9,$F9,$FF
++	.byte	$00,$66,$3C,$FF,$3C,$66,$00,$00
++	.byte	$00,$18,$18,$7E,$18,$18,$00,$00
++	.byte	$00,$00,$00,$00,$00,$18,$18,$30
++	.byte	$00,$00,$00,$7E,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$18,$18,$00
++	.byte	$00,$06,$0C,$18,$30,$60,$40,$00
++	.byte	$00,$3C,$66,$6E,$76,$66,$3C,$00 ; 10 ' '
++	.byte	$00,$18,$38,$18,$18,$18,$7E,$00
++	.byte	$00,$3C,$66,$0C,$18,$30,$7E,$00
++	.byte	$00,$7E,$0C,$18,$0C,$66,$3C,$00
++	.byte	$00,$0C,$1C,$3C,$6C,$7E,$0C,$00
++	.byte	$00,$7E,$60,$7C,$06,$66,$3C,$00
++	.byte	$00,$3C,$60,$7C,$66,$66,$3C,$00
++	.byte	$00,$7E,$06,$0C,$18,$30,$30,$00
++	.byte	$00,$3C,$66,$3C,$66,$66,$3C,$00
++	.byte	$00,$3C,$66,$3E,$06,$0C,$38,$00
++	.byte	$00,$00,$18,$18,$00,$18,$18,$00
++	.byte	$00,$00,$18,$18,$00,$18,$18,$30
++	.byte	$06,$0C,$18,$30,$18,$0C,$06,$00
++	.byte	$00,$00,$7E,$00,$00,$7E,$00,$00
++	.byte	$60,$30,$18,$0C,$18,$30,$60,$00
++	.byte	$00,$3C,$66,$0C,$18,$00,$18,$55
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00 ; 20 p
++	.byte	$33,$FF,$00,$18,$3C,$66,$7E,$66
++	.byte	$33,$FF,$00,$7C,$66,$7C,$66,$7C
++	.byte	$33,$FF,$00,$3C,$66,$60,$66,$3C
++	.byte	$33,$FF,$00,$78,$6C,$6C,$6C,$78
++	.byte	$33,$FF,$00,$7E,$60,$7C,$60,$7E
++	.byte	$33,$FF,$00,$7E,$60,$7C,$60,$60
++	.byte	$33,$FF,$00,$3E,$60,$6E,$66,$3E
++	.byte	$33,$FF,$00,$66,$66,$7E,$66,$66
++	.byte	$33,$FF,$00,$7E,$18,$18,$18,$7E
++	.byte	$33,$FF,$00,$06,$06,$06,$66,$3C
++	.byte	$33,$FF,$00,$66,$6C,$78,$6C,$66
++	.byte	$33,$FF,$00,$60,$60,$60,$60,$7E
++	.byte	$33,$FF,$00,$63,$77,$7F,$6B,$63
++	.byte	$33,$FF,$00,$66,$76,$7E,$6E,$66
++	.byte	$33,$FF,$00,$3C,$66,$66,$66,$3C
++	.byte	$33,$FF,$00,$7C,$66,$7C,$60,$60 ; 30
++	.byte	$33,$FF,$00,$3C,$66,$66,$6C,$36
++	.byte	$33,$FF,$00,$7C,$66,$7C,$6C,$66
++	.byte	$33,$FF,$00,$3C,$60,$3C,$06,$3C
++	.byte	$33,$FF,$00,$7E,$18,$18,$18,$18
++	.byte	$33,$FF,$00,$66,$66,$66,$66,$7E
++	.byte	$33,$FF,$00,$66,$66,$66,$3C,$18
++	.byte	$33,$FF,$00,$63,$6B,$7F,$77,$63
++	.byte	$33,$FF,$00,$66,$3C,$18,$3C,$66
++	.byte	$33,$FF,$00,$66,$66,$3C,$18,$18
++	.byte	$33,$FF,$00,$7E,$0C,$18,$30,$7E
++	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF
++	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF
++	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF
++	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF
++	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF
++	.byte	$33,$CC,$33,$CC,$33,$CC,$33,$CC ; 40
++	.byte	$00,$7E,$66,$66,$7E,$66,$66,$00
++	.byte	$00,$7C,$66,$7C,$66,$66,$7C,$00
++	.byte	$00,$7E,$66,$60,$60,$66,$7E,$00
++	.byte	$00,$7C,$66,$66,$66,$66,$7C,$00
++	.byte	$00,$7E,$60,$7C,$60,$60,$7E,$00
++	.byte	$00,$7E,$60,$7C,$60,$60,$60,$00
++	.byte	$00,$7E,$60,$60,$6E,$66,$7E,$00
++	.byte	$00,$66,$66,$7E,$66,$66,$66,$00
++	.byte	$00,$7E,$18,$18,$18,$18,$7E,$00
++	.byte	$00,$06,$06,$06,$06,$66,$7E,$00
++	.byte	$00,$66,$6C,$78,$78,$6C,$66,$00
++	.byte	$00,$60,$60,$60,$60,$60,$7E,$00
++	.byte	$00,$63,$77,$7F,$6B,$63,$63,$00
++	.byte	$00,$66,$76,$7E,$7E,$6E,$66,$00
++	.byte	$00,$7E,$66,$66,$66,$66,$7E,$00
++	.byte	$00,$7E,$66,$66,$7E,$60,$60,$00 ; 50
++	.byte	$00,$7E,$66,$66,$66,$6E,$7E,$03
++	.byte	$00,$7E,$66,$66,$7C,$6C,$66,$00
++	.byte	$00,$7E,$60,$7E,$06,$06,$7E,$00
++	.byte	$00,$7E,$18,$18,$18,$18,$18,$00
++	.byte	$00,$66,$66,$66,$66,$66,$7E,$00
++	.byte	$00,$66,$66,$66,$66,$3C,$18,$00
++	.byte	$00,$63,$63,$6B,$7F,$77,$63,$00
++	.byte	$00,$66,$66,$3C,$3C,$66,$66,$00
++	.byte	$00,$66,$66,$7E,$18,$18,$18,$00
++	.byte	$00,$7E,$0C,$18,$30,$60,$7E,$00
++	.byte	$00,$0C,$4C,$0C,$CC,$CC,$00,$00
+ 	.byte	$FF,$1E,$9E,$9E,$9E,$1E,$FF,$FF
+-	.byte	$FF,$0C,$4C,$4C,$4C,$0C,$FF,$FF
+-	.byte	$FF,$1F,$9F,$9F,$9F,$1F,$FF,$FF
+-	.byte	$FF,$CC,$CC,$CC,$CC,$CC,$FF,$FF
+-L7F00	.byte	$FF,$1E,$9F,$9E,$9E,$1E,$FF,$FF
++	.byte	$FF,$0C,$4C,$0C,$4C,$0C,$FF,$FF
++	.byte	$FF,$1E,$9F,$9F,$9F,$1F,$FF,$FF
++	.byte	$FF,$0C,$CC,$CC,$CC,$CC,$FF,$FF
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00 ; 60
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00
++	.byte	$18,$18,$18,$18,$18,$18,$18,$18 ; 70
++	.byte	$30,$30,$30,$30,$30,$30,$30,$30
++	.byte	$60,$60,$60,$60,$60,$60,$60,$60
++	.byte	$C0,$C0,$C0,$C0,$C0,$C0,$C0,$C0
++	.byte	$81,$81,$81,$81,$81,$81,$81,$81
++	.byte	$03,$03,$03,$03,$03,$03,$03,$03
++	.byte	$06,$06,$06,$06,$06,$06,$06,$06
++	.byte	$0C,$0C,$0C,$0C,$0C,$0C,$0C,$0C
+ 	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF
+-	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF,$FF,$E1,$B1,$99,$8D,$87,$83,$FF
+-	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF,$33,$FF,$60,$D0,$48,$C4,$42,$C1
+-	.byte	$33,$FE,$07,$0A,$13,$22,$43,$82,$83,$42,$23,$12,$0B,$06,$FF,$CC
+-	.byte	$41,$C2,$44,$C8,$50,$E0,$7F,$CC,$33,$FF,$00,$00,$00,$00,$00,$00
+-	.byte	$00,$00,$00,$00,$00,$00,$FF,$CC,$03,$02,$03,$02,$03,$02,$03,$02
+-	.byte	$40,$C0,$40,$C0,$40,$C0,$40,$C0,$FF,$81,$99,$E1,$E7,$FF,$E7,$FF
+-	.byte	$FF,$E7,$E7,$E7,$E7,$FF,$E7,$FF,$FF,$E7,$E7,$E7,$FF,$FF,$FF,$FF
+-	.byte	$E7,$E7,$E7,$E7,$E7,$E7,$E7,$E7,$CF,$CF,$CF,$CF,$CF,$CF,$CF,$CF
+-	.byte	$9F,$9F,$9F,$9F,$9F,$9F,$9F,$9F,$3F,$3F,$3F,$3F,$3F,$3F,$3F,$3F
+-	.byte	$7E,$7E,$7E,$7E,$7E,$7E,$7E,$7E,$FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
+-	.byte	$F9,$F9,$F9,$F9,$F9,$F9,$F9,$F9,$F3,$F3,$F3,$F3,$F3,$F3,$F3,$F3
+-	.byte	$00,$1E,$4E,$66,$72,$78,$7C,$00,$00,$7E,$7E,$7E,$7E,$7E,$7E,$00
+-	.byte	$FF,$FF,$FF,$FF,$FF,$FF,$FF,$C1,$C9,$C9,$C9,$C1,$FF,$FF,$FF,$FF
+-	.byte	$FF,$00,$FF,$FF,$FF,$FF,$FF,$E0,$FC,$3C,$FC,$FC,$FF,$FF,$FF,$FF
+-	.byte	$FF,$00,$FF,$FF,$FF,$FF,$FF,$E0,$E4,$20,$E4,$E0,$FF,$FF,$FF,$FF
++	.byte	$FF,$81,$81,$81,$81,$81,$81,$FF
++	.byte	$C9,$C1,$FF,$FF,$FF,$FF,$FF,$FF
++	.byte	$FF,$FF,$FF,$FF,$FF,$C1,$C9,$C9
++	.byte	$FC,$FC,$FF,$FF,$FF,$FF,$FF,$00
++	.byte	$FF,$FF,$FF,$FF,$FF,$E0,$E4,$24
++	.byte	$E4,$E0,$FF,$FF,$FF,$FF,$FF,$00
++	.byte	$FF,$FF,$FF,$FF,$FF,$FC,$FC,$3C
++	.byte	$00,$7E,$66,$66,$66,$66,$7E,$00 ; 80
++	.byte	$00,$18,$18,$18,$18,$18,$18,$00
++	.byte	$00,$7E,$06,$7E,$60,$66,$7E,$00
++	.byte	$00,$3E,$06,$3E,$06,$06,$3E,$00
++	.byte	$00,$66,$66,$7E,$7E,$06,$06,$00
++	.byte	$00,$7E,$60,$7E,$06,$66,$7E,$00
++	.byte	$00,$7E,$60,$7E,$66,$66,$7E,$00
++	.byte	$00,$7E,$06,$06,$06,$06,$06,$00
++	.byte	$00,$7E,$66,$7E,$66,$66,$7E,$00
++	.byte	$00,$7E,$66,$7E,$06,$06,$06,$00
++	.byte	$FF,$99,$C3,$00,$C3,$99,$FF,$FF
++	.byte	$FF,$E7,$E7,$81,$E7,$E7,$FF,$FF
++	.byte	$FF,$FF,$FF,$FF,$FF,$E7,$E7,$CF
++	.byte	$FF,$FF,$FF,$81,$FF,$FF,$FF,$FF
++	.byte	$FF,$FF,$FF,$FF,$FF,$E7,$E7,$FF
++	.byte	$FF,$F9,$F3,$E7,$CF,$9F,$BF,$FF
++	.byte	$FF,$C3,$99,$91,$89,$99,$C3,$FF ; 90
++	.byte	$FF,$E7,$C7,$E7,$E7,$E7,$81,$FF
++	.byte	$FF,$C3,$99,$F3,$E7,$CF,$81,$FF
++	.byte	$FF,$81,$F3,$E7,$F3,$99,$C3,$FF
++	.byte	$FF,$F3,$E3,$C3,$93,$81,$F3,$FF
++	.byte	$FF,$81,$9F,$83,$F9,$99,$C3,$FF
++	.byte	$FF,$C3,$9F,$83,$99,$99,$C3,$FF
++	.byte	$FF,$81,$F9,$F3,$E7,$CF,$CF,$FF
++	.byte	$FF,$C3,$99,$C3,$99,$99,$C3,$FF
++	.byte	$FF,$C3,$99,$C1,$F9,$F3,$C7,$FF
++	.byte	$FF,$FF,$E7,$E7,$FF,$E7,$E7,$FF
++	.byte	$FF,$FF,$E7,$E7,$FF,$E7,$E7,$CF
++	.byte	$F9,$F3,$E7,$CF,$E7,$F3,$F9,$FF
++	.byte	$FF,$FF,$81,$FF,$FF,$81,$FF,$FF
++	.byte	$9F,$CF,$E7,$F3,$E7,$CF,$9F,$FF
++	.byte	$FF,$C3,$99,$F3,$E7,$FF,$E7,$AA
++	.byte	$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF ; a0
++	.byte	$CC,$00,$FF,$E7,$C3,$99,$81,$99
++	.byte	$CC,$00,$FF,$83,$99,$83,$99,$83
++	.byte	$CC,$00,$FF,$C3,$99,$9F,$99,$C3
++	.byte	$CC,$00,$FF,$87,$93,$93,$93,$87
++	.byte	$CC,$00,$FF,$81,$9F,$83,$9F,$81
++	.byte	$CC,$00,$FF,$81,$9F,$83,$9F,$9F
++	.byte	$CC,$00,$FF,$C1,$9F,$91,$99,$C1
++	.byte	$CC,$00,$FF,$99,$99,$81,$99,$99
++	.byte	$CC,$00,$FF,$81,$E7,$E7,$E7,$81
++	.byte	$CC,$00,$FF,$F9,$F9,$F9,$99,$C3
++	.byte	$CC,$00,$FF,$99,$93,$87,$93,$99
++	.byte	$CC,$00,$FF,$9F,$9F,$9F,$9F,$81
++	.byte	$CC,$00,$FF,$9C,$88,$80,$94,$9C
++	.byte	$CC,$00,$FF,$99,$89,$81,$91,$99
++	.byte	$CC,$00,$FF,$C3,$99,$99,$99,$C3
++	.byte	$CC,$00,$FF,$83,$99,$83,$9F,$9F ; b0
++	.byte	$CC,$00,$FF,$C3,$99,$99,$93,$C9
++	.byte	$CC,$00,$FF,$83,$99,$83,$93,$99
++	.byte	$CC,$00,$FF,$C3,$9F,$C3,$F9,$C3
++	.byte	$CC,$00,$FF,$81,$E7,$E7,$E7,$E7
++	.byte	$CC,$00,$FF,$99,$99,$99,$99,$81
++	.byte	$CC,$00,$FF,$99,$99,$99,$C3,$E7
++	.byte	$CC,$00,$FF,$9C,$94,$80,$88,$9C
++	.byte	$CC,$00,$FF,$99,$C3,$E7,$C3,$99
++	.byte	$CC,$00,$FF,$99,$99,$C3,$E7,$E7
++	.byte	$CC,$00,$FF,$81,$F3,$E7,$CF,$81
++	.byte	$00,$1E,$4E,$66,$72,$78,$7C,$00
++	.byte	$00,$1E,$4E,$66,$72,$78,$7C,$00
++	.byte	$00,$1E,$4E,$66,$72,$78,$7C,$00
++	.byte	$00,$1E,$4E,$66,$72,$78,$7C,$00
++	.byte	$00,$1E,$4E,$66,$72,$78,$7C,$00
++	.byte	$CC,$33,$CC,$33,$CC,$33,$CC,$33 ; c0
++	.byte	$FF,$81,$99,$99,$81,$99,$99,$FF
++	.byte	$FF,$83,$99,$83,$99,$99,$83,$FF
++	.byte	$FF,$81,$99,$9F,$9F,$99,$81,$FF
++	.byte	$FF,$83,$99,$99,$99,$99,$83,$FF
++	.byte	$FF,$81,$9F,$83,$9F,$9F,$81,$FF
++	.byte	$FF,$81,$9F,$83,$9F,$9F,$9F,$FF
++	.byte	$FF,$81,$9F,$9F,$91,$99,$81,$FF
++	.byte	$FF,$99,$99,$81,$99,$99,$99,$FF
++	.byte	$FF,$81,$E7,$E7,$E7,$E7,$81,$FF
++	.byte	$FF,$F9,$F9,$F9,$F9,$99,$81,$FF
++	.byte	$FF,$99,$93,$87,$87,$93,$99,$FF
++	.byte	$FF,$9F,$9F,$9F,$9F,$9F,$81,$FF
++	.byte	$FF,$9C,$88,$80,$94,$9C,$9C,$FF
++	.byte	$FF,$99,$89,$81,$81,$91,$99,$FF
++	.byte	$FF,$81,$99,$99,$99,$99,$81,$FF
++	.byte	$FF,$81,$99,$99,$81,$9F,$9F,$FF ; d0
++	.byte	$FF,$81,$99,$99,$99,$91,$81,$FC
++	.byte	$FF,$81,$99,$99,$83,$93,$99,$FF
++	.byte	$FF,$81,$9F,$81,$F9,$F9,$81,$FF
++	.byte	$FF,$81,$E7,$E7,$E7,$E7,$E7,$FF
++	.byte	$FF,$99,$99,$99,$99,$99,$81,$FF
++	.byte	$FF,$99,$99,$99,$99,$C3,$E7,$FF
++	.byte	$FF,$9C,$9C,$94,$80,$88,$9C,$FF
++	.byte	$FF,$99,$99,$C3,$C3,$99,$99,$FF
++	.byte	$FF,$99,$99,$81,$E7,$E7,$E7,$FF
++
++	.byte	$FF,$81,$F3,$E7,$CF,$9F,$81,$FF
++	.byte	$FF,$0C,$0C,$0C,$0C,$0C,$FF,$FF
++	;; Horizontal compass bitmap numbers
++	;; 4 are displayed dc-df, but 6 are updated
++COMPHG	.byte	$FF,$1E,$9E,$9E,$9E,$1E,$FF,$FF ; $dc
++	.byte	$FF,$0C,$4C,$4C,$4C,$0C,$FF,$FF ; $dd
++	.byte	$FF,$1F,$9F,$9F,$9F,$1F,$FF,$FF ; $de
++	.byte	$FF,$CC,$CC,$CC,$CC,$CC,$FF,$FF ; $df
++L7F00	.byte	$FF,$1E,$9F,$9E,$9E,$1E,$FF,$FF ; e0
++	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF
++	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF
++	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF
++	.byte	$FF,$E1,$B1,$99,$8D,$87,$83,$FF
++	.byte	$33,$FF,$60,$D0,$48,$C4,$42,$C1
++	.byte	$33,$FE,$07,$0A,$13,$22,$43,$82
++	.byte	$83,$42,$23,$12,$0B,$06,$FF,$CC
++	.byte	$41,$C2,$44,$C8,$50,$E0,$7F,$CC
++	.byte	$33,$FF,$00,$00,$00,$00,$00,$00
++	.byte	$00,$00,$00,$00,$00,$00,$FF,$CC
++	.byte	$03,$02,$03,$02,$03,$02,$03,$02
++	.byte	$40,$C0,$40,$C0,$40,$C0,$40,$C0
++	.byte	$FF,$81,$99,$E1,$E7,$FF,$E7,$FF
++	.byte	$FF,$E7,$E7,$E7,$E7,$FF,$E7,$FF
++	.byte	$FF,$E7,$E7,$E7,$FF,$FF,$FF,$FF
++	;; Horizontal compass bitmap graduation f0-f7
++	.byte	$E7,$E7,$E7,$E7,$E7,$E7,$E7,$E7 ;    ||
++	.byte	$CF,$CF,$CF,$CF,$CF,$CF,$CF,$CF ;   ||
++	.byte	$9F,$9F,$9F,$9F,$9F,$9F,$9F,$9F ;  ||
++	.byte	$3F,$3F,$3F,$3F,$3F,$3F,$3F,$3F ; ||
++	.byte	$7E,$7E,$7E,$7E,$7E,$7E,$7E,$7E ; |      |
++	.byte	$FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC	;      ||
++	.byte	$F9,$F9,$F9,$F9,$F9,$F9,$F9,$F9	;     ||
++	.byte	$F3,$F3,$F3,$F3,$F3,$F3,$F3,$F3	;    ||
++	.byte	$00,$1E,$4E,$66,$72,$78,$7C,$00
++	.byte	$00,$7E,$7E,$7E,$7E,$7E,$7E,$00
++	;; Vertical compass bitmap graduation
++COMPVG	.byte	$FF,$FF,$FF,$FF,$FF,$FF,$FF,$C1 ; $fa 7fd0
++	.byte	$C9,$C9,$C9,$C1,$FF,$FF,$FF,$FF ; $fb 7fd8
++	;; Vertical compass bitmap numbers
++COMPVN	.byte	$FF,$00,$FF,$FF,$FF,$FF,$FF,$E0 ; $fc 7fe0
++	.byte	$FC,$3C,$FC,$FC,$FF,$FF,$FF,$FF ; $fd 7fe8
++	.byte	$FF,$00,$FF,$FF,$FF,$FF,$FF,$E0 ; $fe 7ff0
++	.byte	$E4,$20,$E4,$E0,$FF,$FF,$FF,$FF ; $ff 7ff8
++
++	;; this might be used for scrolling fc-ff?
++
+ 	.byte	$70,$21,$C1,$80,$C3,$C2,$CD,$38,$30,$40
+ 
+ L800A   .byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+@@ -1760,17 +2204,18 @@
+ 	sta	YAW_HI
+ 	sta	PITCH_HI
+ 	jsr	L9950
+-	jsr	LB270
++	jsr	INIT_PALETTE
+ 	lda	#$FF
+ 	sta	L2941
+ 	jsr	L9374
+ 	jmp	MAIN_LOOP
+ 
+-	SEI
++	;; TODO: Can't seem to find anything referencing this
++x8135	SEI
+ 	LDA		#$36
+ 	STA		$01
+ 	JSR		LB8F6
+-	JSR		LBB48
++	JSR		SETCOLOUR_OUTDOOR
+ 	LDA		#$96
+ 	STA		$DD00
+ 	LDA		#$1F
+@@ -1803,7 +2248,7 @@
+ 	LDA		#$00
+ 	STA		$D020
+ 	STA		$D010
+-	JSR		$B506
++	JSR		SETCOLOUR_HUD
+ 	LDA		#$35
+ 	STA		$01
+ 	CLI
+@@ -2491,7 +2936,7 @@
+ 	jsr	DRAW_STRUCTURE_L96E7			; draw the room
+ 	jsr	WHITE_LINES				; setup white lines
+ 	jsr	DRAW_OBJECTS				; draw the objects
+-	jsr	JOYSTICK_LB2FE
++	jsr	READ_INPUT
+ 	jsr	MOVE_LA165
+ 	jmp	MAIN_LOOP 				; next loop
+ 
+@@ -2518,10 +2963,10 @@
+ 	sta	OBJ_Z_HSB_L25C0				; flying ship at edge of city
+ _L85D5	jsr	WHITE_LINES				; setup white lines
+ 	jsr	DRAW_OBJECTS				; draw objects
+-	jsr	JOYSTICK_LB2FE
++	jsr	READ_INPUT
+ 	jsr	MOVE_LA165
+ 	lda	#$30
+-	jsr	L886A     				;
++	jsr	CHECK_FIRE
+ 	jsr	L879B     				;
+ 	jsr	L8690     				;
+ 	jsr	L8921     				;
+@@ -2742,7 +3187,7 @@
+ 	eor	GROUND_STRUCTURES_LIST_L2B00,y
+ 	bpl	_L87C0
+ 	lda	GROUND_STRUCTURES_LIST_L2B00,y
+-	bit	L94DD
++	bit	BITMASK + 5	; why a table with one used entry?
+ 	bne	_L87C0
+ 	asl	a
+ 	bpl	_L87E3
+@@ -2819,18 +3264,19 @@
+ 	ldy	$0B
+ 	rts
+ 
+-L886A	sta	$09
+-	lda	$81
+-	beq	_L8871
+-_L8870	rts
++CHECK_FIRE
++	sta	$09		; always #$30
++	lda	JOY_FIRE
++	beq	_fire
++_nofire	rts
+ 
+-_L8871	lda	CRAFT_ID_WALKING
+-	bmi	_L8870
++_fire	lda	CRAFT_ID_WALKING
++	bmi	_nofire
+ 	lda	$F4
+-	bne	_L8870
++	bne	_nofire
+ 	ldy	#$08
+ 	lda	LBDA3,y
+-	bne	_L8870
++	bne	_nofire
+ 	lda	#$08
+ 	jsr	LB958
+ 	lda	$CD
+@@ -3442,7 +3888,7 @@
+ 	sta	LBEC0
+ 	jmp	l8b92
+ 
+-	;; store byte
++	;; store byte (sound?)
+ l8d0d	iny
+ 	lda	($1f),y
+ 	sta	_store+1
+@@ -3527,15 +3973,16 @@
+ 	.byte	<l8b7c, >l8b7c
+ 	.byte	<l8b0e, >l8b0e
+ 
+-	;; update_ldy0(x)
++	;; message processing
++	;;  initialise next message based on x
+ L8DA4	lda	$E6
+ 	bne	L8DC2
+ 	inc	$E0
+ L8DAA	lda	$E6
+ 	bne	L8DC2
+-	lda	L20E0,x
++	lda	MSG_PTR_HI,x
+ 	sta	ldy0 + 2
+-	lda	L20A0,x
++	lda	MSG_PTR_LO,x
+ 	sta	ldy0 + 1
+ 	lda	#$00
+ 	sta	$DE
+@@ -3543,6 +3990,9 @@
+ 	dec	$E6
+ L8DC2	rts
+ 
++	;; message processing
++	;;  scroll display, advance (but what?)
++	;; runs in hud interrupt
+ L8DC3	INC	$e0
+ 	LDA	$e0
+ 	CMP	#$1a
+@@ -3577,7 +4027,7 @@
+ 	RTS
+ L8e05	LDX	$df
+ 	BEQ	L8e1e
+-	LDA	$14BF,x
++lda0	LDA	$14BF,x		; dynamic pointer
+ 	TAX
+ 	ASL
+ 	CMP	#$14
+@@ -3592,25 +4042,27 @@
+ L8e1b	INC	$df
+ 	RTS
+ 
++	;; message processsing
++	;;  advance word
+ L8e1e	LDA	#$a0
+ 	STA	$fc
+ 	INC	$de
+ 	LDX	$de
+-ldy0	LDY	L09C2,x
++ldy0	LDY	L09C2,x		; current message pointer
+ 	BEQ	L8e50
+ 	CPY	#$ef
+-	BCC	L8e3d
+-	BEQ	L8e16
++	BCC	L8e3d		; < ef
++	BEQ	L8e16		; = ef
+ 	CPY	#$ff
+ 	BEQ	L8e55
+ 	CPY	#$f8
+-	BCS	L8e74
+-	LDA	$56e8,y
++	BCS	L8e74		; >= f8
++	LDA	l57d8 - $f0,y	; f0-f7
+ 	TAY
+-L8e3d	LDA	L2120,y
+-	STA	$8e0a
+-	LDA	L2210,y
+-	STA	$8e0b
++L8e3d	LDA	WD_PTR_LO,y
++	STA	lda0 + 1
++	LDA	WD_PTR_HI,y
++	STA	lda0 + 2
+ 	INC	$df
+ 	CPY	#$08
+ 	BCC	L8e05
+@@ -3619,20 +4071,22 @@
+ L8e50	LDY	#$01
+ 	STY	$e6
+ 	RTS
+-L8e55	LDA	$8e26+1
+-	STA	$8e0a
+-	STA	$8e6d
+-	LDA	$8e26+2
+-	STA	$8e0b
+-	STA	$8e6e
++
++L8e55	LDA	ldy0 + 1
++	STA	lda0 + 1
++	STA	lda1 + 1
++	LDA	ldy0 + 2
++	STA	lda0 + 2
++	STA	lda1 + 2
+ 	INX
+ 	STX	$df
+ 	DEX
+ L8e6b	INX
+-	LDA	L09C2,x
++lda1	LDA	L09C2,x		; dynamic pointer
+ 	BPL	L8e6b
+ 	STX	$de
+ 	RTS
++
+ L8e74	TYA
+ 	AND	#$07
+ 	ASL
+@@ -3640,39 +4094,39 @@
+ 	TAX
+ 	ASL
+ 	TAY
+-	ADC	#$1f
+-	STA	$8e0a
+-	LDA	#$77
++	ADC	#<l7720 - 1
++	STA	lda0 + 1
++	LDA	#>l7720 - 1
+ 	ADC	#$00
+-	STA	$8e0b
++	STA	lda0 + 2
+ 	LDA	#$04
+ 	STA	$06
+-L8e8c	LDA	$7700,x
++L8e8c	LDA	l7700,x
+ 	AND	#$f0
+ 	BNE	L8ea5
+-	LDA	$7700,x
++	LDA	l7700,x
+ 	AND	#$0f
+-	BNE	$8eb2
++	BNE	L8eb2
+ 	INX
+ 	DEC	$06
+ 	BNE	L8e8c
+ 	BEQ	L8eba
+-L8ea1	LDA	$7700,x
++L8ea1	LDA	l7700,x
+ 	INY
+ L8ea5	LSR
+ 	LSR
+ 	LSR
+ 	LSR
+-	STA	$7720,y
+-	LDA	$7700,x
++	STA	l7720,y
++	LDA	l7700,x
+ 	INY
+ 	AND	#$0f
+-L8eb2	STA	$7720,y
++L8eb2	STA	l7720,y
+ 	INX
+ 	DEC	$06
+ 	BNE	L8ea1
+ L8eba	ORA	#$80
+-	STA	$7720,y
++	STA	l7720,y
+ 	INC	$df
+ 	RTS
+ 
+@@ -3931,9 +4385,9 @@
+ 	lda	#$09
+ 	sta	CRAFT_ID_WALKING
+ 	jsr	L9D99
+-	jsr	LB232
++	jsr	INIT_RM_PALETTE
+ 	ldx	#$08
+-_L90D5	lda	_L90ED,x
++_L90D5	lda	_locx,x
+ 	sta	CUR_X_LSB,x
+ 	dex
+ 	bpl	_L90D5
+@@ -3945,15 +4399,10 @@
+ 	sta	$C8
+ 	jmp	CALC_GROUND_STRUCTURE_L950D
+ 
+-_L90ED  .byte	$C0
+-	.byte	$67
+-	.byte	$08
+-	.byte	$80
+-	.byte	$F8
+-	.byte	$40
+-	.byte	$00
+-	.byte	$70
+-	.byte	$08
++	;; outside initial location x y z
++_locx	.byte	$C0,$67,$08
++_locy	.byte	$80,$F8,$40
++_locz	.byte	$00,$70,$08
+ 
+ _SETUP_ROOM_L90F6
+ 	lda	#$E0
+@@ -3998,7 +4447,7 @@
+ 	sta	$F0
+ 	cpx	#$7F
+ 	bne	_L9148
+-	jsr	_L9353		; flip world?
++	jsr	WORLD_FLIP
+ _L9148	ldy	$09
+ 	stx	$CD
+ 	lda	(STRUCT_SHAPE_PTR_LO_1B),y
+@@ -4035,45 +4484,49 @@
+ 	dey
+ 	bpl	_CLEAR_STRUCTURE_LOOP_L916F
+ 
++	;; common edges for room sides (12)
+ 	ldy	#$0C
+-_L918F	lda	_L933A,y
++_edges	lda	ROOM_EDGE_START - 1,y
+ 	sta	L057F,y
+-	lda	_L9346,y
++	lda	ROOM_EDGE_END - 1,y
+ 	sta	L05BF,y
+ 	dey
+-	bne	_L918F
++	bne	_edges
++
++	;; init 8 corner points for room
+ 	lda	(STRUCT_SHAPE_PTR_LO_1B),y
+ 	and	#$7F
+ 	sta	GROUND_STRUCTURE_X_MSB_L0440
+-	sta	L0441
+-	sta	L0444
+-	sta	L0445
++	sta	GROUND_STRUCTURE_X_MSB_L0440 + 1
++	sta	GROUND_STRUCTURE_X_MSB_L0440 + 4
++	sta	GROUND_STRUCTURE_X_MSB_L0440 + 5
+ 	iny
+ 	lda	(STRUCT_SHAPE_PTR_LO_1B),y
+ 	and	#$07
+ 	sta	GROUND_STRUCTURE_Y_MSB_L04C0
+-	sta	L04C1
+-	sta	L04C2
+-	sta	L04C3
++	sta	GROUND_STRUCTURE_Y_MSB_L04C0 + 1
++	sta	GROUND_STRUCTURE_Y_MSB_L04C0 + 2
++	sta	GROUND_STRUCTURE_Y_MSB_L04C0 + 3
+ 	iny
+ 	lda	(STRUCT_SHAPE_PTR_LO_1B),y
+ 	and	#$7F
+ 	sta	GROUND_STRUCTURE_Z_MSB_L0540
+-	sta	L0543
+-	sta	L0544
+-	sta	L0547
++	sta	GROUND_STRUCTURE_Z_MSB_L0540 + 3
++	sta	GROUND_STRUCTURE_Z_MSB_L0540 + 4
++	sta	GROUND_STRUCTURE_Z_MSB_L0540 + 7
++
+ 	lda	#$0B
+ 	sta	$71
+ 	lda	#$07
+ 	sta	$70
+ 	iny
+ 	lda	(STRUCT_SHAPE_PTR_LO_1B),y
+-	sta	$C4
++	sta	COLOUR_RM_BG
+ 	lda	#$01
+ 	sta	$D027
+ 	iny
+ 	lda	(STRUCT_SHAPE_PTR_LO_1B),y
+-	sta	$C5
++	sta	COLOUR_RM_FG
+ _L91E7	iny
+ 	lda	(STRUCT_SHAPE_PTR_LO_1B),y ; door shape
+ 	beq	_L920A
+@@ -4086,9 +4539,9 @@
+ 	jsr	L9425
+ 	beq	_L920A
+ 	lda	#$00
+-	sta	$C2
+-	sta	$C4
+-	sta	$C5
++	sta	COLOUR_RM_LINE
++	sta	COLOUR_RM_BG
++	sta	COLOUR_RM_FG
+ 	lda	#$01
+ 	sta	$F7
+ _L920A	lda	#STRUCTURE_INDOOR_COLOUR_CHANGE_POINT
+@@ -4113,14 +4566,14 @@
+ 	sta	$D404
+ 	rts
+ 
+-_L922F	ldx	#$04
++_L922F	ldx	#>GROUND_STRUCTURE_X_LSB_L0400
+ 	bne	_L9235
+ 
+-_L9233	ldx	#$05
+-_L9235	stx	_L9256+2
++_L9233	ldx	#>GROUND_STRUCTURE_Z_MSB_L0540
++_L9235	stx	_staxz + 2
+ 	and	#$0F
+ 	tax
+-	lda	_L932B,x
++	lda	DOOR_INDEX,x
+ 	tax
+ 	iny
+ 	iny
+@@ -4131,13 +4584,13 @@
+ 	sta	$09
+ 	sty	OBJECT_MEM_PTR
+ 	ldy	$70
+-_L924E	lda	_L928A,x
++_L924E	lda	DOOR_SHAPE,x
+ 	cmp	#$FF
+ 	beq	_L926E
+ 	iny
+-_L9256	sta	GROUND_STRUCTURE_X_LSB_L0400,y     ; populate ground structure
++_staxz	sta	GROUND_STRUCTURE_X_LSB_L0400,y     ; populate ground structure
+ 	inx
+-	lda	_L928A,x
++	lda	DOOR_SHAPE,x
+ 	sta	GROUND_STRUCTURE_Y_LSB_L0480,y
+ 	lda	$08
+ 	sta	GROUND_STRUCTURE_X_MSB_L0440,y
+@@ -4161,7 +4614,8 @@
+ 	jmp	_L91E7
+ 
+ ;;; door shapes, [x_lsb, y_lsb], terminated with z_lsb=$ff
+-_L928A  .byte	$50,$00,$50,$C0,$B0,$C0,$B0,$00,$FF
++DOOR_SHAPE
++	.byte	$50,$00,$50,$C0,$B0,$C0,$B0,$00,$FF
+ 	.byte	$50,$00,$50,$C0,$B0,$C0,$B0,$00,$B0,$60,$80,$A0,$50,$60,$B0,$60,$FF
+ 	.byte	$50,$00,$50,$C0,$B0,$C0,$B0,$00,$80,$00,$80,$A0,$70,$80,$90,$80,$80,$A0,$FF
+ 	.byte	$50,$00,$50,$C0,$B0,$C0,$B0,$00,$80,$00,$70,$20,$90,$20,$80,$00,$80,$A0,$FF
+@@ -4174,14 +4628,17 @@
+ 	.byte	$60,$00,$40,$C0,$C0,$C0,$A0,$00,$FF
+ 	.byte	$60,$00,$40,$60,$60,$C0,$A0,$C0,$C0,$60,$A0,$00,$FF
+ 	.byte	$50,$00,$50,$80,$70,$C0,$90,$C0,$B0,$80,$B0,$00,$FF
++
+ ;;; door index for above
+-_L932B  .byte	$00,$00,$00,$09,$1A,$2D,$40,$4D,$00,$58,$5F,$68,$73,$7E,$87
+-;;; edges for room cuboid + a, offset by 1 ($94 is part of previous table)
+-_L933A  .byte	$94,$00,$01,$02,$03,$00,$01,$02,$03,$04,$05,$06
+-_L9346  .byte	$07,$01,$02,$03,$00,$04,$05,$06,$07,$05,$06,$07,$04
++DOOR_INDEX	.byte	$00,$00,$00,$09,$1A,$2D,$40,$4D,$00,$58,$5F,$68,$73,$7E,$87,$94
++
++;;; edges for room cuboid
++ROOM_EDGE_START	.byte	$00,$01,$02,$03,$00,$01,$02,$03,$04,$05,$06,$07
++ROOM_EDGE_END	.byte	$01,$02,$03,$00,$04,$05,$06,$07,$05,$06,$07,$04
+ 
+ 	;; flip world view
+-_L9353	lda	$F1
++WORLD_FLIP
++	lda	$F1		; F1 is flip state
+ 	eor	#$01
+ 	sta	$F1
+ 	ldx	$EB
+@@ -4217,7 +4674,7 @@
+ 	bpl	_L9388
+ 	stx	NUMBER_OF_OBJECTS
+ 	lda	#$01
+-	sta	$C2
++	sta	COLOUR_RM_LINE
+ 	rts
+ 
+ L939E	lda	#$00
+@@ -4410,14 +4867,10 @@
+ 	sec
+ L94D7	rts
+ 
+-	.byte	$01
+-	.byte	$02
+-	.byte	$04
+-	.byte	$08
+-	.byte	$10
+-L94DD   .byte	$20
+-	.byte	$40
+-	.byte	$80
++	;; this only appears to be used once with a fixed offset
++	;; disassemble error?
++BITMASK	.byte	$01,$02,$04,$08,$10,$20,$40,$80
++
+ L94E0	lda	$CA
+ 	bne	L94D7
+ 	lda	#$00
+@@ -5765,26 +6218,28 @@
+ 	jsr	FP_MUL
+ 	stx	$22
+ 	sty	$23
+-	lda	#$04
+-	bit	$80		; left
+-	bne	_L9F46
++	lda	#JOY_LEFT
++	bit	JOY_DIRECTION
++	bne	_notleft
+ 	ldx	LBEA4
+ 	ldy	LBEA5
+ 	jsr	FP_ADD
+ 	stx	$22
+ 	sty	$23
+-_L9F46	lda	#$08
+-	bit	$80		; right
+-	bne	_L9F5A
++_notleft
++	lda	#JOY_RIGHT
++	bit	JOY_DIRECTION
++	bne	_notright
+ 	ldx	LBEA4
+ 	ldy	LBEA5
+ 	iny
+ 	jsr	FP_ADD
+ 	stx	$22
+ 	sty	$23
+-_L9F5A	lda	#$01
+-	bit	$80		; nose down
+-	bne	_L9F70
++_notright
++	lda	#JOY_UP		; nose down
++	bit	JOY_DIRECTION
++	bne	_notup
+ 	lda	PITCH_LO
+ 	clc
+ 	adc	LBEA6
+@@ -5793,9 +6248,10 @@
+ 	adc	#$00
+ 	and	#$03
+ 	sta	PITCH_HI
+-_L9F70	lda	#$02
+-	bit	$80		; nose up
+-	bne	_L9F86
++_notup
++	lda	#JOY_DOWN
++	bit	JOY_DIRECTION	; nose up
++	bne	_notdown
+ 	sec
+ 	lda	PITCH_LO
+ 	sbc	LBEA6
+@@ -5804,7 +6260,8 @@
+ 	sbc	#$00
+ 	and	#$03
+ 	sta	PITCH_HI
+-_L9F86	ldx	$EC
++_notdown
++	ldx	$EC
+ 	lda	$ED
+ 	ldy	L29DC
+ 	bpl	_L9F98
+@@ -6062,16 +6519,16 @@
+ MOVE_LA165
+ 	lda	$F1			; flip controls if required
+ 	beq	_LA170
+-	ldx	$80
+-	lda	_FLIP_JOY,x
+-	sta	$80
++	ldx	JOY_DIRECTION
++	lda	_joy_flip,x
++	sta	JOY_DIRECTION
+ _LA170	lda	PLANET_UNDERGROUND
+ 	bne	_LA18B
+ 	lda	CRAFT_ID_WALKING
+ 	bmi	_LA18B
+ 	jmp	(LBEA0)
+ 
+-_FLIP_JOY
++_joy_flip
+ 	.byte	$00, $01, $02, $03
+ 	.byte	$08, $09, $0A, $0B
+ 	.byte	$04, $05, $06, $07
+@@ -6084,18 +6541,18 @@
+ 
+ _LA192	lda	CRAFT_ID_WALKING
+ 	bpl	_LA1AC
+-	lda	#$01		; back
+-	bit	$80
++	lda	#JOY_UP
++	bit	JOY_DIRECTION
+ 	bne	_LA1A1
+ 	lda	#$01
+ 	jsr	_LA1ED
+-_LA1A1	lda	#$02		; forward
+-	bit	$80
++_LA1A1	lda	#JOY_DOWN
++	bit	JOY_DIRECTION
+ 	bne	_LA1AC
+ 	lda	#$00
+ 	jsr	_LA1ED
+-_LA1AC	lda	#$04		; left
+-	bit	$80
++_LA1AC	lda	#JOY_LEFT
++	bit	JOY_DIRECTION
+ 	bne	_LA1C1
+ 	lda	YAW_LO
+ 	clc
+@@ -6105,8 +6562,8 @@
+ 	adc	#$00
+ 	and	#$03
+ 	sta	YAW_HI
+-_LA1C1	lda	#$08		; right
+-	bit	$80
++_LA1C1	lda	#JOY_RIGHT
++	bit	JOY_DIRECTION
+ 	bne	_LA1D6
+ 	lda	YAW_LO
+ 	sec
+@@ -6229,15 +6686,15 @@
+ 	sta	CUR_X_MSB
+ 	sta	CUR_Z_MSB
+ 	ldx	$CD
+-	lda	LB4B7-1,x
++	lda	HANGARS_X - 1,x
+ 	sta	CUR_X_HSB
+-	lda	LB4BE,x
++	lda	HANGARS_Z - 1,x
+ 	sta	CUR_Z_HSB
+ 	jsr	CALC_GROUND_STRUCTURE_L950D
+ 	lda	#$00
+ 	sta	$CD
+ 	jsr	L9374
+-	jmp	LB232
++	jmp	INIT_RM_PALETTE
+ 
+ _LA2BD	lda	CUR_Y_LSB
+ 	sec
+@@ -6258,10 +6715,10 @@
+ 	stx	$08
+ 	sty	$09
+ 	jsr	SETUP_ROOM_L90BE
+-	lda	$C4
+-	sta	$A5
+-	lda	$C5
+-	sta	$A6
++	lda	COLOUR_RM_BG
++	sta	COLOUR_BG
++	lda	COLOUR_RM_FG
++	sta	COLOUR_FG
+ 	lda	#$08
+ 	sta	CUR_X_MSB
+ 	sta	CUR_Z_MSB
+@@ -7277,11 +7734,11 @@
+ 	bpl	_LAA7F
+ 	lda	#$00
+ 	ldx	#$F8
+-	jsr	LB1A1
++	jsr	FILL_SCREEN0
+ 	jmp	_LAAF2
+ 
+ _LAA95	jsr	BENSON_L8AB2
+-	jsr	JOYSTICK_LB2FE
++	jsr	READ_INPUT
+ 	jsr	_LAC1C
+ _LAA9E	lda	$D012
+ 	cmp	#$E0
+@@ -7442,41 +7899,37 @@
+ 	tax
+ 	jmp	_LAAF7
+ 
+-_LAC0A  .byte	$60
+-_LAC0B  .byte	$00
+-_LAC0C  .byte	$60
+-_LAC0D  .byte	$60
+-	.byte	$60
+-	.byte	$B0
+-	.byte	$60
+-	.byte	$B0
+-	.byte	$00
+-	.byte	$B0
+-	.byte	$00
+-	.byte	$B0
+-	.byte	$00
+-	.byte	$C0
+-	.byte	$00
+-	.byte	$C0
+-	.byte	$00
+-	.byte	$C0
+-_LAC1C	dec	_LAC0A
++	;;  some sort of colour animation
++_delay	.byte	$60
++_index	.byte	$00
++
++	;; 0=black, 6=blue, b=dark grey, c=medium grey
++_coltab	.byte	$60,$60
++	.byte	$60,$B0
++	.byte	$60,$B0
++	.byte	$00,$B0
++	.byte	$00,$B0
++	.byte	$00,$C0
++	.byte	$00,$C0
++	.byte	$00,$C0
++
++_LAC1C	dec	_delay
+ 	bne	_LAC43
+ 	lda	#$03
+-	sta	_LAC0A
+-_LAC26	ldx	_LAC0B
+-	lda	_LAC0C,x
+-	sta	$A3
+-	ldy	_LAC0D,x
+-	sta	$A4
++	sta	_delay
++_LAC26	ldx	_index
++	lda	_coltab + 0,x
++	sta	COLOUR_LINE
++	ldy	_coltab + 1,x
++	sta	COLOUR_SKY
+ 	stx	$06
+-	jsr	LBB4F
++	jsr	SETCOLOUR_INDOOR
+ 	ldx	$06
+ 	cpx	#$0E
+ 	beq	_LAC44
+ 	inx
+ 	inx
+-	stx	_LAC0B
++	stx	_index
+ _LAC43	rts
+ 
+ _LAC44	lda	#$FF
+@@ -7836,7 +8289,7 @@
+ 	bcc	_LAE9D
+ 	lda	$A3
+ 	sta	$C6
+-	lda	$C4
++	lda	COLOUR_RM_BG
+ 	sta	$A3
+ 	jsr	LAF3A
+ 	lda	#$00
+@@ -7852,12 +8305,12 @@
+ 	sta	POINT_LINE_COUNT
+ 	cmp	#$84
+ 	bcc	_LAEB2
+-	lda	$C2
+-	sta	$A3
+-	lda	$C4
+-	sta	$A5
+-	lda	$C5
+-	sta	$A6
++	lda	COLOUR_RM_LINE
++	sta	COLOUR_LINE
++	lda	COLOUR_RM_BG
++	sta	COLOUR_BG
++	lda	COLOUR_RM_FG
++	sta	COLOUR_FG
+ LAED3	jsr	LB910		; stop sound
+ 	lda	$F0
+ 	beq	_LAEE4
+@@ -7874,18 +8327,18 @@
+ 	jmp	LAE4B		; set final irq values
+ 
+ ROOM_CHANGE_LAEF3
+-	lda	$A5
++	lda	COLOUR_BG
+ 	sta	$A3
+-	lda	$C2
++	lda	COLOUR_RM_LINE
+ 	sta	$C6
+-	lda	$C4
+-	sta	$A5
+-	lda	$C5
+-	sta	$A6
++	lda	COLOUR_RM_BG
++	sta	COLOUR_BG
++	lda	COLOUR_RM_FG
++	sta	COLOUR_FG
+ 	ldy	#$84
+ 	sty	POINT_LINE_COUNT
+ 	jsr	LAE37		; set video control for irq
+-	jsr	LBB48		; set colours (animating?)
++	jsr	SETCOLOUR_OUTDOOR		; set colours (animating?)
+ 	jsr	LAF3E		; start lift sound
+ 	jmp	_LAF17		; run animation
+ 
+@@ -7900,8 +8353,8 @@
+ 	sta	POINT_LINE_COUNT
+ 	bcs	_LAF13
+ 
+-	lda	$C2
+-	sta	$A3
++	lda	COLOUR_RM_LINE
++	sta	COLOUR_LINE
+ 	jsr	LAF3A
+ 	lda	#$00
+ 	sta	$E2
+@@ -7964,14 +8417,14 @@
+ 	beq	_LAFBD
+ 	dec	$F0
+ 	bne	_LAFB7
+-	lda	$C4
+-	sta	$A5
++	lda	COLOUR_RM_BG
++	sta	COLOUR_BG
+ 	jmp	_LAFBD
+ 
+ _LAFB7	tax
+ 	lda	LBB7E,x
+-	sta	$A5
+-_LAFBD	jsr	LBB48
++	sta	COLOUR_BG
++_LAFBD	jsr	SETCOLOUR_OUTDOOR
+ 	jsr	LB53D
+ 	lda	PLANET_UNDERGROUND
+ 	beq	_LAFCA
+@@ -8258,16 +8711,17 @@
+ 	ldy	SCREEN_BANK
+ 	cpy	#$60
+ 	beq	LB1E7
+-LB1A1	sta	SCREEN0 + $F8 * 00 - 1,x
+-	sta	SCREEN0 + $F8 * 01 - 1,x
+-	sta	SCREEN0 + $F8 * 02 - 1,x
+-	sta	SCREEN0 + $F8 * 03 - 1,x
+-	sta	SCREEN0 + $F8 * 04 - 1,x
+-	sta	SCREEN0 + $F8 * 05 - 1,x
+-	sta	SCREEN0 + $F8 * 06 - 1,x
+-	sta	SCREEN0 + $F8 * 07 - 1,x
+-	sta	SCREEN0 + $F8 * 08 - 1,x
+-	sta	SCREEN0 + $F8 * 09 - 1,x
++FILL_SCREEN0
++	sta	SCREEN0 + $F8 * 0 - 1,x
++	sta	SCREEN0 + $F8 * 1 - 1,x
++	sta	SCREEN0 + $F8 * 2 - 1,x
++	sta	SCREEN0 + $F8 * 3 - 1,x
++	sta	SCREEN0 + $F8 * 4 - 1,x
++	sta	SCREEN0 + $F8 * 5 - 1,x
++	sta	SCREEN0 + $F8 * 6 - 1,x
++	sta	SCREEN0 + $F8 * 7 - 1,x
++	sta	SCREEN0 + $F8 * 8 - 1,x
++	sta	SCREEN0 + $F8 * 9 - 1,x
+ 	sta	SCREEN0 + $F8 * 10 - 1,x
+ 	sta	SCREEN0 + $F8 * 11 - 1,x
+ 	sta	SCREEN0 + $F8 * 12 - 1,x
+@@ -8281,19 +8735,19 @@
+ 	sta	SCREEN0 + $F8 * 20 - 1,x
+ 	sta	SCREEN0 + $F8 * 21 - 1 - 16,x
+ 	dex
+-	bne	LB1A1
++	bne	FILL_SCREEN0
+ 	rts
+ 
+-LB1E7	sta	SCREEN1 + $F8 * 00 - 1,x
+-	sta	SCREEN1 + $F8 * 01 - 1,x
+-	sta	SCREEN1 + $F8 * 02 - 1,x
+-	sta	SCREEN1 + $F8 * 03 - 1,x
+-	sta	SCREEN1 + $F8 * 04 - 1,x
+-	sta	SCREEN1 + $F8 * 05 - 1,x
+-	sta	SCREEN1 + $F8 * 06 - 1,x
+-	sta	SCREEN1 + $F8 * 07 - 1,x
+-	sta	SCREEN1 + $F8 * 08 - 1,x
+-	sta	SCREEN1 + $F8 * 09 - 1,x
++LB1E7	sta	SCREEN1 + $F8 * 0 - 1,x
++	sta	SCREEN1 + $F8 * 1 - 1,x
++	sta	SCREEN1 + $F8 * 2 - 1,x
++	sta	SCREEN1 + $F8 * 3 - 1,x
++	sta	SCREEN1 + $F8 * 4 - 1,x
++	sta	SCREEN1 + $F8 * 5 - 1,x
++	sta	SCREEN1 + $F8 * 6 - 1,x
++	sta	SCREEN1 + $F8 * 7 - 1,x
++	sta	SCREEN1 + $F8 * 8 - 1,x
++	sta	SCREEN1 + $F8 * 9 - 1,x
+ 	sta	SCREEN1 + $F8 * 10 - 1,x
+ 	sta	SCREEN1 + $F8 * 11 - 1,x
+ 	sta	SCREEN1 + $F8 * 12 - 1,x
+@@ -8313,9 +8767,10 @@
+ LB22D	ldy	#$11
+ 	jmp	LB244
+ 
+-LB232	ldx	#$03
+-_LB234	lda	LB27D,x
+-	sta	$C2,x
++INIT_RM_PALETTE
++	ldx	#$03
++_LB234	lda	DEFAULT_PALETTE,x
++	sta	COLOUR_RM_LINE,x
+ 	dex
+ 	bpl	_LB234
+ 	lda	#$0F
+@@ -8325,8 +8780,8 @@
+ KEYBOARD_LB242
+ 	ldy	#$00
+ LB244	sty	$A3
+-	sty	$A6
+-	jsr	LBB4F
++	sty	COLOUR_FG
++	jsr	SETCOLOUR_INDOOR
+ 	lda	#$18
+ 	jsr	LB958
+ _LB250	lda	$D011
+@@ -8342,22 +8797,25 @@
+ 	bne	_LB260
+ 	dey
+ 	bne	_LB260
+-	jsr	LB270
+-	jmp	LBB48
++	jsr	INIT_PALETTE
++	jmp	SETCOLOUR_OUTDOOR
+ 
+-	;; sets colours
+-LB270	ldx	#$03
+-_LB272	lda	LB27D,x
++	;; sets initial (outside) colours
++INIT_PALETTE
++	ldx	#$03
++_LB272	lda	DEFAULT_PALETTE,x
+ 	sta	$A3,x
+ 	dex
+ 	bpl	_LB272
+-	jmp	LB232
++	jmp	INIT_RM_PALETTE
+ 
+ 	;; white, blue, green, grey
+-LB27D	.byte	$01,$06,$05,$0b
++DEFAULT_PALETTE
++	.byte	$01,$06,$05,$0b
+ 
+ 	;; low level keyboard read
+-LB281	lda	#$FF
++SCAN_KEYBOARD
++	lda	#$FF
+ 	sta	$DC02			; DDRA
+ 	lda	#$00
+ 	sta	$07
+@@ -8366,7 +8824,7 @@
+ 	sta	$DC00			; PRA - write keyboard matrix column
+ 	ldy	$DC01
+ 	cpy	#$FF
+-	beq	_KEYBOARD_EXIT_LB2F8	; key not pressed?
++	beq	_nokey
+ 	lda	#$FE
+ _LB29A	sta	$DC00
+ 	ldy	$DC01
+@@ -8417,35 +8875,39 @@
+ 	ldy	$07
+ 	tya
+ 	and	#$3F
+-	beq	_KEYBOARD_EXIT_LB2F8
++	beq	_nokey
+ 	eor	$EA
+ 	and	#$3F
+-	beq	_LB2F4
++	beq	_same
+ 	sty	$E9
+-_LB2F4	sty	$EA
++_same	sty	$EA
+ 	clc
+ 	rts
+ 
+-_KEYBOARD_EXIT_LB2F8
++_nokey
+ 	ldy	#$FF
+ 	sty	$EA
+ 	sec
+ 	rts
+ 
+-JOYSTICK_LB2FE
++	;; this first checks the joystick then the keyboard
++
++	;; the same cia lines are used for joystick and keyboard
++	;; so it can only read the keyboard if the joystick is inactive
++READ_INPUT
+ 	lda	#$00
+ 	sta	$DC02		; DDRA
+ 	lda	$DC00		; PRA
+ 	tax
+ 	and	#$0F
+-	sta	$80		; direction [ 3:right, 2:left, 1:down, 0:up ]
++	sta	JOY_DIRECTION
+ 	txa
+ 	lsr	a
+ 	lsr	a
+ 	lsr	a
+ 	lsr	a
+ 	and	#$01
+-	sta	$81		; fire
++	sta	JOY_FIRE
+ 	txa
+ 	and	#$1F
+ 	cmp	#$1F
+@@ -8455,63 +8917,94 @@
+ 	sta	LBEC0
+ _LB323	rts
+ 
++	;; raw keyboard matrix values
++KEY_CTRL	= $80
++
++;KEY_LT		= $6f
++;KEY_GT		= $6c
++KEY_PLUS	= $28
++KEY_MINUS	= $2B
++KEY_RETURN	= $01
++KEY_SPACE	= $3c
++
++KEY_0	= $23
++KEY_1	= $38
++KEY_2	= $3b
++KEY_3	= $08
++KEY_4	= $0b
++KEY_5	= $10
++KEY_6	= $13
++KEY_7	= $18
++KEY_8	= $1b
++KEY_9	= $20
++
++KEY_B	= $1c
++KEY_D	= $12
++KEY_E	= $0e
++KEY_L	= $2a
++KEY_S	= $0d
++KEY_T	= $16
++KEY_Y	= $19
++
+ 	;; no joystick input, check keyboard
+-_LB324	jsr	LB281
++_LB324	jsr	SCAN_KEYBOARD
+ 	bcs	_LB323
+ 	lda	#$80
+ 	ora	LBEC0
+ 	sta	LBEC0
+ _LB331	ldy	$E9
+ 	ldx	$EA
+-	cpy	#$81       	; key ? pressed ?
+-	bne	_LB33F     	; no
+-	jsr	LB281      	; yes
++	cpy	#KEY_RETURN | KEY_CTRL
++	bne	_next0
++	jsr	SCAN_KEYBOARD
+ 	jmp	_LB331
+ 
+-_LB33F	cpy	#$12 		; 'D' key pressed
+-	bne	_LB349
++_next0	cpy	#KEY_D		; drop
++	bne	_next1
+ 	jsr	LB4B2
+ 	jmp	L98FE
+ 
+-_LB349	cpy	#$2A     	; 'L' key pressed
+-	bne	_LB356
++_next1	cpy	#KEY_L		; leave
++	bne	_next2
+ 	jsr	LB4B2
+ 	jsr	LB949
+ 	jmp	L98C8
+ 
+-_LB356	cpx	#$2B     	; '-' key pressed
+-	bne	_LB361
++_next2	cpx	#KEY_MINUS	; thrust down
++	bne	_next3
+ 	ldx	#$F8
+ 	ldy	#$FC
+-	jmp	_LB499
++	jmp	_throttle
+ 
+-_LB361	cpx	#$28      	; '+' key pressed
+-	bne	_LB36C
++_next3	cpx	#KEY_PLUS	; thrust up
++	bne	_next4
+ 	ldx	#$08
+ 	ldy	#$00
+-	jmp	_LB499
++	jmp	_throttle
+ 
+-_LB36C	cpy	#$8D     	; keyboard?
+-	bne	_LB377
++_next4	cpy	#KEY_S | KEY_CTRL     	; save
++	bne	_next5
+ 	sty	L825F
+ 	ldx	#$3B
+-	bne	_LB382
++	bne	_askfile
+ 
+-_LB377	cpy	#$AA       	; keyboard?
+-	bne	_LB3E4
++_next5	cpy	#KEY_L | KEY_CTRL      	; load
++	bne	_next6
+ 	lda	#$00
+ 	sta	L825F
+ 	ldx	#$3A
+-_LB382	jsr	LB94D
++_askfile
++	jsr	LB94D
+ 	jsr	LB4B2
+ 	jsr	_LB3D6
+-_LB38B	jsr	LB281
++
++_retry	jsr	SCAN_KEYBOARD
+ 	lda	$E9
+ 	cmp	#$04
+-	beq	_LB38B
++	beq	_retry
+ 	and	#$3F
+ 	tax
+-	lda	LBC50,x
++	lda	KEY_TABLE,x
+ 	beq	_LB3D1
+ 	lsr	a
+ 	sec
+@@ -8529,7 +9022,7 @@
+ 	jsr	_LB3D6
+ 	lda	#$05
+ 	sta	$01
+-_LB3BD	jsr	LB281
++_LB3BD	jsr	SCAN_KEYBOARD
+ 	lda	$E9
+ 	cmp	#$04
+ 	beq	_LB3BD
+@@ -8550,8 +9043,8 @@
+ 	bcc	_LB3DD
+ 	rts
+ 
+-_LB3E4	nop
+-	cpy	#$BE		; key
++_next6	nop
++	cpy	#$BE		; ? key
+ 	bne	_LB3F6
+ 	jsr	LB94D
+ 	jsr	LB4B2
+@@ -8560,41 +9053,43 @@
+ 	cld
+ 	jmp	L80E8
+ 
+-_LB3F6	cpy	#$0E		; keyboard
+-	beq	_LB3FD
+-	jmp	_LB47E
++_LB3F6	cpy	#KEY_E		; elevator
++	beq	_elevator
++	jmp	_next7
+ 
+-_LB3FD	jsr	LB4B2		; elevator?
++_elevator
++	jsr	LB4B2
+ 	lda	$CA
+-	bne	_LB42F
++	bne	_exit
+ 	lda	PLANET_UNDERGROUND
+-	bne	_LB455
++	bne	_is_hangar_room
+ 	lda	$7F
+-	beq	_LB42F
++	beq	_exit
+ 	lda	CUR_X_MSB
+ 	lsr	a
+ 	lsr	a
+ 	cmp	#$1C
+-	bne	_LB42F
++	bne	_exit
+ 	lda	CUR_Z_MSB
+ 	lsr	a
+ 	lsr	a
+ 	cmp	#$1C
+-	bne	_LB42F
++	bne	_exit
++
+ 	ldx	#$08
+-_LB41E	lda	LB4B7-1,x
++_loop0	lda	HANGARS_X - 1,x
+ 	cmp	CUR_X_HSB
+-	bne	_LB42C
+-	lda	LB4BE,x
++	bne	_cont0
++	lda	HANGARS_Z - 1,x
+ 	cmp	CUR_Z_HSB
+-	beq	_LB430
+-_LB42C	dex
+-	bne	_LB41E
+-_LB42F	rts
++	beq	_hangar
++_cont0	dex
++	bne	_loop0
++_exit	rts
+ 
+-_LB430	cpx	#$05
++_hangar	cpx	#$05
+ 	bne	_LB43E
+-	lda	L29EE
++	lda	L29EE		; special case 81:35 (pass check?)
+ 	bmi	_LB43E
+ 	ldx	#$39
+ 	jmp	L8DAA
+@@ -8604,22 +9099,23 @@
+ 	lda	LBBCF
+ 	sta	$C6
+ 	lda	LBBCE
+-	sta	$C2
++	sta	COLOUR_RM_LINE
+ 	lda	#$0D
+ 	ldx	#$83
+ 	ldy	#$80
+ 	bmi	_LB470
+ 
+-_LB455	ldx	#$00
++_is_hangar_room
++	ldx	#$00
+ 	lda	#$08
+ 	cmp	$CD
+-	bcc	_LB42F
++	bcc	_exit
+ 	bne	_LB460
+ 	dex
+ _LB460	stx	$FA
+ 	jsr	LB94D
+ 	lda	LBBCA
+-	sta	$C2
++	sta	COLOUR_RM_LINE
+ 	lda	#$00
+ 	ldx	#$42
+ 	ldy	#$01
+@@ -8630,11 +9126,12 @@
+ 	jsr	LB93A
+ 	jmp	L9950
+ 
+-_LB47E	tya
++	;; handle 0-9
++_next7	tya
+ 	and	#$3F
+ 	tax
+-	lda	LBC50,x
+-	beq	_LB42F
++	lda	KEY_TABLE,x
++	beq	_exit
+ 	tax
+ 	tya
+ 	rol	a
+@@ -8647,7 +9144,9 @@
+ 	jsr	LB945
+ 	jmp	LB4B2
+ 
+-_LB499	stx	$08
++	;; delta throttle by x, y
++_throttle
++	stx	$08
+ 	sty	$09
+ 	ldx	$EC
+ 	ldy	$ED
+@@ -8663,58 +9162,79 @@
+ 	sta	$E9
+ 	rts
+ 
+-LB4B7   .byte	$09,$09,$03,$0B,$03,$51,$88
+-LB4BE   .byte	$08,$06,$05,$00,$0D,$0F,$23,$88,$08
++HANGARS_X	.byte	$09,$09,$03,$0B,$03,$51,$88,$08
++HANGARS_Z	.byte	$06,$05,$00,$0D,$0F,$23,$88,$08
+ 
+-LB4C7	sta	LB4D3
++	;; set benson colour
++	;;  23 values @ (22,8)
++SETCOLOUR_BENSON
++	sta	LB4D3
+ 	ldx	#$17
+ _LB4CC	sta	$DB77,x
+ 	dex
+ 	bne	_LB4CC
+ 	rts
+ 
++	;; probably should be pitch/yaw
++COMPV_COL = 2
++COMPV_ROW = 19
++COMPH_COL = 34
++COMPH_ROW = 20
++LOC_ROW = 19
++LOC_COL = 8
++
+ LB4D3   .byte	$02
+ 
+-Lb4d4	STA	$dafa
+-Lb4d7	STA	$dafb
+-Lb4da	STA	$db22
+-Lb4dd	STA	$db23
+-Lb4e0	STA	$db4a
+-Lb4e3	STA	$db4b
+-Lb4e6	STA	$db72
+-Lb4e9	STA	$db73
+-Lb4ec	RTS
+-Lb4ed	STA	$db42
+-Lb4f0	STA	$db43
+-Lb4f3	STA	$db44
+-Lb4f6	STA	$db45
+-Lb4f9	STA	$db6a
+-Lb4fc	STA	$db6b
+-Lb4ff	STA	$db6c
+-Lb502	STA	$db6d
+-Lb505	RTS
+-Lb506	LDX	#$a0
+-Lb508	LDA	#$00
+-Lb50a	STA	$daa7,x
+-Lb50d	STA	$db47,x
+-Lb510	DEX
+-Lb511	BNE	$b50a
+-Lb513	LDA	$bbc2
+-Lb516	JSR	$b4c7
+-Lb519	LDA	$bbc3
+-Lb51c	JSR	$b4d4
+-Lb51f	LDA	$bbc7
+-Lb522	JSR	$b4ed
+-Lb525	LDX	#$04
+-Lb527	LDA	$bbc4
+-Lb52a	STA	$db00,x
+-Lb52d	LDA	$bbc5
+-Lb530	STA	$db09,x
+-Lb533	LDA	$bbc6
+-Lb536	STA	$db12,x
+-Lb539	DEX
+-Lb53a	BPL	$b527
+-Lb53c	RTS
++	;; set vert compass colour
++SETCOLOUR_COMPV
++	sta	$dafa		; 19 * 40 + 2
++	sta	$dafb
++	sta	$db22
++	sta	$db23
++	sta	$db4a
++	sta	$db4b
++	sta	$db72
++	sta	$db73
++	rts
++	;; set horiz compass colour
++SETCOLOUR_COMPH
++	sta	$db42		; 20 * 40 + 34
++	sta	$db43
++	sta	$db44
++	sta	$db45
++	sta	$db6a
++	sta	$db6b
++	sta	$db6c
++	sta	$db6d
++	rts
++
++	;;
++SETCOLOUR_HUD
++LB506
++	ldx	#$a0
++	lda	#$00
++_clear	sta	$daa7,x		; clear all colours
++	sta	$db47,x
++	dex
++	bne	_clear
++	lda	lbbc2
++	jsr	SETCOLOUR_BENSON
++	lda	lbbc3
++	jsr	SETCOLOUR_COMPV
++	lda	lbbc7
++	jsr	SETCOLOUR_COMPH
++
++	;; set location colour (metal detector)
++	ldx	#$04
++Lb527	lda	lbbc4
++	sta	$db00,x		; 19 * 40 + 8
++	lda	lbbc5
++	sta	$db09,x
++	lda	lbbc6
++	sta	$db12,x
++	dex
++	bpl	Lb527
++	rts
+ 
+ LB53D	lda	$CA
+ 	beq	_LB542
+@@ -8741,7 +9261,7 @@
+ _LB563	lda	#$02
+ _LB565	cmp	LB4D3
+ 	beq	_LB56D
+-	jsr	LB4C7
++	jsr	SETCOLOUR_BENSON
+ _LB56D	lda	#$00
+ 	sta	$07
+ 	lda	#$39
+@@ -8835,13 +9355,13 @@
+ 	lsr	a
+ 	lsr	a
+ 	ora	$06
+-	sta	LB9AB
+-	sta	$D408
++	sta	SND_9 + 0	; set frequency
++	sta	$D408		; and voice 2 frequency
+ 	pla
+-	cmp	LB9AD
++	cmp	SND_9 + 2
+ 	beq	_LB61D
+-	sta	LB9AD
+-	sta	$D40D
++	sta	SND_9 + 2	; set stn/rls
++	sta	$D40D		; and voice 2 stn/rls
+ 	bcc	_LB61D
+ 	lda	#$24
+ 	jsr	LB93A
+@@ -8908,7 +9428,10 @@
+ 	iny
+ 	rts
+ 
+-Lb67b	LDA	$2a
++	;; updates compass graphics and colours
++	;; note: runs in the hud raster interrupt
++UPDATE_COMPASS_VER
++	LDA	$2a
+ 	LSR
+ 	LSR
+ 	LSR
+@@ -8920,13 +9443,14 @@
+ 	LDA	$2b
+ 	SBC	$bb
+ 	AND	#$03
+-	BNE	Lb694
++	BNE	_update
+ 	CPX	#$00
+-	BNE	Lb694
++	BNE	_update
+ 	RTS
+-Lb694	AND	#$02
+-	BEQ	Lb69b
+-	JMP	$b75b
++_update	AND	#$02
++	BEQ	Lb69b		; slide up
++	JMP	$b75b		; slide down
++
+ Lb69b	LDY	$ba
+ 	CPY	#$8f
+ 	BNE	Lb6b0
+@@ -8944,84 +9468,83 @@
+ 	TAY
+ 	BNE	Lb6cd
+ 	LDA	#$ff
+-	STA	$7fe0		;FIXME
+-	STA	$7ff0
++	STA	COMPVN + $00
++	STA	COMPVN + $10
+ 	LDA	#$00
+-	STA	$7fef
+-	STA	$7fff
++	STA	COMPVN + $0f
++	STA	COMPVN + $1f
+ 	JMP	Lb6dd
+ Lb6cd	LDA	#$ff
+-	STA	$7fe0,y
+-	STA	$7ff0,y
++	STA	COMPVN + $00,y
++	STA	COMPVN + $10,y
+ 	LDA	#$00
+-	STA	$7fdf,y
+-	STA	$7fef,y
++	STA	COMPVG + $0f,y
++	STA	COMPVN + $0f,y
+ Lb6dd	TYA
+ 	CLC
+ 	ADC	#$05
+ 	AND	#$0f
+ 	TAY
+-	LDA	$7fe1,y
+-	STA	$7fe0,y
+-	LDA	$7fe2,y
+-	STA	$7fe1,y
+-	LDA	$7fe3,y
+-	STA	$7fe2,y
+-	LDA	$7fe4,y
+-	STA	$7fe3,y
+-	LDA	$7fe5,y
+-	STA	$7fe4,y
++	LDA	COMPVN + $01,y
++	STA	COMPVN + $00,y
++	LDA	COMPVN + $02,y
++	STA	COMPVN + $01,y
++	LDA	COMPVN + $03,y
++	STA	COMPVN + $02,y
++	LDA	COMPVN + $04,y
++	STA	COMPVN + $03,y
++	LDA	COMPVN + $05,y
++	STA	COMPVN + $04,y
+ 	LDA	#$ff
+-	STA	$7fe5,y
++	STA	COMPVN + $05,y
+ 	LDX	#$05
+-Lb709	CPY	#$0f
++_up0	CPY	#$0f
+ 	BEQ	Lb726
+-	LDA	$7ff1,y
+-	STA	$7ff0,y
+-	LDA	$76e8,x
+-	STA	$7fd0,y
++	LDA	COMPVN + $11,y
++	STA	COMPVN + $10,y
++	LDA	CHARV0 - 1,x	; x goes [5 .. 1]
++	STA	COMPVG + $00,y
+ 	INY
+ 	DEX
+-	BNE	Lb709
++	BNE	_up0
+ 	LDA	#$ff
+-	STA	$7ff0,y
+-	STA	$7fd0,y
++	STA	COMPVN + $10,y
++	STA	COMPVG + $00,y
+ 	RTS
+-Lb726	LDA	$7fd0
+-	STA	$7fdf
++
++Lb726	LDA	COMPVG + $00
++	STA	COMPVG + $0f
+ 	LDY	#$00
+-Lb72e	LDA	$7fe1,y
+-	STA	$7fe0,y
+-	LDA	$7fd1,y
+-	STA	$7fd0,y
++_up1	LDA	COMPVN + $01,y
++	STA	COMPVN + $00,y
++	LDA	COMPVG + $01,y
++	STA	COMPVG + $00,y
+ 	INY
+ 	DEX
+-	BNE	Lb72e
++	BNE	_up1
+ 	INC	$bc
+-	LDY	$bc
+-	LDA	$768b,y
+-	STA	$7fff
++	LDY	$bc		; bc is 0++ or $5b-- ?
++	LDA	l7680 + $b,y	; ??
++	STA	COMPVN + $1f
+ 	RTS
+ Lb749	LDA	$bb
+ 	AND	#$03
+ 	TAX
+-	LDA	$b757,x
+-	JSR	$b4d4
++	LDA	vert_colours,x
++	JSR	SETCOLOUR_COMPV
+ 	TXA
+ 	LSR
+ 	RTS
+ 
+-	.byte	$06
+-	.byte	$06
+-	.byte	$05
+-	.byte	$05
++vert_colours	.byte	$06,$06,$05,$05
+ 
++	;; slide vcompass down
+ Lb75b	LDY	$ba
+ 	BNE	Lb76e
+ 	LDA	#$90
+ 	STA	$ba
+ 	DEC	$bb
+-	JSR	$b749
++	JSR	Lb749
+ 	BCC	Lb76e
+ 	LDA	#$5b
+ 	STA	$bc
+@@ -9033,65 +9556,67 @@
+ 	CMP	#$0f
+ 	BNE	Lb78d
+ 	LDA	#$ff
+-	STA	$7fef
+-	STA	$7fff
++	STA	COMPVN + $0f
++	STA	COMPVN + $1f
+ 	LDA	#$00
+-	STA	$7fe0
+-	STA	$7ff0
++	STA	COMPVN + $00
++	STA	COMPVN + $10
+ 	JMP	Lb79d
+ Lb78d	LDA	#$ff
+-	STA	$7fe0,y
+-	STA	$7ff0,y
++	STA	COMPVN + $00,y
++	STA	COMPVN + $10,y
+ 	LDA	#$00
+-	STA	$7fe1,y
+-	STA	$7ff1,y
++	STA	COMPVN + $01,y
++	STA	COMPVN + $11,y
+ Lb79d	TYA
+ 	CLC
+ 	ADC	#$0b
+ 	AND	#$0f
+ 	TAY
+-	LDA	$7fef,y
+-	STA	$7ff0,y
+-	LDA	$7fee,y
+-	STA	$7fef,y
+-	LDA	$7fed,y
+-	STA	$7fee,y
+-	LDA	$7fec,y
+-	STA	$7fed,y
+-	LDA	$7feb,y
+-	STA	$7fec,y
++	LDA	COMPVN + $0f,y
++	STA	COMPVN + $10,y
++	LDA	COMPVN + $0e,y
++	STA	COMPVN + $0f,y
++	LDA	COMPVN + $0d,y
++	STA	COMPVN + $0e,y
++	LDA	COMPVN + $0c,y
++	STA	COMPVN + $0d,y
++	LDA	COMPVN + $0b,y
++	STA	COMPVN + $0c,y
+ 	LDA	#$ff
+-	STA	$7feb,y
++	STA	COMPVN + $0b,y
+ 	LDX	#$05
+-Lb7c9	CPY	#$00
++_down0	CPY	#$00
+ 	BEQ	Lb7e6
+-	LDA	$7fdf,y
+-	STA	$7fe0,y
+-	LDA	$76e8,x
+-	STA	$7fd0,y
++	LDA	COMPVG + $0f,y
++	STA	COMPVN + $00,y
++	LDA	CHARV0 - 1,x
++	STA	COMPVG + $00,y
+ 	DEY
+ 	DEX
+-	BNE	Lb7c9
++	BNE	_down0
+ 	LDA	#$ff
+-	STA	$7fe0,y
+-	STA	$7fd0,y
++	STA	COMPVN + $00,y
++	STA	COMPVG + $00,y
+ 	RTS
+-Lb7e6	LDA	$7fdf
+-	STA	$7fd0
++Lb7e6	LDA	COMPVG + $0f
++	STA	COMPVG + $00
+ 	LDY	#$0f
+-Lb7ee	LDA	$7fef,y
+-	STA	$7ff0,y
+-	LDA	$7fcf,y
+-	STA	$7fd0,y
++_down1	LDA	COMPVN + $0f,y
++	STA	COMPVN + $10,y
++	LDA	COMPVG - 1,y
++	STA	COMPVG + $00,y
+ 	DEY
+ 	DEX
+-	BNE	Lb7ee
++	BNE	_down1
+ 	DEC	$bc
+ 	LDY	$bc
+ 	LDA	l7680+2,y
+ 	STA	$7fe0
+ 	RTS
+-Lb809	LDA	$2c
++
++UPDATE_COMPASS_HOR
++	LDA	$2c
+ 	LSR
+ 	LSR
+ 	LSR
+@@ -9109,8 +9634,9 @@
+ 	RTS
+ Lb822	AND	#$02
+ 	BNE	Lb829
+-	JMP	Lb899
+-Lb829	LDY	$be
++	JMP	Lb899		;spin left
++
++Lb829	LDY	$be		;spin right
+ 	BNE	Lb83c
+ 	LDA	#$90
+ 	STA	$be
+@@ -9121,20 +9647,20 @@
+ 	STA	$c0
+ Lb83c	DEC	$be
+ 	LDX	#$05
+-Lb840	LSR	L7ED8 + 8 * 0,x
+-	ROR	L7ED8 + 8 * 1,x
+-	ROR	L7ED8 + 8 * 2,x
+-	ROR	L7ED8 + 8 * 3,x
+-	ROR	L7ED8 + 8 * 4,x
+-	ROR	L7ED8 + 8 * 5,x
++_right	LSR	COMPHG - 8 + 8 * 0,x
++	ROR	COMPHG - 8 + 8 * 1,x
++	ROR	COMPHG - 8 + 8 * 2,x
++	ROR	COMPHG - 8 + 8 * 3,x
++	ROR	COMPHG - 8 + 8 * 4,x
++	ROR	COMPHG - 8 + 8 * 5,x
+ 	DEX
+-	BNE	Lb840
++	BNE	_right
+ 	TYA
+ 	SEC
+ 	SBC	#$02
+ 	AND	#$07
+ 	ORA	#$f0
+-	STA	L5F42 + 0
++	STA	L5F42 + 0	; sets the graduation char = $f0 - $f7
+ 	STA	L5F42 + 1
+ 	STA	L5F42 + 2
+ 	STA	L5F42 + 3
+@@ -9147,27 +9673,25 @@
+ 	BCS	Lb876
+ 	TAY
+ Lb876	LDX	#$04
+-Lb878	LDA	l7680+4,y
+-	ORA	#$c0
+-	STA	$7ed9,x
++Lb878	LDA	l7680 + 4,y	; this might not be the right base
++	ORA	#$c0		;  y is up to $b4
++	STA	COMPHG - 7,x
+ 	DEY
+ 	DEC	$c0
+ 	DEX
+ 	BPL	Lb878
+ 	RTS
++
+ Lb887	LDA	$bf
+ 	AND	#$03
+ 	TAX
+-	LDA	$b895,x
+-	JSR	$b4ed
++	LDA	horiz_colours,x
++	JSR	SETCOLOUR_COMPH
+ 	TXA
+ 	LSR
+ Lb894	RTS
+ 
+-	.byte	$02
+-	.byte	$06
+-	.byte	$00
+-	.byte	$05
++horiz_colours	.byte	$02,$06,$00,$05
+ 
+ Lb899	LDY	$be
+ 	CPY	#$8f
+@@ -9183,7 +9707,7 @@
+ 	TYA
+ 	AND	#$07
+ 	ORA	#$f0
+-	STA	L5F42 + 0
++	STA	L5F42 + 0	; sets the graduation char = $f0 - $f7
+ 	STA	L5F42 + 1
+ 	STA	L5F42 + 2
+ 	STA	L5F42 + 3
+@@ -9196,23 +9720,22 @@
+ 	BCS	Lb8ce
+ 	TAY
+ Lb8ce	LDX	#$fb
+-;Lb8d0	LDA	$768f,y
+-Lb8d0	LDA	L7680 + $f,y
++_left0	LDA	L7680 + $f,y
+ 	ORA	#$c0
+-	STA	L7F00 - $fb + 1,x
++	STA	L7F00 - $fb + 1,x ; this seems to update $e0 but $f7 is the char on screen
+ 	INY
+ 	INC	$c0
+ 	INX
+-	BNE	Lb8d0
++	BNE	_left0
+ Lb8de	LDX	#$05
+-Lb8e0	ASL	L7ED8 + 8 * 5,x
+-	ROL	L7ED8 + 8 * 4,x
+-	ROL	L7ED8 + 8 * 3,x
+-	ROL	L7ED8 + 8 * 2,x
+-	ROL	L7ED8 + 8 * 1,x
+-	ROL	L7ED8 + 8 * 0,x
++_left1	ASL	COMPHG - 8 + 8 * 5,x
++	ROL	COMPHG - 8 + 8 * 4,x
++	ROL	COMPHG - 8 + 8 * 3,x
++	ROL	COMPHG - 8 + 8 * 2,x
++	ROL	COMPHG - 8 + 8 * 1,x
++	ROL	COMPHG - 8 + 8 * 0,x
+ 	DEX
+-	BNE	Lb8e0
++	BNE	_left1
+ 	RTS
+ 
+ LB8F6	ldx	#$FE
+@@ -9228,9 +9751,9 @@
+ _LB90A	sta	GROUND_STRUCTURE_Y_HSB_L0780,x
+ 	dex
+ 	bpl	_LB90A
+-	;; set silence?
++	;; set silence?  or just init
+ LB910	ldx	#$18
+-_LB912	lda	_LB921,x
++_LB912	lda	_sidreg,x
+ 	sta	$D400,x
+ 	dex
+ 	bpl	_LB912
+@@ -9238,8 +9761,9 @@
+ 	sta	$D412
+ 	rts
+ 
+-_LB921  .byte	$80,$00,$00,$08,$00,$00,$00,$80,$00,$00,$08,$00,$00,$00,$00,$00,$00,$08,$04,$00,$F0,$00,$00,$00,$0F
++_sidreg	.byte	$80,$00,$00,$08,$00,$00,$00,$80,$00,$00,$08,$00,$00,$00,$00,$00,$00,$08,$04,$00,$F0,$00,$00,$00,$0F
+ 
++	;; sound something
+ LB93A	stx	SND_X
+ 	sty	SND_Y
+ 	tax
+@@ -9264,13 +9788,13 @@
+ 	ldy	#$00
+ LB961	lda	#$00
+ 	sta	$D404,y
+-	lda	SND_FH,x
++	lda	SND_TABLE + 0,x
+ 	sta	$D401,y
+-	lda	SND_AD,x
++	lda	SND_TABLE + 1,x
+ 	sta	$D405,y
+-	lda	SND_SR,x
++	lda	SND_TABLE + 2,x
+ 	sta	$D406,y
+-	lda	SND_CTL,x
++	lda	SND_TABLE + 3,x
+ 	sta	$D404,y
+ 	ldy	SND_Y
+ 	ldx	SND_X
+@@ -9279,10 +9803,9 @@
+ SND_X	.byte	$F4
+ SND_Y	.byte	$15
+ 
+-SND_FH	.byte	$59
+-SND_AD	.byte	$09
+-SND_SR	.byte	$09
+-SND_CTL	.byte	$41
++	;; freq_hi, atk/dcy, stn/rls, ctrl
++SND_TABLE
++	.byte	$59,$09,$09,$41
+ 	.byte	$09,$0E,$0A,$81
+ 	.byte	$12,$09,$09,$81
+ 	.byte	$06,$0B,$0B,$81
+@@ -9291,10 +9814,7 @@
+ 	.byte	$0E,$0B,$0B,$81
+ 	.byte	$0E,$CA,$0A,$41
+ 	.byte	$0F,$CA,$0A,$41
+-LB9AB   .byte	$40			; engine sound frequency?
+-	.byte	$00
+-LB9AD   .byte	$F0
+-	.byte	$81
++SND_9	.byte	$40,$00,$F0,$81	; TODO: work out what this is, thrust probably
+ 	.byte	$50,$DF,$AC,$80
+ 	.byte	$30,$3F,$0F,$80
+ 	.byte	$00,$00,$40,$41
+@@ -9360,7 +9880,7 @@
+ 	PLA
+ 	RTI
+ 
+-;;; raster interrupt line $BA
++;;; raster interrupt line $BA (hud interrupt)
+ RASTER_BA
+ 	PHA
+ 	NOP
+@@ -9391,8 +9911,8 @@
+ _LBA54	LDA		$CA
+ 	BMI		_lba7b
+ 	BNE		_lba78
+-	JSR		LB809
+-	JSR		LB67B
++	JSR		UPDATE_COMPASS_HOR
++	JSR		UPDATE_COMPASS_VER
+ _lba60	INC		$E2
+ 	LDA		$E2
+ 	CMP		#$32
+@@ -9431,8 +9951,8 @@
+ 	cpx	#$07
+ 	bne	_lbaaf
+ 	lda	$c6
+-	sta	$a3	; LINE_COLOUR
+-	lda	$c2
++	sta	COLOUR_LINE
++	lda	COLOUR_RM_LINE
+ 	sta	$c6
+ _lbaa7	ldy	$cb
+ 	jsr	LAE37
+@@ -9440,7 +9960,7 @@
+ 
+ _lbaaf	bcc	_lbad6
+ 	lda	$c6
+-	sta	$a3	; LINE_COLOUR
++	sta	COLOUR_LINE
+ 	lda	lbbc2,x
+ 	sta	$c6
+ 	jsr	lbb37
+@@ -9455,8 +9975,8 @@
+ 	bne	_lbac5
+ _lbad2	ldy	#$ff
+ 	bne	_lbac3
+-_lbad6	lda	$c2
+-	sta	$a3	; LINE_COLOUR
++_lbad6	lda	COLOUR_RM_LINE
++	sta	COLOUR_LINE
+ 	jmp	_lbad2
+ 
+ _lbadd	ldx	$cc
+@@ -9491,12 +10011,12 @@
+ 	cpx	#$07
+ 	beq	_lbaa7
+ 	bne	_lbabd
+-_lbb1d	lda	$c2
+-	sta	$a3	; LINE_COLOUR
+-	lda	$c4
+-	sta	$a5
+-	lda	$c5
+-	sta	$a6
++_lbb1d	lda	COLOUR_RM_LINE
++	sta	COLOUR_LINE
++	lda	COLOUR_RM_BG
++	sta	COLOUR_BG
++	lda	COLOUR_RM_FG
++	sta	COLOUR_FG
+ 	jsr	$ae76
+ 	jmp	_lbabd
+ 
+@@ -9514,18 +10034,20 @@
+ 	rts
+ 
+ 	;; set screen colour, 17 rows $A5 screen matrix, $A6 Colour RAM
+-LBB48	lda	$A5
++SETCOLOUR_OUTDOOR
++	lda	COLOUR_BG
+ 	and	#$0F
+-	ora	#$60
++	ora	#$60		; blue
+ 	tay
+-LBB4F	lda	COLOUR_RAM
++SETCOLOUR_INDOOR
++	lda	COLOUR_RAM
+ 	and	#$0F
+-	cmp	$A6
++	cmp	COLOUR_FG
+ 	bne	_LBB5D
+ 	cpy	SCREEN_COLOUR
+ 	beq	_LBB7D
+ _LBB5D	ldx	#$AA		; (40 * 17) / 4 = 170
+-_LBB5F	lda	$A6
++_LBB5F	lda	COLOUR_FG
+ 	sta	COLOUR_RAM + $AA * 0 - 1,x
+ 	sta	COLOUR_RAM + $AA * 1 - 1,x
+ 	sta	COLOUR_RAM + $AA * 2 - 1,x
+@@ -9545,8 +10067,13 @@
+ lbba5	.byte	$02,$02,$02,$02,$03,$03,$03,$03,$04
+ 	.byte	$04,$04,$04,$04,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05,$05
+ 	.byte	$04,$03,$02,$00
++	;; related to hud colours
+ lbbc2	.byte	$02
+-lbbc3	.byte	$06,$09,$04,$05,$02,$02,$08
++lbbc3	.byte	$06
++lbbc4	.byte	$09
++lbbc5	.byte	$04
++lbbc6	.byte	$05
++lbbc7	.byte	$02,$02,$08
+ LBBCA   .byte	$0B,$00,$09,$00
+ LBBCE   .byte	$0B
+ LBBCF   .byte	$00
+@@ -9571,12 +10098,21 @@
+ 	.byte	>LINE_DRAW_0_LAC61,>LINE_DRAW_1_LAC90,>LINE_DRAW_2_LACBF,>LINE_DRAW_3_LACEE,>LINE_DRAW_4_LAD1D,>LINE_DRAW_5_LAD4C,>LINE_DRAW_6_LAD7B,>LINE_DRAW_7_LADAA
+ 	.byte	$C0,$30,$0C,$03
+ HORIZON_PIXEL_TAB   .byte	$56,$5A,$6A,$AA
+-LBC50   .byte	$00,$00,$00,$00,$00,$00,$00,$00,$0E,$00,$00,$10,$00,$00,$00,$00,$12,$00,$00,$14,$00,$00,$00,$00,$16,$00,$00,$18,$00,$00,$00,$00
+-	.byte	$1A,$00,$00,$1C,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$0A,$42,$00,$0C,$42,$00,$00,$00
+-	.byte	$4C,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+-	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$21,$0E,$00,$24,$29,$33,$2B,$00,$24,$29,$32,$25,$23,$34,$2F,$32,$39,$00,$00,$29,$0E,$00
+-	.byte	$26,$2F,$32,$2D,$21,$34,$00,$24,$29,$33,$2B,$00,$00,$00,$00,$00,$00,$00,$22,$0E,$00,$32,$35,$2E,$00,$23,$21,$32,$34,$32,$29,$24
+-	.byte	$27,$25,$00,$00,$00,$2A,$0E,$00,$24,$35,$30,$2C,$29,$23,$21,$34
++
++	;; maps key matrix codes
++KEY_TABLE
++	;;        0   1   2   3   4   5   6   7   8   9   a   b   c   d   e   f
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$0E,$00,$00,$10,$00,$00,$00,$00 ;0
++	.byte	$12,$00,$00,$14,$00,$00,$00,$00,$16,$00,$00,$18,$00,$00,$00,$00 ;1
++	.byte	$1A,$00,$00,$1C,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ;2
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$0A,$42,$00,$0C,$42,$00,$00,$00 ;3
++	.byte	$4C,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ;4
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00 ;5
++	.byte	$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$21,$0E,$00,$24,$29,$33 ;6
++	.byte	$2B,$00,$24,$29,$32,$25,$23,$34,$2F,$32,$39,$00,$00,$29,$0E,$00 ;7
++	.byte	$26,$2F,$32,$2D,$21,$34,$00,$24,$29,$33,$2B,$00,$00,$00,$00,$00 ;8
++	.byte	$00,$00,$22,$0E,$00,$32,$35,$2E,$00,$23,$21,$32,$34,$32,$29,$24 ;9
++	.byte	$27,$25,$00,$00,$00,$2A,$0E,$00,$24,$35,$30,$2C,$29,$23,$21,$34 ;a
+ 
+ DRAW_SCREEN_LINE_FORWARD_LBD00
+ 	ldy	#$00
+@@ -9755,6 +10291,8 @@
+ 	sta	(SCREEN_POINTER_LO),y
+ 	rts
+ 
++	;; game engine state?
++
+ 	.byte	$00
+ LBEA0   .byte	$66,$9E
+ LBEA2   .byte	$20
