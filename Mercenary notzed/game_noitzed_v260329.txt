@@ -1,0 +1,629 @@
+
+	; Script 00
+
+ 086c 0f .086c:		load	object,$0e
+ 086f 20		or	object,#$04
+ 0871 0f		load	object,$0e
+ 0874 20		or	object,#$04
+ 0876 0f		load	object,$0e
+ 0879 20		or	object,#$04
+ 087b 14		msg	$32	; {e6:         }
+ 087d 04		jsr	$0a8f
+ 0880 04		jsr	$0a8f
+ 0883 01		msg	{ec:   } {23:CRASH} "IMMINENT!"
+ 0891 14		msg	$32	; {e6:         }
+ 0893 04		jsr	$0a8f
+ 0896 01		msg	[ef] "RETURNING" {d5:TO} {0a:- - -}
+ 08a5 01		msg	{ec:   } "MANUAL" {28:CONTROL}
+ 08b0 19		stor	$d404,$00
+ 08b4 04		jsr	$0a8f
+ 08b7 1b		msg	$3c,4
+ 08ba 14		msg	$32	; {e6:         }
+ 08bc 11 .08bc:		clrf	$80
+ 08be 01		msg	{eb:    } {c7:STATUS} {c0:REPORT}
+ 08c3 01		msg	[ef] {23:CRASH} {98:LAND} {04:ED} {ad:ON} {d7:TARG}
+ 08cb 01		msg	[ef] "PRESTINIUM" {30:DESTROY} {04:ED}
+ 08db 01		msg	" STATE OF WAR BETWEEN"
+ 08f3 01		msg	{b4:PALYAR} {02:S} {13:AND} {9f:MECHANOID} {02:S}
+ 08fa 01		msg	[ef] {9a:LOCATION} "NEAR AIRBASE"
+ 090b 01		msg	{ec:   } {11:AIRCRAFT} {ad:ON} {bb:PAD}
+ 0911 01		msg	" TYPE - DOMINION DART"
+ 0929 01		msg	{ed:  } {a0:MESSAGE} "RECEIVED"
+ 0936 01		msg	{ec:   } {22:CRAFT} {3c:FOR} {c4:SALE}
+ 093c 01		msg	"  PRICE 5OOO" {25:CREDITS}
+ 094c 14		msg	$15	; {dc:YOU} {3a:HAVE} [f8] {25:CREDITS}
+ 094e 04		jsr	$0aab
+ 0951 12		jset	#01,flags,$0a29
+ 0955 01		msg	{c3:I} "THINK" {dc:YOU} {c6:SHOULD} {1c:BUY}
+ 0961 04		jsr	$0aab
+ 0964 12		jset	#01,flags,$0a29
+ 0968 01		msg	{ed:  } {2b:IS} {d3:THIS} "SENSIBLE"
+ 0976 04		jsr	$0aab
+ 0979 12		jset	#01,flags,$0a29
+ 097d 01		msg	{ed:  } {dc:YOU} {b6:PLAN} {d5:TO} {e1:WALK}
+ 0984 04		jsr	$0aab
+ 0987 12		jset	#01,flags,$0a29
+ 098b 01		msg	{ed:  } {dc:YOU} {a3:MUST} {1d:BE} "CRAZY"
+ 0997 12		jset	#80,flags,$09b1
+ 099b 14		msg	$32	; {e6:         }
+ 099d 04		jsr	$09c2
+ 09a0 01		msg	{a9:NOW} {dc:YOU} {14:ARE} {2d:HERE} {0a:- - -}
+ 09a7 01		msg	{ee: } {c3:I} {e5:WILL} {c9:START} {0d:AGAIN}
+ 09ae 03		jmp	$08bc
+ 09b1 01 .09b1:		msg	{ce:IT} {e5:WILL} {1d:BE} {08:A} {99:LONG} {e1:WALK}
+ 09b9 14		msg	$32	; {e6:         }
+ 09bb 22 .09bb:		jeq	craft,$01,$0a3c
+ 09bf 03		jmp	$09bb
+ 09c2 01 .09c2:		msg	{ed:  } {2b:IS} "ANYBODY" {d2:THERE}
+ 09cf 04		jsr	$0a84
+ 09d2 12		jset	#80,flags,$0a1b
+ 09d6 01		msg	{09:AM} {c3:I} "TALKING TO MYSELF"
+ 09ec 04		jsr	$0a84
+ 09ef 12		jset	#80,flags,$0a1b
+ 09f3 01		msg	{ee: } {14:ARE} {dc:YOU} "STILL ALIVE"
+ 0a04 04		jsr	$0a84
+ 0a07 12		jset	#80,flags,$0a1b
+ 0a0b 01		msg	{eb:    } {e4:WHERE} {14:ARE} {dc:YOU}
+ 0a11 04 .0a11:		jsr	$0a84
+ 0a14 12		jset	#80,flags,$0a1b
+ 0a18 03		jmp	$0a11
+ 0a1b 01 .0a1b:		msg	{ed:  } "AH!" {dc:YOU} {14:ARE} {1b:BACK}
+ 0a25 04		jsr	$0a8f
+ 0a28 05		rts
+ 0a29 0e .0a29:		add	D8,!00509999
+ 0a2f 01		msg	[ef] {d8:TRANSACTION} {29:COMPLETE} {05:D}
+ 0a35 14		msg	$15	; {dc:YOU} {3a:HAVE} [f8] {25:CREDITS}
+ 0a37 14		msg	$32	; {e6:         }
+ 0a39 03		jmp	$09bb
+
+	; Script 01
+
+ 0a3c 0f .0a3c:		load	object,$0e
+ 0a3f 20		and	object,#$f3
+ 0a41 11		clrf	$40
+ 0a43 12		jset	#01,flags,$0a71
+ 0a47 01		msg	{d3:THIS} {22:CRAFT} "BELONGED" {d5:TO}
+ 0a55 01		msg	{bc:THE PALYAR COMMANDER'S}
+ 0a58 01		msg	{ec:   } {1f:BROTHER-IN-LAW}
+ 0a5c 01		msg	" HE" {2b:IS} {a8:NOT} {d6:TOO} {b7:PLEASE} {05:D}
+ 0a67 10		setf	$20
+ 0a69 04		jsr	$11b7
+ 0a6c 14		msg	$32	; {e6:         }
+ 0a6e 03		jmp	$0a81
+ 0a71 04 .0a71:		jsr	$0aa4
+ 0a74 8a		jlt	$50,rand,$0a7e
+ 0a78 0f		load	room,$0f
+ 0a7b 13		jset	room,$0a71
+ 0a7e 04 .0a7e:		jsr	$0ac5
+ 0a81 03 .0a81:		jmp	$0a81
+ 0a84 02 .0a84:		clear	frame
+ 0a85 12 .0a85:		jset	#80,flags,$0a8e
+ 0a89 07		jge	$0f00,frame,$0a85
+ 0a8e 05 .0a8e:		rts
+ 0a8f 02 .0a8f:		clear	frame
+ 0a90 07 .0a90:		jge	$0200,frame,$0a90
+ 0a95 05		rts
+ 0a96 02		clear	frame
+ 0a97 07 .0a97:		jge	$0300,frame,$0a97
+ 0a9c 05		rts
+ 0a9d 02 .0a9d:		clear	frame
+ 0a9e 07 .0a9e:		jge	$0100,frame,$0a9e
+ 0aa3 05		rts
+ 0aa4 02 .0aa4:		clear	frame
+ 0aa5 07 .0aa5:		jge	$0f00,frame,$0aa5
+ 0aaa 05		rts
+ 0aab 1c .0aab:		clear	key
+ 0aac 01		msg	{ee: } {33:DO} {dc:YOU} {d9:WANT} {d5:TO} {1c:BUY} {07:?}
+ 0ab5 02 .0ab5:		clear	frame
+ 0ab6 0b .0ab6:		jset	$19,key,$0ac2
+ 0aba 07		jge	$0500,frame,$0ab6
+ 0abf 11		clrf	$01
+ 0ac1 05		rts
+ 0ac2 10 .0ac2:		setf	$01
+ 0ac4 05		rts
+ 0ac5 14 .0ac5:		msg	$03	; [ef] {a0:MESSAGE} {3e:FROM} {b4:PALYAR} {02:S}
+ 0ac7 14		msg	$05	; [ef] {0a:- - -} {dd:JOB} {ac:OFFER} {0a:- - -}
+ 0ac9 01		msg	[ef] {3c:FOR} {9e:MORE} {d1:INFORMATION}
+ 0acf 01		msg	{2e:GO} {d5:TO} {d0:THE} {1e:BRIEF} {03:ING} {c1:ROOM}
+ 0ad7 01		msg	{cd:IN} {27:COMPLEX} {17:AT} {9b:LOC} "O9-O6"
+ 0ae3 14		msg	$07	; {eb:    } {a0:MESSAGE} {38:END} {02:S}
+ 0ae5 14		msg	$32	; {e6:         }
+ 0ae7 05		rts
+
+	; Script 02
+
+ 0ae8 04 .0ae8:		jsr	$0a9d
+ 0aeb 14		msg	$0c	; {e9:      } {9f:MECHANOID} {e9:      }
+ 0aed 01		msg	[ef] {d0:THE} {9f:MECHANOID} "DEMANDS"
+ 0afa 01		msg	[ef] "THAT" {dc:YOU} "PUT HIM DOWN"
+ 0b10 14		msg	$32	; {e6:         }
+ 0b12 11		clrf	$40
+ 0b14 05		rts
+ 0b15 05		rts
+
+	; Script 03
+
+ 0b16 04 .0b16:		jsr	$0a9d
+ 0b19 01		msg	{e7:        } "BANK"
+ 0b21 14		msg	$15	; {dc:YOU} {3a:HAVE} [f8] {25:CREDITS}
+ 0b23 14		msg	$32	; {e6:         }
+ 0b25 11		clrf	$40
+ 0b27 05		rts
+
+	; Script 04
+
+ 0b28 04 .0b28:		jsr	$0cc1
+ 0b2b 01		msg	[ef] "NOVABILL -" {e3:WELL} {34:DONE} {06:!}
+ 0b3c 14		msg	$32	; {e6:         }
+ 0b3e 11		clrf	$40
+ 0b40 05		rts
+
+	; Script 05
+
+ 0b41 04 .0b41:		jsr	$0cc1
+ 0b44 01		msg	{ee: } {d0:THE} {16:AUTHOR} {02:S} "ADVERT"
+ 0b51 01		msg	"THINGS" {14:ARE} {2e:GO} {03:ING} {d5:TO} {1d:BE}
+ 0b5f 01		msg	{ed:  } "TOUGH" {3e:FROM} {a9:NOW} {ad:ON}
+ 0b6b 10		setf	$08
+ 0b6d 03		jmp	$0cc4
+
+	; Script 06
+
+ 0b70 04 .0b70:		jsr	$0cc1
+ 0b73 01		msg	{ea:     } "SABINS CUBE"
+ 0b82 03		jmp	$0ccc
+
+	; Script 07
+
+ 0b85 04 .0b85:		jsr	$0cc1
+ 0b88 01		msg	{ee: } {d0:THE} "WALTON MONUMENT"
+ 0b9c 01		msg	{d5:TO} {d0:THE} "FAMOUS ARCHITECT"
+ 0bb1 03		jmp	$0cc4
+
+	; Script 08
+
+ 0bb4 04 .0bb4:		jsr	$0cc1
+ 0bb7 01		msg	{eb:    } "ST. STALLARDS"
+ 0bc8 03		jmp	$0cc4
+
+	; Script 09
+
+ 0bcb 04 .0bcb:		jsr	$0cc1
+ 0bce 01		msg	{ec:   } {d0:THE} "MOORBY ARCH"
+ 0bde 03		jmp	$0ccc
+
+	; Script 0a
+
+ 0be1 04 .0be1:		jsr	$0cc1
+ 0be4 01		msg	{ea:     } "TYLER POINT"
+ 0bf3 03		jmp	$0ccc
+
+	; Script 0b
+
+ 0bf6 04 .0bf6:		jsr	$0cc1
+ 0bf9 01		msg	{ec:   } "BOSHER STADIUM"
+ 0c0b 03		jmp	$0cc4
+
+	; Script 0c
+
+ 0c0e 04 .0c0e:		jsr	$0cc1
+ 0c11 01		msg	{ec:   } "JORDAN" {0f:AIRPORT}
+ 0c1c 03		jmp	$0cc4
+
+	; Script 0d
+
+ 0c1f 04 .0c1f:		jsr	$0cc1
+ 0c22 01		msg	{eb:    } "VECTOR HENGE"
+ 0c32 03		jmp	$0ccc
+
+	; Script 0e
+
+ 0c35 04 .0c35:		jsr	$0cc1
+ 0c38 01		msg	{bc:THE PALYAR COMMANDER'S}
+ 0c3b 01		msg	[ef] {1f:BROTHER-IN-LAW} {02:S} {a4:HOUSE}
+ 0c41 10		setf	$20
+ 0c43 03		jmp	$0cc4
+
+	; Script 0f
+
+ 0c46 04 .0c46:		jsr	$0cc1
+ 0c49 01		msg	{ee: } {d0:THE} {9f:MECHANOID} "FORT"
+ 0c53 03		jmp	$0ccc
+
+	; Script 10
+
+ 0c56 04 .0c56:		jsr	$0cc1
+ 0c59 01		msg	[ef] {d0:THE} "COACH AND HORSES"
+ 0c6e 01		msg	{dc:YOU} {e5:WILL} {a8:NOT} {1d:BE} "POPULAR"
+ 0c7c 03		jmp	$0cc4
+
+	; Script 11
+
+ 0c7f 04 .0c7f:		jsr	$0cc1
+ 0c82 01		msg	{bc:THE PALYAR COMMANDER'S}
+ 0c85 01		msg	{ec:   } {1f:BROTHER-IN-LAW} {02:S}
+ 0c8a 01		msg	{e9:      } "NEW" {c5:SHIP}
+ 0c92 10		setf	$20
+ 0c94 03		jmp	$0cc4
+
+	; Script 12
+
+ 0c97 04 .0c97:		jsr	$0a9d
+ 0c9a 01		msg	{e9:      } "TRAITOR!"
+ 0ca6 14		msg	$32	; {e6:         }
+ 0ca8 11		clrf	$40
+ 0caa 05		rts
+
+	; Script 13
+
+ 0cab 04 .0cab:		jsr	$0a9d
+ 0cae 01		msg	{ea:     } "GOOD SHOW!"
+ 0cbc 14		msg	$32	; {e6:         }
+ 0cbe 11		clrf	$40
+ 0cc0 05		rts
+ 0cc1 14 .0cc1:		msg	$17	; {dc:YOU} {3a:HAVE} {0c:JUST} {30:DESTROY} {04:ED}
+ 0cc3 05		rts
+ 0cc4 04 .0cc4:		jsr	$11b7
+ 0cc7 14		msg	$32	; {e6:         }
+ 0cc9 11		clrf	$40
+ 0ccb 05		rts
+ 0ccc 04 .0ccc:		jsr	$11c3
+ 0ccf 14		msg	$32	; {e6:         }
+ 0cd1 11		clrf	$40
+ 0cd3 05		rts
+
+	; Script 14
+
+ 0cd4 8a .0cd4:		jlt	$50,rand,$0cc4
+ 0cd8 11		clrf	$40
+ 0cda 05		rts
+
+	; Script 15
+
+ 0cdb 8a .0cdb:		jlt	$50,rand,$0ccc
+ 0cdf 11		clrf	$40
+ 0ce1 05		rts
+
+	; Script 16
+
+ 0ce2 04 .0ce2:		jsr	$0a9d
+ 0ce5 0f		load	room,$0f
+ 0ce8 01		msg	[ef] {b4:PALYAR} {1e:BRIEF} {03:ING} {c1:ROOM}
+ 0cef 14		msg	$32	; {e6:         }
+ 0cf1 93		jclr	room,$0d9a
+ 0cf4 01		msg	{ec:   } {e2:WE} {e5:WILL} {12:REWARD}
+ 0cfa 01		msg	[ef] "DELIVERY" {aa:OF} {0b:OUR} {a5:NEED} {02:S}
+ 0d0a 01		msg	{d5:TO} "APPROPRIATE" {c1:ROOM} {02:S} {cd:IN}
+ 0d1c 01		msg	{d0:THE} {b4:PALYAR} "COLONY" {22:CRAFT}
+ 0d28 14		msg	$32	; {e6:         }
+ 0d2a 93		jclr	room,$0d9a
+ 0d2d 01		msg	{d2:THERE} {2b:IS} {08:A} "BIG" {39:FEE} {3c:FOR}
+ 0d38 01		msg	[ef] {08:A} "CAPTURED" {9f:MECHANOID}
+ 0d46 14		msg	$32	; {e6:         }
+ 0d48 93		jclr	room,$0d9a
+ 0d4b 01		msg	{ae:ONLY} {e0:WHEN} {dc:YOU} "KNOW HOW"
+ 0d59 01		msg	{d5:TO} "CHOOSE" {cf:THEM} {3e:FROM} {de:US}
+ 0d66 01		msg	[ef] {30:DESTROY} {10:ALL} {9f:MECHANOID}
+ 0d6c 01		msg	"OCCUPIED" {9a:LOCATION} {02:S} {3c:FOR}
+ 0d7a 01		msg	{df:VERY} "SPECIAL GRATITUDE"
+ 0d8f 14		msg	$32	; {e6:         }
+ 0d91 01		msg	{eb:    } {1e:BRIEF} {03:ING} {38:END} {02:S}
+ 0d98 14		msg	$32	; {e6:         }
+ 0d9a 11 .0d9a:		clrf	$40
+ 0d9c 05		rts
+
+	; Script 17
+
+ 0d9d 04 .0d9d:		jsr	$0a9d
+ 0da0 0f		load	room,$0f
+ 0da3 01		msg	{9f:MECHANOID} {1e:BRIEF} {03:ING} {c1:ROOM}
+ 0da9 14		msg	$32	; {e6:         }
+ 0dab 01		msg	{ea:     } {e2:WE} {e5:WILL} {b3:PAY}
+ 0db1 01		msg	{3c:FOR} {b4:PALYAR} {bf:REQUIREMENT} {02:S}
+ 0db7 01		msg	[ef] {e0:WHEN} {2f:DELIVER} {04:ED} {d5:TO} {0b:OUR}
+ 0dbf 01		msg	{28:CONTROL} {cd:IN} {d3:THIS} {27:COMPLEX}
+ 0dc5 14		msg	$32	; {e6:         }
+ 0dc7 93		jclr	room,$0e01
+ 0dca 01		msg	{ee: } {e2:WE} {a2:MAY} "ALSO" {b3:PAY} {3c:FOR}
+ 0dd6 01		msg	"DESTRUCTION OF SELECTED"
+ 0df0 01		msg	[ef] {b4:PALYAR} {be:INSTALLATION} {02:S}
+ 0df6 14		msg	$32	; {e6:         }
+ 0df8 01		msg	{eb:    } {1e:BRIEF} {03:ING} {38:END} {02:S}
+ 0dff 14		msg	$32	; {e6:         }
+ 0e01 11 .0e01:		clrf	$40
+ 0e03 05		rts
+
+	; Script 18
+
+ 0e04 14 .0e04:		msg	$08	; {ee: } {26:COMMUNICATION} {c1:ROOM}
+ 0e06 0f		load	object,$0e
+ 0e09 0f		load	room,$0f
+ 0e0c 1d		jset	room,object,$0e1d
+ 0e0f 0c		jeq	inventory,object,$0e1d
+ 0e12 01		msg	{eb:    } {a8:NOT} {db:WORK} {03:ING}
+ 0e18 14		msg	$32	; {e6:         }
+ 0e1a 11		clrf	$40
+ 0e1c 05		rts
+ 0e1d 01 .0e1d:		msg	{eb:    } {a0:MESSAGE} {3e:FROM}
+ 0e22 01		msg	"HERTZ SPACESHIP RENTAL"
+ 0e3b 01		msg	{c5:SHIP} {3c:FOR} "HIRE 999999" {24:CR}
+ 0e4c 1c		clear	key
+ 0e4d 01		msg	[ef] {33:DO} {dc:YOU} {d9:WANT} {d5:TO} "HIRE?"
+ 0e5a 04		jsr	$0ab5
+ 0e5d 12		jset	#01,flags,$0e6f
+ 0e61 01		msg	[ef] {ab:OK} {b7:PLEASE} {20:CALL} {0d:AGAIN}
+ 0e68 14		msg	$07	; {eb:    } {a0:MESSAGE} {38:END} {02:S}
+ 0e6a 14		msg	$32	; {e6:         }
+ 0e6c 11		clrf	$40
+ 0e6e 05		rts
+ 0e6f 18 .0e6f:		jge	#$00,$7700,$0e90
+ 0e75 01		msg	{ee: } "INSUFFICIENT" {3f:FUND} {02:S}
+ 0e87 14		msg	$15	; {dc:YOU} {3a:HAVE} [f8] {25:CREDITS}
+ 0e89 14		msg	$07	; {eb:    } {a0:MESSAGE} {38:END} {02:S}
+ 0e8b 14		msg	$32	; {e6:         }
+ 0e8d 11		clrf	$40
+ 0e8f 05		rts
+ 0e90 0e .0e90:		add	D8,!01000099
+ 0e96 01		msg	{ec:   } {c5:SHIP} "DESPATCHED"
+ 0ea5 01		msg	{eb:    } {ce:IT} {e5:WILL} {98:LAND}
+ 0eab 01		msg	{17:AT} {9b:LOC} "8-8 IN 2" {a1:MIN} {02:S}
+ 0eba 19		stor	$beff,$ff
+ 0ebe 10		setf	$04
+ 0ec0 11		clrf	$40
+ 0ec2 05		rts
+
+	; Script 19
+
+ 0ec3 0f .0ec3:		load	object,$0e
+ 0ec6 0f		load	room,$0f
+ 0ec9 0d		load	D9,!00001000
+ 0ecf 01		msg	{ea:     } {af:POWER} {c1:ROOM}
+ 0ed4 03		jmp	$1010
+
+	; Script 1a
+
+ 0ed7 0f .0ed7:		load	object,$0e
+ 0eda 0f		load	room,$0f
+ 0edd 0d		load	D9,!00500300
+ 0ee3 01		msg	{e8:       } {c8:STORES}
+ 0ee7 03		jmp	$1010
+
+	; Script 1b
+
+ 0eea 0f .0eea:		load	object,$0e
+ 0eed 0f		load	room,$0f
+ 0ef0 0d		load	D9,!00500600
+ 0ef6 01		msg	{e8:       } {b0:ARMOURY}
+ 0efa 03		jmp	$1010
+
+	; Script 1c
+
+ 0efd 0f .0efd:		load	object,$0e
+ 0f00 0f		load	room,$0f
+ 0f03 0d		load	D9,!00001000
+ 0f09 01		msg	{ea:     } {b1:LABORATORY}
+ 0f0d 03		jmp	$1010
+
+	; Script 1d
+
+ 0f10 0f .0f10:		load	object,$0e
+ 0f13 0f		load	room,$0f
+ 0f16 0d		load	D9,!00001000
+ 0f1c 01		msg	{eb:    } {28:CONTROL} {c1:ROOM}
+ 0f21 03		jmp	$1010
+
+	; Script 1e
+
+ 0f24 0f .0f24:		load	object,$0e
+ 0f27 0f		load	room,$0f
+ 0f2a 0d		load	D9,!00002500
+ 0f30 01		msg	{ec:   } {b2:INTERVIEW} {c1:ROOM}
+ 0f35 03		jmp	$1010
+
+	; Script 1f
+
+ 0f38 0f .0f38:		load	object,$0e
+ 0f3b 0f		load	room,$0f
+ 0f3e 0d		load	D9,!00002500
+ 0f44 01		msg	[ef] {9f:MECHANOID} {3b:FUEL} {c8:STORES}
+ 0f4a 03		jmp	$104c
+
+	; Script 20
+
+ 0f4d 0f .0f4d:		load	object,$0e
+ 0f50 0f		load	room,$0f
+ 0f53 0d		load	D9,!00001000
+ 0f59 01		msg	[ef] {9f:MECHANOID} {af:POWER} {c1:ROOM}
+ 0f5f 03		jmp	$104c
+
+	; Script 21
+
+ 0f62 0f .0f62:		load	object,$0e
+ 0f65 0f		load	room,$0f
+ 0f68 0d		load	D9,!00000800
+ 0f6e 01		msg	{ed:  } {9f:MECHANOID} {c8:STORES}
+ 0f73 03		jmp	$104c
+
+	; Script 22
+
+ 0f76 0f .0f76:		load	object,$0e
+ 0f79 0f		load	room,$0f
+ 0f7c 0d		load	D9,!00001200
+ 0f82 01		msg	{ed:  } {9f:MECHANOID} {b0:ARMOURY}
+ 0f87 03		jmp	$104c
+
+	; Script 23
+
+ 0f8a 0f .0f8a:		load	object,$0e
+ 0f8d 0f		load	room,$0f
+ 0f90 0d		load	D9,!00002500
+ 0f96 01		msg	[ef] {9f:MECHANOID} {b1:LABORATORY}
+ 0f9b 03		jmp	$104c
+
+	; Script 24
+
+ 0f9e 0f .0f9e:		load	object,$0e
+ 0fa1 0f		load	room,$0f
+ 0fa4 0d		load	D9,!00002000
+ 0faa 01		msg	{ea:     } {36:ENGINE} {c1:ROOM}
+ 0faf 03		jmp	$1010
+
+	; Script 25
+
+ 0fb2 0f .0fb2:		load	object,$0e
+ 0fb5 0f		load	room,$0f
+ 0fb8 0d		load	D9,!00000500
+ 0fbe 01		msg	{ec:   } {ba:CONFERENCE} {c1:ROOM}
+ 0fc3 03		jmp	$1010
+
+	; Script 26
+
+ 0fc6 0f .0fc6:		load	object,$0e
+ 0fc9 0f		load	room,$0f
+ 0fcc 0d		load	D9,!00001000
+ 0fd2 01		msg	{e9:      } {b8:EXCHEQUER}
+ 0fd6 03		jmp	$1010
+
+	; Script 27
+
+ 0fd9 0f .0fd9:		load	object,$0e
+ 0fdc 0f		load	room,$0f
+ 0fdf 0d		load	D9,!00000600
+ 0fe5 01		msg	{e8:       } {d4:KITCHEN}
+ 0fe9 03		jmp	$1010
+
+	; Script 28
+
+ 0fec 0f .0fec:		load	object,$0e
+ 0fef 0f		load	room,$0f
+ 0ff2 0d		load	D9,!00000400
+ 0ff8 01		msg	{e9:      } {cc:INFIRMARY}
+ 0ffc 03		jmp	$1010
+
+	; Script 29
+
+ 0fff 04 .0fff:		jsr	$0a9d
+ 1002 01		msg	{e8:       } "PRISON" {e6:         }
+ 100d 11		clrf	$40
+ 100f 05		rts
+ 1010 21 .1010:		jclr	object,#$01
+ 1012 47		bge	$100c,frame,$101d
+ 1017 1d		jset	room,object,$101d
+ 101a 03		jmp	$1047
+ 101d 01 .101d:		msg	{eb:    } {b7:PLEASE} "LEAVE"
+ 1027 14		msg	Re
+ 1029 01		msg	[ef] {2d:HERE} {3c:FOR} [f9] {12:REWARD}
+ 1030 1d .1030:		jset	room,object,$1039
+ 1033 13		jset	room,$1030
+ 1036 03		jmp	$1047
+ 1039 20 .1039:		or	object,#$11
+ 103b 01 .103b:		msg	{ee: } [f9] {25:CREDITS} {b5:PAID}
+ 1041 15		add	D8,D9,D8
+ 1045 14		msg	$15	; {dc:YOU} {3a:HAVE} [f8] {25:CREDITS}
+ 1047 14 .1047:		msg	$32	; {e6:         }
+ 1049 11		clrf	$40
+ 104b 05		rts
+ 104c 1e .104c:		load	R8,Re
+ 104e 1e		load	R9,Rf
+ 1050 0f		load	object,$0e
+ 1053 0f		load	room,$0f
+ 1056 9d		jclr	room,object,$1060
+ 1059 1e		load	Re,R8
+ 105b 1e		load	Rf,R9
+ 105d 03		jmp	$1010
+ 1060 01 .1060:		msg	{ee: } {d0:THE} {9f:MECHANOID} {02:S} "SAY"
+ 106a 01		msg	{ee: } "PUT" {1b:BACK} {0b:OUR} "LEADER"
+ 107a 14		msg	$32	; {e6:         }
+ 107c 11		clrf	$40
+ 107e 05		rts
+
+	; Script 2a
+
+ 107f 0f .107f:		load	room,$0f
+ 1082 0f		load	object,$0e
+ 1085 01		msg	{ed:  } "INTERSTELLAR" {c5:SHIP}
+ 1096 a2 .1096:		jne	craft,$07,$10d7
+ 109a 93		jclr	room,$1096
+ 109d 04		jsr	$0a9d
+ 10a0 12		jset	#04,flags,$10b9
+ 10a4 0c		jeq	inventory,object,$10b9
+ 10a7 01		msg	{ee: } {a7:NOVADRIVE} "REQUIRED"
+ 10b4 14		msg	$32	; {e6:         }
+ 10b6 11		clrf	$40
+ 10b8 05		rts
+ 10b9 1c .10b9:		clear	key
+ 10ba 01		msg	{ed:  } "PRESS Y TO LAUNCH"
+ 10cf 0b .10cf:		jset	$19,key,$10dc
+ 10d3 22		jeq	craft,$07,$10cf
+ 10d7 14 .10d7:		msg	$32	; {e6:         }
+ 10d9 11		clrf	$40
+ 10db 05		rts
+ 10dc 93 .10dc:		jclr	room,$1096
+ 10df 12		jset	#04,flags,$10e6
+ 10e3 8c		jne	inventory,object,$1096
+ 10e6 0f .10e6:		load	map,$32
+ 10e9 9a		jclr	map,$80,$1123
+ 10ec 01		msg	{ee: } {d0:THE} {16:AUTHOR} "WON'T LET"
+ 10fb 01		msg	{ee: } {dc:YOU} "LEAVE UNTIL" {dc:YOU}
+ 110c 01		msg	{ec:   } "FIX HIS ADVERT"
+ 111e 14		msg	$32	; {e6:         }
+ 1120 11		clrf	$40
+ 1122 05		rts
+ 1123 19 .1123:		stor	$befe,$01
+ 1127 04		jsr	$0a8f
+ 112a 19		stor	$00e1,$96
+ 112e 01		msg	{ee: } {d0:THE} {16:AUTHOR} {c2:SEND} {02:S} {dc:YOU}
+ 1136 01		msg	"CONGRATULATIONS" {ad:ON} {97:YOUR}
+ 114a 01		msg	{ec:   } "ESCAPE" {3e:FROM} {d7:TARG}
+ 1156 14		msg	$32	; {e6:         }
+ 1158 92		jclr	#20,flags,$1176
+ 115c 01		msg	{bc:THE PALYAR COMMANDER'S}
+ 115f 01		msg	{ec:   } {1f:BROTHER-IN-LAW}
+ 1163 01		msg	{2b:IS} {b7:PLEASE} {05:D} "YOU!VE GONE"
+ 1174 14		msg	$32	; {e6:         }
+ 1176 01 .1176:		msg	"SAVE OUT" {d0:THE} {c7:STATUS} {13:AND}
+ 1184 01		msg	"SEE" {dc:YOU} {cd:IN} "MERCENARY II"
+ 1199 04		jsr	$0aa4
+ 119c 04 .119c:		jsr	$0aa4
+ 119f 01		msg	{e9:      } "GAME OVER"
+ 11ac 19		stor	$d404,$00
+ 11b0 19		stor	$d40b,$00
+ 11b4 03		jmp	$119c
+ 11b7 01 .11b7:		msg	[ef] {b4:PALYAR} {c5:SHIP} {32:ATTACK} {03:ING}
+ 11be 19		stor	$bef8,$01
+ 11c2 05		rts
+ 11c3 01 .11c3:		msg	[ef] {9f:MECHANOID} {c5:SHIP} {32:ATTACK}
+ 11c9 19		stor	$bef8,$01
+ 11cd 05		rts
+ 11ce 01 .11ce:		msg	{ee: } {e2:WE} {14:ARE} {bd:MOST} {b7:PLEASE} {05:D}
+ 11d6 01		msg	{dc:YOU} {3a:HAVE} {30:DESTROY} {04:ED} {10:ALL}
+ 11dd 01		msg	[ef] "KEY OPPOSITION SITES"
+ 11f5 10		setf	$02
+ 11f7 05		rts
+
+	; Script 2b
+
+ 11f8 04 .11f8:		jsr	$0a9d
+ 11fb 12		jset	#02,flags,$1208
+ 11ff 14		msg	$04	; {a0:MESSAGE} {3e:FROM} {9f:MECHANOID} {02:S}
+ 1201 04		jsr	$11ce
+ 1204 14		msg	$07	; {eb:    } {a0:MESSAGE} {38:END} {02:S}
+ 1206 14		msg	$32	; {e6:         }
+ 1208 11 .1208:		clrf	$40
+ 120a 05		rts
+
+	; Script 2c
+
+ 120b 04 .120b:		jsr	$0a9d
+ 120e 12		jset	#02,flags,$1246
+ 1212 14		msg	$03	; [ef] {a0:MESSAGE} {3e:FROM} {b4:PALYAR} {02:S}
+ 1214 04		jsr	$11ce
+ 1217 0d		load	D9,!00005000
+ 121d 0f		load	object,$0e
+ 1220 0f		load	room,$0f
+ 1223 9d		jclr	room,object,$103b
+ 1226 01		msg	{dc:YOU} {e5:WILL} {3d:FIND} {08:A} {12:REWARD}
+ 122d 01		msg	[ef] "INSIDE THE RED" {0e:HANGER}
+ 1240 19		stor	$296e,$01
+ 1244 14		msg	$07	; {eb:    } {a0:MESSAGE} {38:END} {02:S}
+ 1246 11 .1246:		clrf	$40

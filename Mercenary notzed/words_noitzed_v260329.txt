@@ -1,0 +1,241 @@
+20a0 20e0
+00: MENT(d4)}
+01: MENT(d4)}
+02: S(d3)}
+03: ING(c7)}
+04: ED(c4)}
+05: D(c4)}
+06: !(ee)}
+07: ?(ed)}
+08: A(c1)}
+09: AM(cd)}
+0a: - - -(0d)}
+0b: OUR(d2)}
+0c: JUST(d4)}
+0d: AGAIN(ce)}
+0e: HANGER(d2)}
+0f: AIRPORT(d4)}
+10: ALL(cc)}
+11: AIRCRAFT(d4)}
+12: REWARD(c4)}
+13: AND(c4)}
+14: ARE(c5)}
+15: ANTIGRAV(d6)}
+16: AUTHOR(d2)}
+17: AT(d4)}
+18: ANTENNA(c1)}
+19: ITS(d3)}
+1a: GOLD(c4)}
+1b: BACK(cb)}
+1c: BUY(d9)}
+1d: BE(c5)}
+1e: BRIEF(c6)}
+1f: BROTHER-IN-LAW(d7)}
+20: CALL(cc)}
+21: CATERING(c7)}
+22: CRAFT(d4)}
+23: CRASH(c8)}
+24: CR(d2)}
+25: CREDITS(d3)}
+26: COMMUNICATION(ce)}
+27: COMPLEX(d8)}
+28: CONTROL(cc)}
+29: COMPLETE(c5)}
+2a: CRYSTAL(cc)}
+2b: IS(d3)}
+2c: DARK(cb)}
+2d: HERE(c5)}
+2e: GO(cf)}
+2f: DELIVER(d2)}
+30: DESTROY(d9)}
+31: -(0d)}
+32: ATTACK(cb)}
+33: DO(cf)}
+34: DONE(c5)}
+35: ESSENTIAL(cc)}
+36: ENGINE(c5)}
+37: ENERGY(d9)}
+38: END(c4)}
+39: FEE(c5)}
+3a: HAVE(c5)}
+3b: FUEL(cc)}
+3c: FOR(d2)}
+3d: FIND(c4)}
+3e: FROM(cd)}
+3f: FUND(c4)}
+40: AND(c4)}
+41: Y(d9)}
+42: NEED(c4)}
+43: OCATION(ce)}
+44: NO. O-9 ?(ed)}
+45: NO. O-9 ?(ed)}
+46: NO. O-9 ?(ed)}
+47: NO. O-9 ?(ed)}
+48: NO. O-9 ?(ed)}
+49: NO. O-9 ?(ed)}
+4a: NO. O-9 ?(ed)}
+4b: NO. O-9 ?(ed)}
+4c: NO. O-9 ?(ed)}
+4d: NO. O-9 ?(ed)}
+4e: NO. O-9 ?(ed)}
+4f: NO. O-9 ?(ed)}
+50: AND(c4)}
+51: ID(c4)}
+52: OL(cc)}
+53: CHANOID(c4)}
+54: OCATION(ce)}
+55: VER(d2)}
+56: RIVE(c5)}
+57: T(d4)}
+58: INTERVIEW(d7)}
+59: Y(d9)}
+5a: UR(d2)}
+5b: VER(d2)}
+5c: Y(d9)}
+5d: 9 ?(ed)}
+5e: VER(d2)}
+5f: NO. O-9 ?(ed)}
+60: NO. O-9 ?(ed)}
+61: NO. O-9 ?(ed)}
+62: NO. O-9 ?(ed)}
+63: NO. O-9 ?(ed)}
+64: NO. O-9 ?(ed)}
+65: NO. O-9 ?(ed)}
+66: NO. O-9 ?(ed)}
+67: NO. O-9 ?(ed)}
+68: NO. O-9 ?(ed)}
+69: NO. O-9 ?(ed)}
+6a: NO. O-9 ?(ed)}
+6b: NO. O-9 ?(ed)}
+6c: NO. O-9 ?(ed)}
+6d: NO. O-9 ?(ed)}
+6e: NO. O-9 ?(ed)}
+6f: NO. O-9 ?(ed)}
+70: NO. O-9 ?(ed)}
+71: NO. O-9 ?(ed)}
+72: NO. O-9 ?(ed)}
+73: NO. O-9 ?(ed)}
+74: NO. O-9 ?(ed)}
+75: NO. O-9 ?(ed)}
+76: NO. O-9 ?(ed)}
+77: NO. O-9 ?(ed)}
+78: NO. O-9 ?(ed)}
+79: NO. O-9 ?(ed)}
+7a: NO. O-9 ?(ed)}
+7b: NO. O-9 ?(ed)}
+7c: NO. O-9 ?(ed)}
+7d: NO. O-9 ?(ed)}
+7e: NO. O-9 ?(ed)}
+7f: NO. O-9 ?(ed)}
+80: NO. O-9 ?(ed)}
+81: NO. O-9 ?(ed)}
+82: NO. O-9 ?(ed)}
+83: NO. O-9 ?(ed)}
+84: NO. O-9 ?(ed)}
+85: NO. O-9 ?(ed)}
+86: NO. O-9 ?(ed)}
+87: NO. O-9 ?(ed)}
+88: NO. O-9 ?(ed)}
+89: NO. O-9 ?(ed)}
+8a: NO. O-9 ?(ed)}
+8b: NO. O-9 ?(ed)}
+8c: NO. O-9 ?(ed)}
+8d: NO. O-9 ?(ed)}
+8e: NO. O-9 ?(ed)}
+8f: NO. O-9 ?(ed)}
+90: NO. O-9 ?(ed)}
+91: NO. O-9 ?(ed)}
+92: NO. O-9 ?(ed)}
+93: NO. O-9 ?(ed)}
+94: NO. O-9 ?(ed)}
+95: NO. O-9 ?(ed)}
+96: NO. O-9 ?(ed)}
+97: YOUR(d2)}
+98: LAND(c4)}
+99: LONG(c7)}
+9a: LOCATION(ce)}
+9b: LOC(c3)}
+9c: MEDICAL(cc)}
+9d: LOCKED(c4)}
+9e: MORE(c5)}
+9f: MECHANOID(c4)}
+a0: MESSAGE(c5)}
+a1: MIN(ce)}
+a2: MAY(d9)}
+a3: MUST(d4)}
+a4: HOUSE(c5)}
+a5: NEED(c4)}
+a6: NEUTRON(ce)}
+a7: NOVADRIVE(c5)}
+a8: NOT(d4)}
+a9: NOW(d7)}
+aa: OF(c6)}
+ab: OK(cb)}
+ac: OFFER(d2)}
+ad: ON(ce)}
+ae: ONLY(d9)}
+af: POWER(d2)}
+b0: ARMOURY(d9)}
+b1: LABORATORY(d9)}
+b2: INTERVIEW(d7)}
+b3: PAY(d9)}
+b4: PALYAR(d2)}
+b5: PAID(c4)}
+b6: PLAN(ce)}
+b7: PLEASE(c5)}
+b8: EXCHEQUER(d2)}
+b9: PROVISIONS(d3)}
+ba: CONFERENCE(c5)}
+bb: PAD(c4)}
+bc: THE PALYAR COMMANDER'S(d3)}
+bd: MOST(d4)}
+be: INSTALLATION(ce)}
+bf: REQUIREMENT(d4)}
+c0: REPORT(d4)}
+c1: ROOM(cd)}
+c2: SEND(c4)}
+c3: I(c9)}
+c4: SALE(c5)}
+c5: SHIP(d0)}
+c6: SHOULD(c4)}
+c7: STATUS(d3)}
+c8: STORES(d3)}
+c9: START(d4)}
+ca: SUPPLIES(d3)}
+cb: 00-0000000j(aa)}
+cc: INFIRMARY(d9)}
+cd: IN(ce)}
+ce: IT(d4)}
+cf: THEM(cd)}
+d0: THE(c5)}
+d1: INFORMATION(ce)}
+d2: THERE(c5)}
+d3: THIS(d3)}
+d4: KITCHEN(ce)}
+d5: TO(cf)}
+d6: TOO(cf)}
+d7: TARG(c7)}
+d8: TRANSACTION(ce)}
+d9: WANT(d4)}
+da: GOOD(c4)}
+db: WORK(cb)}
+dc: YOU(d5)}
+dd: JOB(c2)}
+de: US(d3)}
+df: VERY(d9)}
+e0: WHEN(ce)}
+e1: WALK(cb)}
+e2: WE(c5)}
+e3: WELL(cc)}
+e4: WHERE(c5)}
+e5: WILL(cc)}
+e6:          (a0)}
+e7:         (a0)}
+e8:        (a0)}
+e9:       (a0)}
+ea:      (a0)}
+eb:     (a0)}
+ec:    (a0)}
+ed:   (a0)}
+ee:  (a0)}
+ef:  (a0)}
